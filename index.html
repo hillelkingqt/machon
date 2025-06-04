@@ -1,0 +1,138 @@
+
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="https://www.machon-aviv.co.il/wp-content/uploads/2025/05/cropped-logo2-32x32.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>מכון אביב | הכנה למבחני מחוננים</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Rubik', sans-serif;
+        scroll-behavior: smooth;
+      }
+      /* Custom scrollbar for webkit browsers */
+      ::-webkit-scrollbar {
+        width: 10px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #e5e7eb; /* Tailwind gray-200 */
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #9ca3af; /* Tailwind gray-400 */
+        border-radius: 5px;
+        border: 2px solid #e5e7eb; /* Tailwind gray-200 - track color for padding */
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #6b7280; /* Tailwind gray-500 */
+      }
+      html.dark ::-webkit-scrollbar-track {
+        background: #374151; /* Tailwind gray-700 */
+      }
+      html.dark ::-webkit-scrollbar-thumb {
+        background: #6b7280; /* Tailwind gray-500 */
+        border-color: #374151; /* Tailwind gray-700 - track color for padding */
+      }
+      html.dark ::-webkit-scrollbar-thumb:hover {
+        background: #9ca3af; /* Tailwind gray-400 */
+      }
+      .gradient-text {
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+        background-size: 250% auto; /* Increased size for shimmer */
+        animation: shimmer-animation 5s ease-in-out infinite alternate;
+      }
+
+      @keyframes shimmer-animation {
+        0% {
+          background-position: 0% center;
+        }
+        100% {
+          background-position: 100% center;
+        }
+      }
+    </style>
+    <script>
+      // Tailwind dark mode configuration
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                light: '#02cfc9', // Original teal
+                DEFAULT: '#02b3ae', // Darker teal for better contrast
+                dark: '#019a94', 
+              },
+              secondary: {
+                light: '#2d3748', // Dark blue-gray
+                DEFAULT: '#1a202c', // Even darker
+                dark: '#12141d', // Original dark
+              },
+              accent: {
+                DEFAULT: '#FFD700', // Gold for accent
+              }
+            },
+            animation: {
+              'fade-in-up': 'fadeInUp 0.6s ease-out',
+              'fade-in-down': 'fadeInDown 0.6s ease-out',
+              'fade-in': 'fadeIn 0.6s ease-out',
+              'slide-in-right': 'slideInRight 0.6s ease-out',
+              'slide-in-left': 'slideInLeft 0.6s ease-out',
+              'pulse-slow': 'pulseSlow 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            },
+            keyframes: {
+              fadeInUp: {
+                '0%': { opacity: '0', transform: 'translateY(25px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+              fadeInDown: {
+                '0%': { opacity: '0', transform: 'translateY(-25px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+              fadeIn: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
+              },
+              slideInRight: {
+                '0%': { opacity: '0', transform: 'translateX(-35px)' },
+                '100%': { opacity: '1', transform: 'translateX(0)' },
+              },
+              slideInLeft: {
+                '0%': { opacity: '0', transform: 'translateX(35px)' },
+                '100%': { opacity: '1', transform: 'translateX(0)' },
+              },
+              pulseSlow: {
+                '0%, 100%': { opacity: 1, transform: 'scale(1)' },
+                '50%': { opacity: 0.7, transform: 'scale(1.05)' },
+              }
+            }
+          }
+        }
+      }
+    </script>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.1.0/",
+    "react": "https://esm.sh/react@^19.1.0",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.6.2",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.513.0",
+    "framer-motion": "https://esm.sh/framer-motion@^12.16.0",
+    "react-intersection-observer": "https://esm.sh/react-intersection-observer@^9.16.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
