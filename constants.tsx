@@ -384,7 +384,7 @@ export const COURSES_DATA: Course[] = [
 - עלות 120 ש"ח
 - משך 60 דקות
 - מס' שאלות 24-28 שאלות רב-ברירה
-מבנה התוכנית 30 מפגשים שבועיים (ספטמבר-יולי), 3-4 שעות אקדמיות למפגש, אחר הצהריים
+מבנה התוכנית: 30 מפגשים שבועיים (ספטמבר-יולי), 3-4 שעות אקדמיות למפגש, אחר הצהריים
 `,
         links: [{ label: 'לפרטים נוספים ורכישה', href: 'https://www.machon-aviv.co.il/shop/bar-ilan-university-acceleration-program/' }],
         color: 'bg-gradient-to-br from-indigo-500 to-purple-600 dark:from-indigo-600 dark:to-purple-700',
