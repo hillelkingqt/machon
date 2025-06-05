@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ARTICLES_DATA, APP_NAME } from '../constants';
 import AnimatedDiv from '../components/ui/AnimatedDiv';
@@ -158,7 +158,17 @@ const formatArticleContentToHtml = (text: string | undefined): string => {
 const FullArticlePage: React.FC = () => {
     const { articleId } = useParams<{ articleId: string }>();
     const navigate = useNavigate();
+    const articleTopRef = useRef<HTMLDivElement>(null);
     const article = ARTICLES_DATA.find(art => art.id === articleId);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (articleTopRef.current) {
+                articleTopRef.current.scrollIntoView({ behavior: 'auto', block: 'start' });
+            }
+        }, 400);
+        return () => clearTimeout(timer);
+    }, [articleId]);
 
     if (!article) {
         return (
@@ -204,6 +214,7 @@ const FullArticlePage: React.FC = () => {
         <div className="py-1 sm:py-2 selection:bg-primary/30 selection:text-primary-dark dark:selection:bg-primary-light/30 dark:selection:text-primary-light">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 my-10 sm:my-14 md:my-20">
                 <AnimatedDiv
+                    ref={articleTopRef}
                     animation="fadeInUp"
                     duration={0.8}
                     className="max-w-4xl mx-auto bg-white dark:bg-slate-800/80 dark:backdrop-blur-xl p-6 sm:p-10 md:p-14 lg:p-16 rounded-3xl shadow-[0_20px_50px_-10px_rgba(0,0,0,0.1),_0_10px_30px_-5px_rgba(0,0,0,0.07)] dark:shadow-[0_20px_50px_-10px_rgba(0,0,0,0.3),_0_10px_30px_-5px_rgba(0,0,0,0.2)] border border-slate-200/70 dark:border-slate-700/60"
