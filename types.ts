@@ -1,21 +1,37 @@
 
+import { LucideIcon } from 'lucide-react';
+
 export interface NavItem {
-  label: string;
-  href: string;
-  external?: boolean;
-  isButton?: boolean;
+    label: string;
+    href: string;
+    external?: boolean;
+    isButton?: boolean;
+    icon?: LucideIcon; // Optional icon for nav items
 }
 
 export interface Course {
-  id: string;
-  title: string;
-  iconUrl: string;
-  description: string;
-  links?: { label: string; href: string }[];
-  color?: string; // For specific card styling
+    id: string;
+    title: string;
+    icon: LucideIcon; // Changed from iconUrl: string
+    description: string;
+    links?: { label: string; href: string }[];
+    color?: string; // For specific card styling
+    price?: string; // Optional price for shop
 }
 
 export interface DarkModeContextType {
-  darkMode: boolean;
-  toggleDarkMode: () => void;
+    darkMode: boolean;
+    toggleDarkMode: () => void;
+}
+
+export interface Article {
+    id: string;
+    title: string;
+    date: string;
+    imageUrl?: string;
+    excerpt: string;
+    category?: string;
+    author?: string;
+    fullContent?: string; // Added for full article text
+    // fullContentLink?: string; // For future expansion
 }

@@ -1,18 +1,37 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/Header';
-import Footer from './components/Footer'; // Ensured this path is relative
+import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
+import AboutPage from './pages/AboutPage';
+import CoursesPage from './pages/CoursesPage';
+import ArticlesPage from './pages/ArticlesPage';
+import ShopPage from './pages/ShopPage';
+import ContactPage from './pages/ContactPage';
+import FullArticlePage from './pages/FullArticlePage'; // Import FullArticlePage
 import { DarkModeContext, DarkMode } from './contexts/DarkModeContext';
+
+// Utility component to scroll to top on route change
+const ScrollToTop: React.FC = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+};
 
 const App: React.FC = () => {
   const [darkMode, setDarkMode] = useState<DarkMode>(() => {
     if (typeof window !== 'undefined') {
       const savedMode = localStorage.getItem('darkMode');
-      return savedMode === 'dark';
+      if (savedMode === 'dark') return true;
+      if (savedMode === 'light') return false;
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     }
-    return false; // Default to light mode or handle SSR appropriately
+    return false;
   });
 
   useEffect(() => {
@@ -34,11 +53,20 @@ const App: React.FC = () => {
   return (
     <DarkModeContext.Provider value={{ darkMode, toggleDarkMode }}>
       <HashRouter>
-        <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-secondary transition-colors duration-300">
+        <ScrollToTop />
+        <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
           <Header />
-          <main className="flex-grow">
+          <main className="flex-grow pt-20 sm:pt-24"> {/* Padding top for fixed header */}
             <Routes>
               <Route path="/" element={<HomePage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/courses" element={<CoursesPage />} />
+              <Route path="/articles" element={<ArticlesPage />} />
+              <Route path="/article/:articleId" element={<FullArticlePage />} /> {/* New route for full article */}
+              <Route path="/shop" element={<ShopPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              {/* Add a fallback route for 404 if needed */}
+              {/* <Route path="*" element={<NotFoundPage />} /> */}
             </Routes>
           </main>
           <Footer />
