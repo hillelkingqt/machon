@@ -87,8 +87,8 @@ const ContactSection: React.FC = () => {
 
                 <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 items-start">
                     <AnimatedDiv
-                        animation="slideInRight"
-                        delay={0.1}
+                        animation="fadeInUp"
+                        delay={0.2}
                         className="bg-gray-50 dark:bg-secondary-light p-6 sm:p-8 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1.5"
                     >
                         <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-6">פרטי התקשרות</h3>
@@ -121,8 +121,8 @@ const ContactSection: React.FC = () => {
                     </AnimatedDiv>
 
                     <AnimatedDiv
-                        animation="slideInLeft"
-                        delay={0.2}
+                        animation="fadeInUp"
+                        delay={0.3}
                         className="bg-gray-50 dark:bg-secondary-light p-6 sm:p-8 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1.5"
                     >
                         <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-6">שלחו לנו הודעה</h3>
