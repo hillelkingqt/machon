@@ -202,10 +202,7 @@ const FullArticlePage: React.FC = () => {
 
     return (
         <div className="py-1 sm:py-2 selection:bg-primary/30 selection:text-primary-dark dark:selection:bg-primary-light/30 dark:selection:text-primary-light">
-            <AnimatedDiv
-                animation="fadeInUp"
-                duration={0.8}
-                delay={0.1}
+            <div
                 className="max-w-4xl mx-auto bg-white dark:bg-slate-800/80 dark:backdrop-blur-xl p-6 sm:p-10 md:p-14 lg:p-16 rounded-3xl shadow-[0_20px_50px_-10px_rgba(0,0,0,0.1),_0_10px_30px_-5px_rgba(0,0,0,0.07)] dark:shadow-[0_20px_50px_-10px_rgba(0,0,0,0.3),_0_10px_30px_-5px_rgba(0,0,0,0.2)] border border-slate-200/70 dark:border-slate-700/60"
             >
                 <div className="mb-8 sm:mb-10">
@@ -299,7 +296,7 @@ const FullArticlePage: React.FC = () => {
                         </div>
                     </div>
                 </AnimatedDiv>
-            </AnimatedDiv>
+            </div>
         </div>
     );
 };
