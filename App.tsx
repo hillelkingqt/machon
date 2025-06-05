@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { HashRouter, Switch, Route, useLocation } from 'react-router-dom'; // Changed Routes to Switch
 import Header from './components/Header';
 import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
@@ -58,18 +58,18 @@ const App: React.FC = () => {
                 <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
                     <Header />
                     <main className="flex-grow pt-20 sm:pt-24"> {/* Padding top for fixed header */}
-                        <Routes>
-                            <Route path="/" element={<HomePage />} />
-                            <Route path="/about" element={<AboutPage />} />
-                            <Route path="/courses" element={<CoursesPage />} />
-                            <Route path="/articles" element={<ArticlesPage />} />
-                            <Route path="/article/:articleId" element={<FullArticlePage />} /> {/* New route for full article */}
-                            <Route path="/shop" element={<ShopPage />} />
-                            <Route path="/contact" element={<ContactPage />} />
-                            <Route path="/faq" element={<FAQPage />} /> {/* New route for FAQ page */}
+                        <Switch> {/* Changed Routes to Switch */}
+                            <Route exact path="/" component={HomePage} /> {/* Changed element to component, added exact */}
+                            <Route path="/about" component={AboutPage} /> {/* Changed element to component */}
+                            <Route path="/courses" component={CoursesPage} /> {/* Changed element to component */}
+                            <Route path="/articles" component={ArticlesPage} /> {/* Changed element to component */}
+                            <Route path="/article/:articleId" component={FullArticlePage} /> {/* Changed element to component */}
+                            <Route path="/shop" component={ShopPage} /> {/* Changed element to component */}
+                            <Route path="/contact" component={ContactPage} /> {/* Changed element to component */}
+                            <Route path="/faq" component={FAQPage} /> {/* Changed element to component */}
                             {/* Add a fallback route for 404 if needed */}
-                            {/* <Route path="*" element={<NotFoundPage />} /> */}
-                        </Routes>
+                            {/* <Route path="*" component={NotFoundPage />} /> */}
+                        </Switch> {/* Changed Routes to Switch */}
                     </main>
                     <Footer />
                 </div>

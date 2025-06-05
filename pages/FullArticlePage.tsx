@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useHistory } from 'react-router-dom'; // Changed useNavigate to useHistory
 import { ARTICLES_DATA, APP_NAME } from '../constants';
 import AnimatedDiv from '../components/ui/AnimatedDiv';
 import Button from '../components/ui/Button';
@@ -157,7 +158,7 @@ const formatArticleContentToHtml = (text: string | undefined): string => {
 
 const FullArticlePage: React.FC = () => {
     const { articleId } = useParams<{ articleId: string }>();
-    const navigate = useNavigate();
+    const history = useHistory(); // Changed navigate to history
     const article = ARTICLES_DATA.find(art => art.id === articleId);
 
     if (!article) {
@@ -170,7 +171,7 @@ const FullArticlePage: React.FC = () => {
                         מצטערים, לא הצלחנו למצוא את המאמר שחיפשת. ייתכן שהקישור שבור או שהמאמר הוסר.
                     </p>
                     <Button
-                        onClick={() => navigate('/articles')}
+                        onClick={() => history.push('/articles')} // Changed navigate to history.push
                         variant="primary"
                         size="xl"
                         icon={<ChevronsLeft size={24} />}
@@ -202,7 +203,8 @@ const FullArticlePage: React.FC = () => {
 
     return (
         <div className="py-1 sm:py-2 selection:bg-primary/30 selection:text-primary-dark dark:selection:bg-primary-light/30 dark:selection:text-primary-light">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8 my-10 sm:my-14 md:my-20">
+            {/* Adjusted top padding here and removed top margin (my-*) to rely on App.tsx's main padding */}
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-8 md:pt-12 pb-10 sm:pb-14 md:pb-20">
                 <AnimatedDiv
                     animation="fadeInUp"
                     duration={0.8}
