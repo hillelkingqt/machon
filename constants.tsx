@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { NavItem, Course, Article } from './types'; // Combined Article import
-import { ExternalLink, Facebook, Instagram, MessageCircle, Rss, ShoppingBag, Info, Home, BookOpen, Users, BarChart2, Award, UsersRound, Edit3, Lightbulb, ChevronRight, Send, Phone, BookOpenCheck, Tv, Settings, Target, TrendingUp, Brain, CheckCircle, Star as StarIcon, Users as UsersIcon, Smile, Award as AwardIcon, MessageSquareQuote, Activity, Briefcase, GraduationCap, Zap, Rocket, ClipboardCheck } from 'lucide-react';
+import { ExternalLink, Facebook, Instagram, MessageCircle, Rss, ShoppingBag, Info, Home, BookOpen, Users, BarChart2, Award, UsersRound, Edit3, Lightbulb, ChevronRight, Send, Phone, BookOpenCheck, Tv, Settings, Target, TrendingUp, Brain, CheckCircle, Star as StarIcon, Users as UsersIcon, Smile, Award as AwardIcon, MessageSquareQuote, Activity, Briefcase, GraduationCap, Zap, Rocket, ClipboardCheck, HelpCircle } from 'lucide-react'; // Added HelpCircle
 
 
 export const LOGO_URL = 'text_logo'; // Indicates text logo is used, actual text comes from APP_NAME
@@ -13,7 +13,7 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     { label: 'הקורסים שלנו', href: '/courses', icon: BookOpen },
     { label: 'מאמרים', href: '/articles', icon: Rss },
     { label: 'חנות', href: '/shop', icon: ShoppingBag },
-    { label: 'חנות חיצונית', href: 'https://www.machon-aviv.co.il/shop/', external: true }, // Removed icon: ExternalLink
+    { label: 'שאלות', href: '/faq', icon: HelpCircle }, // Changed from "חנות חיצונית"
     { label: 'צור קשר', href: '/contact', isButton: false, icon: Send },
 ];
 
@@ -176,7 +176,7 @@ export const ARTICLES_DATA: Article[] = [
 
 ### סיכום: חשיבות ההבנה והתמיכה
 
-הן ילדים מצטיינים והן ילדים מחוננים זקוקים לסביבה תומכת ומאתגרת כדי למצות את הפוטנציאל הגלום בהם. ההבדל המרכזי הוא שלעיתים קרובות, ילדים מחוננים זקוקים למסגרות ולהתאמות ספציפיות יותר, שכן דרכי החשיבה והצרכים הרגשיים שלהם עשויים להיות שונים.
+הן ילדים מצטיינים והן ילדים מחוננים זקוקים לסביבה תומכת ומאתגרת כדי למצות את הפוטנציאל הגלום בהם. ההבדל המרכזי הוא שלעיתים קרובות, ילדים מחוננים זקוקים למסגרות ולהתאמות ספציфиות יותר, שכן דרכי החשיבה והצרכים הרגשיים שלהם עשויים להיות שונים.
 
 כהורים, חשוב שתהיו קשובים לילדכם, תזהו את נטיותיו ויכולותיו, ותפעלו בשיתוף פעולה עם מערכת החינוך כדי למצוא את המסלול המתאים לו ביותר. זכרו, המטרה היא לא רק הישגים, אלא גם פיתוח סקרנות, אהבת למידה, ורווחה רגשית.
 
@@ -361,3 +361,78 @@ export const CONTACT_DETAILS = {
     email: 'office@machon-aviv.co.il',
     workingHours: 'א׳-ה׳: 09:00-18:00, ו׳: 09:00-13:00'
 };
+
+export interface FAQItem {
+    id: string;
+    question: string;
+    answer: string;
+}
+
+export interface FAQCategory {
+    id: string;
+    title: string;
+    icon?: React.ElementType; // LucideIcon or other
+    questions: FAQItem[];
+}
+
+export const FAQ_DATA: FAQCategory[] = [
+    {
+        id: 'general-odyssey',
+        title: 'שאלות ותשובות על תוכנית אודיסאה',
+        icon: HelpCircle,
+        questions: [
+            {
+                id: 'q1',
+                question: 'מהי תוכנית אודיסאה?',
+                answer: 'תוכנית אודיסאה היא תוכנית לימודים יוקרתית לתלמידים מחוננים, המאפשרת להם ללמוד קורסים אקדמיים כבר מגיל חטיבת ביניים, באוניברסיטאות המובילות בארץ.',
+            },
+            {
+                id: 'q2',
+                question: 'לאילו תלמידים מתאימה התוכנית?',
+                answer: 'התוכנית מיועדת לתלמידים מחוננים מכיתה ח’ בעלי יכולות גבוהות בתחומים ריאליים (בעיקר מתמטיקה ומדעים), בעלי סקרנות, התמדה, ויכולת לימוד עצמאית.',
+            },
+            {
+                id: 'q3',
+                question: 'איפה מתקיימת תוכנית אודיסאה?',
+                answer: 'התוכנית מופעלת בשיתוף האוניברסיטה העברית, אוניברסיטת תל אביב, אוניברסיטת חיפה והטכניון. כל תלמיד משובץ לפי האזור הגאוגרפי שלו.',
+            },
+            {
+                id: 'q4',
+                question: 'מה לומדים במסגרת התוכנית?',
+                answer: 'לימודים ברמה אקדמית בתחומים כמו מתמטיקה, פיזיקה, מדעי המחשב, כימיה ועוד. הלימודים כוללים הרצאות, תרגולים ומטלות כמו באוניברסיטה.',
+            },
+        ],
+    },
+    {
+        id: 'additional-questions',
+        title: 'שאלות נוספות',
+        icon: HelpCircle,
+        questions: [
+            {
+                id: 'q5',
+                question: 'האם מקבלים נקודות זכות על הלימודים?',
+                answer: 'כן. תלמידים מסיימים את הקורסים עם נקודות זכות אקדמיות, ובמקרים מסוימים יכולים להמשיך לתואר ראשון לאחר סיום התיכון.',
+            },
+            {
+                id: 'q6',
+                question: 'איך מתקבלים לתוכנית?',
+                answer: 'יש לעבור מבחן קבלה ייחודי שמודד חשיבה מתמטית ולוגית. רק תלמידים בעלי ציונים גבוהים במיוחד במבחן יתקבלו.',
+            },
+            {
+                id: 'q7',
+                question: 'מה כולל מבחן הקבלה?',
+                answer: 'המבחן כולל שאלות מתמטיות מתקדמות, חידות לוגיות ובעיות שדורשות חשיבה יצירתית – ללא צורך בידע קודם מעבר לחומר הנלמד בבית הספר.',
+            },
+            {
+                id: 'q8',
+                question: 'האם כדאי להתכונן מראש?',
+                answer: 'בהחלט. הכנה טובה מעלה משמעותית את סיכויי הקבלה. תרגול מוקדם תורם להבנה של סגנון השאלות ובונה ביטחון עצמי.',
+            },
+            {
+                id: 'q9',
+                question: 'כמה תלמידים מתקבלים?',
+                answer: 'רק אחוז קטן מהנבחנים מתקבל לתוכנית, בהתאם לרמת ההישגים ולמספר המקומות הפנויים במוסד האקדמי הקרוב. בכל שנה מתקבלים סך הכל כ-250 תלמידים בכל הארץ.',
+            },
+        ],
+    },
+];
