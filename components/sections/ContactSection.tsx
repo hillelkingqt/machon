@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { CONTACT_DETAILS } from '../../constants';
 import { MapPin, Phone, Mail, ExternalLink, Send, Loader2, CheckCircle2, AlertTriangle } from 'lucide-react';
 import AnimatedDiv from '../ui/AnimatedDiv';
@@ -12,18 +12,6 @@ const ContactSection: React.FC = () => {
     const [formData, setFormData] = useState({ name: '', email: '', message: '' });
     const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus>('idle');
     const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
-    const [isMobile, setIsMobile] = useState(false);
-
-    useEffect(() => {
-        const checkMobile = () => {
-            setIsMobile(window.innerWidth < 768); // Tailwind's 'md' breakpoint
-        };
-        checkMobile(); // Initial check
-        // Optional: Add resize listener if dynamic changes are needed,
-        // but for initial animation choice, mount check is often sufficient.
-        // window.addEventListener('resize', checkMobile);
-        // return () => window.removeEventListener('resize', checkMobile);
-    }, []);
 
 
     const getWhatsAppNumber = (phone: string) => {
@@ -99,8 +87,8 @@ const ContactSection: React.FC = () => {
 
                 <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 items-start">
                     <AnimatedDiv
-                        animation={isMobile ? "fadeInUp" : "slideInRight"}
-                        delay={isMobile ? 0.1 : 0.1}
+                        animation="slideInRight"
+                        delay={0.1}
                         className="bg-gray-50 dark:bg-secondary-light p-6 sm:p-8 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1.5"
                     >
                         <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-6">פרטי התקשרות</h3>
@@ -133,8 +121,8 @@ const ContactSection: React.FC = () => {
                     </AnimatedDiv>
 
                     <AnimatedDiv
-                        animation={isMobile ? "fadeInUp" : "slideInLeft"}
-                        delay={isMobile ? 0.2 : 0.2}
+                        animation="slideInLeft"
+                        delay={0.2}
                         className="bg-gray-50 dark:bg-secondary-light p-6 sm:p-8 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1.5"
                     >
                         <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-6">שלחו לנו הודעה</h3>
@@ -152,7 +140,7 @@ const ContactSection: React.FC = () => {
                                 <textarea name="message" id="message" value={formData.message} onChange={handleInputChange} rows={4} required disabled={submissionStatus === 'loading'} className="w-full px-4 py-2.5 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-primary focus:border-primary dark:bg-secondary dark:text-white transition-all duration-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 disabled:opacity-70 disabled:bg-gray-200 dark:disabled:bg-gray-700" placeholder="כתבו את פנייתכם כאן..."></textarea>
                             </div>
                             <div>
-                                <Button type="submit" variant="primary" className="w-full text-base sm:text-lg py-3 shadow-lg hover:shadow-xl" icon={submissionStatus === 'loading' ? <Loader2 size={20} className="animate-spin" /> : <Send size={18} />} disabled={submissionStatus === 'loading'}>
+                                <Button type="submit" variant="primary" className="w-full text-base sm:text-lg py-3 shadow-lg hover:shadow-xl" icon={submissionStatus === 'loading' ? <Loader2 size={20} className="animate-spin" /> : <Send size={18} />} iconPosition="trailing" disabled={submissionStatus === 'loading'}>
                                     {submissionStatus === 'loading' ? 'שולח...' : 'שליחה'}
                                 </Button>
                             </div>
