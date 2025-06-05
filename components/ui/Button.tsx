@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion, HTMLMotionProps } from 'framer-motion'; // Removed ForwardRefComponent import
 import { Link as RouterLink, LinkProps as RouterLinkProps } from 'react-router-dom';
@@ -75,7 +74,7 @@ const Button: React.FC<ButtonProps> = ({
 
     const isAnchor = typeof (rest as ActualAnchorProps).href === 'string';
 
-    const baseStyles = "inline-flex items-center justify-center font-semibold rounded-lg shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-secondary-dark transition-all duration-200 ease-in-out transform hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none disabled:hover:shadow-md";
+    const baseStyles = "inline-flex items-center justify-center font-semibold rounded-lg shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-secondary-dark transition-all duration-200 ease-in-out transform hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none disabled:hover:shadow-md gap-2";
 
     const variantStyles = {
         primary: 'bg-primary hover:bg-primary-dark text-white focus-visible:ring-primary-dark dark:focus-visible:ring-primary',
@@ -98,9 +97,9 @@ const Button: React.FC<ButtonProps> = ({
 
     const content = (
         <>
-            {icon && iconPosition === 'leading' && <span className="me-2 rtl:ms-2 rtl:me-0 flex-shrink-0">{icon}</span>}
+            {icon && iconPosition === 'leading' && <span className="flex-shrink-0">{icon}</span>}
             {children}
-            {icon && iconPosition === 'trailing' && <span className="ms-2 rtl:me-2 rtl:ms-0 flex-shrink-0">{icon}</span>}
+            {icon && iconPosition === 'trailing' && <span className="flex-shrink-0">{icon}</span>}
         </>
     );
 

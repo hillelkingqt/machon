@@ -14,6 +14,7 @@ export interface Course {
     title: string;
     icon: LucideIcon; // Changed from iconUrl: string
     description: string;
+    detailedContent?: string; // Added for detailed course information
     links?: { label: string; href: string }[];
     color?: string; // For specific card styling
     price?: string; // Optional price for shop
