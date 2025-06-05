@@ -1,16 +1,16 @@
 
 import React from 'react';
-import { useHistory } from 'react-router-dom'; // Changed useNavigate to useHistory
+import { useNavigate } from 'react-router-dom'; // Changed useHistory to useNavigate
 import AnimatedDiv from '../ui/AnimatedDiv';
 import Button from '../ui/Button';
 import { ABOUT_STATS, TEAM_MEMBERS_DATA, APP_NAME } from '../../constants';
 import { CheckCircle, MessageSquareQuote, Brain, Star } from 'lucide-react';
 
 const AboutSection: React.FC = () => {
-    const history = useHistory(); // Changed navigate to history
+    const navigate = useNavigate(); // Changed history to navigate
 
     const handleDiscoverCoursesClick = () => {
-        history.push('/courses'); // Changed navigate to history.push
+        navigate('/courses'); // Changed history.push to navigate
     };
 
     const teamFeatures = [

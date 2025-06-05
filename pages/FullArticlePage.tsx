@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useParams, Link, useHistory } from 'react-router-dom'; // Changed useNavigate to useHistory
+import { useParams, Link, useNavigate } from 'react-router-dom'; // Changed useHistory to useNavigate
 import { ARTICLES_DATA, APP_NAME } from '../constants';
 import AnimatedDiv from '../components/ui/AnimatedDiv';
 import Button from '../components/ui/Button';
@@ -158,7 +158,7 @@ const formatArticleContentToHtml = (text: string | undefined): string => {
 
 const FullArticlePage: React.FC = () => {
     const { articleId } = useParams<{ articleId: string }>();
-    const history = useHistory(); // Changed navigate to history
+    const navigate = useNavigate(); // Changed history to navigate
     const article = ARTICLES_DATA.find(art => art.id === articleId);
 
     if (!article) {
@@ -171,7 +171,7 @@ const FullArticlePage: React.FC = () => {
                         מצטערים, לא הצלחנו למצוא את המאמר שחיפשת. ייתכן שהקישור שבור או שהמאמר הוסר.
                     </p>
                     <Button
-                        onClick={() => history.push('/articles')} // Changed navigate to history.push
+                        onClick={() => navigate('/articles')} // Changed history.push to navigate
                         variant="primary"
                         size="xl"
                         icon={<ChevronsLeft size={24} />}

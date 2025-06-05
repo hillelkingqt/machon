@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom'; // Changed useNavigate to useHistory
+import { useNavigate } from 'react-router-dom'; // Changed useHistory to useNavigate
 import { PlayCircle, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import AnimatedDiv from '../ui/AnimatedDiv';
@@ -11,10 +11,10 @@ const VIDEO_URL = 'https://www.youtube.com/embed/fY85ck-pI5c'; // Use embed URL 
 
 const HeroSection: React.FC = () => {
     const [showVideoModal, setShowVideoModal] = useState(false);
-    const history = useHistory(); // Changed navigate to history
+    const navigate = useNavigate(); // Changed history to navigate
 
     const handleDiscoverCoursesClick = () => {
-        history.push('/courses'); // Changed navigate to history.push
+        navigate('/courses'); // Changed history.push to navigate
     };
 
     return (
