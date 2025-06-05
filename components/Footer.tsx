@@ -94,9 +94,6 @@ const Footer: React.FC = () => {
 
                 <div className="border-t border-gray-700 pt-6 sm:pt-8 mt-8 sm:mt-10 text-center text-xs sm:text-sm text-gray-400">
                     <p>&copy; {new Date().getFullYear()} {APP_NAME}. כל הזכויות שמורות למכון אביב.</p>
-                    <p className="mt-1">
-                        עיצוב ופיתוח בסיוע <a href="https://gemini.google.com" target="_blank" rel="noopener noreferrer" className="text-primary-light hover:underline">Gemini AI</a>
-                    </p>
                 </div>
             </div>
         </footer>
