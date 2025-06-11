@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { MessageSquare, Send } from 'lucide-react';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import Button from './ui/Button';
@@ -31,18 +31,19 @@ const ChatWidget: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const location = useLocation();
   const messagesRef = useRef<HTMLDivElement | null>(null);
+  const navigate = useNavigate();
 
   // New state variables
   const [showAdminLogin, setShowAdminLogin] = useState(false);
-  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  // const [showAdminPanel, setShowAdminPanel] = useState(false); // Removed
   const [adminPasswordInput, setAdminPasswordInput] = useState('');
-  const [articleTitle, setArticleTitle] = useState('');
-  const [articleBody, setArticleBody] = useState('');
-  const [questionText, setQuestionText] = useState('');
-  const [answerText, setAnswerText] = useState('');
+  // const [articleTitle, setArticleTitle] = useState(''); // Removed
+  // const [articleBody, setArticleBody] = useState(''); // Removed
+  // const [questionText, setQuestionText] = useState(''); // Removed
+  // const [answerText, setAnswerText] = useState(''); // Removed
   const [adminError, setAdminError] = useState('');
-  const [submissionStatus, setSubmissionStatus] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // const [submissionStatus, setSubmissionStatus] = useState(''); // Removed
+  // const [isSubmitting, setIsSubmitting] = useState(false); // Removed, or rename if login needs specific loading
 
   const initialAiMessage = "שלום לך! \n במה אנו יכולים לעזור לך היום?";
 
@@ -229,87 +230,20 @@ const ChatWidget: React.FC = () => {
 
   const handleAdminLoginSubmit = () => {
     if (adminPasswordInput === '8725') {
-      setShowAdminLogin(false);
-      setShowAdminPanel(true);
-      setAdminPasswordInput('');
-      setAdminError('');
+      sessionStorage.setItem('isAdminAuthenticated', 'true');
+      setAdminPasswordInput(''); // Clear password input
+      setAdminError(''); // Clear any previous error
+      setShowAdminLogin(false); // Hide login form
+      setOpen(false); // Close chat widget
+      navigate('/admin'); // Navigate to admin page
     } else {
       setAdminError('סיסמה שגויה. נסה שוב.');
     }
   };
 
-  const handleArticleSubmit = async () => {
-    if (articleTitle.trim() === '' || articleBody.trim() === '') {
-      setSubmissionStatus('כותרת ותוכן המאמר נדרשים.');
-      setTimeout(() => setSubmissionStatus(''), 3000);
-      return;
-    }
-    setIsSubmitting(true);
-    setSubmissionStatus('מעבד ושולח מאמר...');
-    try {
-      const { data, error } = await supabase
-        .from('articles')
-        .insert([{
-          title: articleTitle,
-          body: articleBody,
-          author_id: null // Assuming author_id can be null or handle accordingly
-        }]);
-
-      if (error) {
-        throw error;
-      }
-      setSubmissionStatus('מאמר פורסם בהצלחה!');
-      setArticleTitle('');
-      setArticleBody('');
-    } catch (error: any) {
-      console.error('Error publishing article:', error);
-      setSubmissionStatus(`שגיאה בפרסום המאמר: ${error.message || 'Unknown error'}`);
-    } finally {
-      setIsSubmitting(false);
-      setTimeout(() => setSubmissionStatus(''), 5000); // Clear status after 5 seconds
-    }
-  };
-
-  const handleQASubmit = async () => {
-    if (questionText.trim() === '') {
-      setSubmissionStatus('שדה השאלה נדרש.');
-      setTimeout(() => setSubmissionStatus(''), 3000);
-      return;
-    }
-    setIsSubmitting(true);
-    setSubmissionStatus('מעבד ושולח שאלה ותשובה...');
-    try {
-      const { data, error } = await supabase
-        .from('qa')
-        .insert([{
-          question_text: questionText,
-          answer_text: answerText.trim() === '' ? null : answerText,
-        }]);
-
-      if (error) {
-        throw error;
-      }
-      setSubmissionStatus('שאלה ותשובה פורסמו בהצלחה!');
-      setQuestionText('');
-      setAnswerText('');
-    } catch (error: any) {
-console.error('Error publishing Q&A:', JSON.stringify(error, null, 2));
-      setSubmissionStatus(`שגיאה בפרסום שאלה ותשובה: ${error.message || 'Unknown error'}`);
-    } finally {
-      setIsSubmitting(false);
-      setTimeout(() => setSubmissionStatus(''), 5000); // Clear status after 5 seconds
-    }
-  };
-
-  const resetAdminPanelStates = () => {
-    setShowAdminPanel(false);
-    setArticleTitle('');
-    setArticleBody('');
-    setQuestionText('');
-    setAnswerText('');
-    setSubmissionStatus('');
-    setIsSubmitting(false); // Reset submitting state as well
-  };
+  // Removed handleArticleSubmit
+  // Removed handleQASubmit
+  // Removed resetAdminPanelStates
 
   const resetAdminLoginStates = () => {
     setShowAdminLogin(false);
@@ -337,13 +271,13 @@ console.error('Error publishing Q&A:', JSON.stringify(error, null, 2));
           >
             <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-primary dark:text-sky-400 font-semibold text-lg">
-                {showAdminPanel ? 'מערכת ניהול תוכן' : showAdminLogin ? 'Admin Login' : 'נציג מכון אביב'}
+                {showAdminLogin ? 'Admin Login' : 'נציג מכון אביב'}
               </h3>
               <button
                 onClick={() => {
                   setOpen(false);
                   if (showAdminLogin) resetAdminLoginStates();
-                  if (showAdminPanel) resetAdminPanelStates();
+                  // if (showAdminPanel) resetAdminPanelStates(); // Removed
                 }}
                 aria-label="סגור"
                 className="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
@@ -352,85 +286,7 @@ console.error('Error publishing Q&A:', JSON.stringify(error, null, 2));
               </button>
             </div>
 
-            {showAdminPanel ? (
-              <div className="p-4 flex-grow overflow-y-auto space-y-4 dark:text-gray-100">
-                <div className="min-h-[40px] flex items-center justify-center">
-                  {submissionStatus && (
-                    <p className={`w-full text-center p-2 rounded-md text-sm ${
-                      submissionStatus.includes('בהצלחה') ? 'bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-100'
-                      : submissionStatus.includes('שגיאה') || submissionStatus.includes('נדרשים') || submissionStatus.includes('נדרש') ? 'bg-red-100 dark:bg-red-800 text-red-700 dark:text-red-100'
-                      : 'bg-sky-100 dark:bg-sky-800 text-sky-700 dark:text-sky-100' // For loading/processing messages
-                    }`}>
-                      {submissionStatus}
-                    </p>
-                  )}
-                </div>
-
-                {/* New Article Form */}
-                <div className="space-y-4 p-4 border rounded-md dark:border-gray-700">
-                  <h4 className="text-xl font-semibold text-gray-800 dark:text-white border-b dark:border-gray-600 pb-2 mb-3">פרסום מאמר חדש</h4>
-                  <div>
-                    <label htmlFor="articleTitle" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">כותרת</label>
-                    <input
-                      type="text"
-                      id="articleTitle"
-                      value={articleTitle}
-                      onChange={(e) => setArticleTitle(e.target.value)}
-                      placeholder="כותרת המאמר"
-                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white text-right"
-                      disabled={isSubmitting}
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="articleBody" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">תוכן המאמר</label>
-                    <textarea
-                      id="articleBody"
-                      value={articleBody}
-                      onChange={(e) => setArticleBody(e.target.value)}
-                      placeholder="כתוב את תוכן המאמר כאן..."
-                      rows={5}
-                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white text-right"
-                      disabled={isSubmitting}
-                    />
-                  </div>
-                  <Button onClick={handleArticleSubmit} className="w-full bg-primary hover:bg-primary-dark text-white disabled:opacity-50 py-2.5" disabled={isSubmitting}>
-                    {isSubmitting ? 'שולח מאמר...' : 'פרסם מאמר'}
-                  </Button>
-                </div>
-
-                {/* New Q&A Form */}
-                <div className="space-y-4 p-4 border rounded-md dark:border-gray-700 mt-6">
-                  <h4 className="text-xl font-semibold text-gray-800 dark:text-white border-b dark:border-gray-600 pb-2 mb-3">פרסום שאלה ותשובה חדשה</h4>
-                  <div>
-                    <label htmlFor="questionText" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">שאלה</label>
-                    <input
-                      type="text"
-                      id="questionText"
-                      value={questionText}
-                      onChange={(e) => setQuestionText(e.target.value)}
-                      placeholder="הכנס את השאלה"
-                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white text-right"
-                      disabled={isSubmitting}
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="answerText" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">תשובה</label>
-                    <textarea
-                      id="answerText"
-                      value={answerText}
-                      onChange={(e) => setAnswerText(e.target.value)}
-                      placeholder="כתוב את התשובה כאן..."
-                      rows={4}
-                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white text-right"
-                      disabled={isSubmitting}
-                    />
-                  </div>
-                  <Button onClick={handleQASubmit} className="w-full bg-primary hover:bg-primary-dark text-white disabled:opacity-50 py-2.5" disabled={isSubmitting}>
-                    {isSubmitting ? 'שולח שו"ת...' : 'פרסם שאלה ותשובה'}
-                  </Button>
-                </div>
-              </div>
-            ) : showAdminLogin ? (
+            {showAdminLogin ? (
               <div className="p-6 flex flex-col gap-y-5 items-center justify-center h-full">
                 <h4 className="text-2xl font-semibold text-gray-800 dark:text-white mb-2">התחברות למערכת ניהול</h4>
                 <input
@@ -441,7 +297,7 @@ console.error('Error publishing Q&A:', JSON.stringify(error, null, 2));
                   placeholder="הכנס סיסמה"
                   className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white text-right"
                 />
-                <Button onClick={handleAdminLoginSubmit} className="w-full bg-primary hover:bg-primary-dark text-white py-2.5" disabled={isSubmitting}>
+                <Button onClick={handleAdminLoginSubmit} className="w-full bg-primary hover:bg-primary-dark text-white py-2.5">
                   התחבר
                 </Button>
                 {adminError && <p className="text-red-500 text-sm mt-1 text-center">{adminError}</p>}
