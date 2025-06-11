@@ -4,6 +4,8 @@ import { useLocation } from 'react-router-dom';
 import { MessageSquare, Send } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 import { APP_NAME, ARTICLES_DATA, COURSES_DATA, FAQ_DATA, PREVIEW_SECTIONS } from '../constants.tsx';
 import { Article, Course, FAQCategory } from '../types.ts';
 
@@ -132,16 +134,7 @@ useEffect(() => {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 text-right" dir="rtl">
-      <motion.button
-        whileHover={{ scale: 1.1, rotate: 5 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => setOpen(o => !o)}
-        className="bg-gradient-to-br from-primary to-primary-dark text-white rounded-full p-3 shadow-xl focus:outline-none flex items-center"
-      >
-        <span className="ml-2">צ'אט</span>
-        <MessageSquare size={24} />
-      </motion.button>
+    <div className="fixed bottom-4 right-4 z-50 text-right flex flex-col items-end" dir="rtl">
       <AnimatePresence>
         {open && (
           <motion.div
@@ -149,7 +142,7 @@ useEffect(() => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 40, scale: 0.9 }}
             transition={{ type: 'spring', stiffness: 250, damping: 25 }}
-            className="w-96 h-[550px] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col mt-3"
+            className="w-96 h-[550px] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col mb-3"
           >
             <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-primary dark:text-sky-400 font-semibold text-lg">נציג מכון אביב</h3>
@@ -174,7 +167,8 @@ useEffect(() => {
                     m.text
                   ) : (
                     <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
+                      remarkPlugins={[remarkGfm, remarkMath]}
+                      rehypePlugins={[rehypeKatex]}
                       className="prose prose-sm dark:prose-invert max-w-none"
                     >
                       {m.text}
@@ -206,6 +200,15 @@ useEffect(() => {
           </motion.div>
         )}
       </AnimatePresence>
+      <motion.button
+        whileHover={{ scale: 1.1, rotate: 5 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={() => setOpen(o => !o)}
+        className="bg-gradient-to-br from-primary to-primary-dark text-white rounded-full p-3 shadow-xl focus:outline-none flex items-center"
+      >
+        <span className="ml-2">צ'אט</span>
+        <MessageSquare size={24} />
+      </motion.button>
     </div>
   );
 };

@@ -11,6 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" integrity="sha384-KMGtAWxiZ1xO6PvxI6Bjq5lHppZArYrusS4X+h0/pYfZfbQfVIAtF5LuPp6BXPDh" crossorigin="anonymous">
 
     <style>
         body {
@@ -483,8 +484,13 @@
             --tw-prose-invert-code: theme('colors.primary.light');
             --tw-prose-invert-pre-code: theme('colors.slate.300');
             --tw-prose-invert-pre-bg: #020617cc;
-            --tw-prose-invert-th-borders: theme('colors.slate.600');
-            --tw-prose-invert-td-borders: theme('colors.slate.700');
+        --tw-prose-invert-th-borders: theme('colors.slate.600');
+        --tw-prose-invert-td-borders: theme('colors.slate.700');
+        }
+        .katex {
+            direction: ltr;
+            display: inline-block;
+            vertical-align: middle;
         }
     </style>
     <script>
