@@ -142,7 +142,7 @@ useEffect(() => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 40, scale: 0.9 }}
             transition={{ type: 'spring', stiffness: 250, damping: 25 }}
-            className="w-96 h-[550px] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col mb-3"
+            className="w-96 h-[550px] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col absolute bottom-full right-0 mb-2"
           >
             <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-primary dark:text-sky-400 font-semibold text-lg">נציג מכון אביב</h3>
