@@ -26,7 +26,10 @@ const ChatWidget: React.FC = () => {
 
   useEffect(() => {
     if (messagesRef.current) {
-      messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+      const container = messagesRef.current;
+      const offset = 40; // keep a small gap so the start of the new message is visible
+      const target = container.scrollHeight - container.clientHeight - offset;
+      container.scrollTop = target > 0 ? target : 0;
     }
   }, [messages, open]);
 
