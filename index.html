@@ -303,67 +303,34 @@
 
 
         /* --- List Styling "Billion Times Better" Overhaul --- */
+        /* Standard list styling will be handled by Tailwind Prose defaults */
         .prose ul, .prose ol {
-            @apply mb-10 ps-0;
-            list-style-position: outside;
+            @apply mb-10; /* Keep bottom margin for spacing */
+            /* list-style-position: outside; */ /* Let prose default handle this or remove if not needed */
+            /* ps-0 removed to allow default padding for bullets */
         }
 
         .prose li {
-            @apply mb-4 ps-12 sm:ps-14 relative;
-            font-size: 1.1rem;
-            line-height: 1.9;
+            @apply mb-4; /* Keep bottom margin for spacing */
+            /* ps-12 sm:ps-14 relative removed */
+            font-size: 1.1rem; /* This was custom, decide if keep or let prose default */
+            line-height: 1.9; /* This was custom, decide if keep or let prose default */
         }
 
-        html[dir="rtl"] .prose li {
-            @apply ps-0 pe-12 sm:pe-14;
-        }
+        /* html[dir="rtl"] .prose li removed as padding is no longer custom */
 
-        .prose ul li::marker {
-            content: '';
-        }
+        /* .prose ul li::marker { content: ''; } removed to show default markers */
 
-        .prose ul li::before {
-            content: '✓';
-            font-family: 'Rubik', sans-serif;
-            @apply absolute w-7 h-7 rounded-full flex items-center justify-center font-bold text-lg;
-            @apply bg-gradient-to-br from-primary/10 to-teal-500/5 dark:from-primary-light/10 dark:to-teal-400/5 text-primary dark:text-primary-light shadow-sm;
-            top: 0.3em;
-            inset-inline-start: 0.75rem;
-            line-height: 1;
-            border: 1px solid theme('colors.primary / 15%');
-        }
+        /* .prose ul li::before rule (custom checkmark) removed */
 
-        html[dir="rtl"] .prose ul li::before {
-            inset-inline-start: auto;
-            inset-inline-end: 0.75rem;
-        }
+        /* html[dir="rtl"] .prose ul li::before rule removed */
 
-        .prose ol {
-            counter-reset: list-counter;
-        }
-
-            .prose ol li::marker {
-                content: '';
-            }
-
-            .prose ol li::before {
-                counter-increment: list-counter;
-                content: counter(list-counter);
-                @apply absolute font-bold text-base flex items-center justify-center w-7 h-7 rounded-lg;
-                @apply bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-md;
-                top: 0.3em;
-                inset-inline-start: 0.75rem;
-                border: 1px solid theme('colors.slate.300');
-            }
-
-        html.dark .prose ol li::before {
-            border-color: theme('colors.slate.600');
-        }
-
-        html[dir="rtl"] .prose ol li::before {
-            inset-inline-start: auto;
-            inset-inline-end: 0.75rem;
-        }
+        /* .prose ol rules for custom counters removed to show default numbering */
+        /* .prose ol { counter-reset: list-counter; } */ /* Removed */
+        /* .prose ol li::marker { content: ''; } */ /* Removed */
+        /* .prose ol li::before rule (custom counter) removed */
+        /* html.dark .prose ol li::before rule removed */
+        /* html[dir="rtl"] .prose ol li::before rule removed */
 
         .prose strong {
             @apply font-extrabold text-slate-900 dark:text-slate-50;
