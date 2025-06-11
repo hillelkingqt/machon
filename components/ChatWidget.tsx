@@ -284,7 +284,6 @@ const ChatWidget: React.FC = () => {
         .insert([{
           question_text: questionText,
           answer_text: answerText.trim() === '' ? null : answerText,
-          created_by: null // Assuming created_by can be null or handle accordingly
         }]);
 
       if (error) {
