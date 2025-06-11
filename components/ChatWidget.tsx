@@ -27,7 +27,7 @@ const ChatWidget: React.FC = () => {
   const location = useLocation();
   const messagesRef = useRef<HTMLDivElement | null>(null);
 
-  const initialAiMessage = "Here are some points:\n* Item 1\n* Item 2\n- Sub-item A\n- Sub-item B\n* Item 3";
+  const initialAiMessage = "שלום לך! \n במה אנו יכולים לעזור לך היום?";
 
 useEffect(() => {
   const container = messagesRef.current;
