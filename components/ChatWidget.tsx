@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { MessageSquare, Send } from 'lucide-react';
+import { Button } from './ui/Button';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -26,6 +27,8 @@ const ChatWidget: React.FC = () => {
   const location = useLocation();
   const messagesRef = useRef<HTMLDivElement | null>(null);
 
+  const initialAiMessage = "Here are some points:\n* Item 1\n* Item 2\n- Sub-item A\n- Sub-item B\n* Item 3";
+
 useEffect(() => {
   const container = messagesRef.current;
   if (container) {
@@ -33,6 +36,10 @@ useEffect(() => {
     const offset = 40;
     const targetScroll = container.scrollHeight - container.clientHeight - offset;
     container.scrollTop = Math.max(targetScroll, 0);
+  }
+
+  if (open && messages.length === 0) {
+    setMessages([{ role: 'ai', text: initialAiMessage }]);
   }
 }, [messages, open]);
 
@@ -51,7 +58,85 @@ useEffect(() => {
     **שים לב היטב להקשר מהדף הנוכחי בו המשתמש נמצא (יינתן לך בהמשך) ולהיסטוריית השיחה המלאה כדי לספק תשובות מדויקות ורלוונטיות.**
     בשום פנים ואופן אל תזכיר שאתה מודל שפה, בינה מלאכותית, או שנוצרת על ידי גוגל. אתה אך ורק נציג שירות של '${APP_NAME}'.
     האתר מציע קורסי הכנה למבחני מחוננים ותוכניות הצטיינות, מאמרים מקצועיים בתחום, וחנות מוצרים.
-    אנא השתמש ב-Markdown לעיצוב התשובות שלך כאשר זה רלוונטי ומוסיף ערך. לדוגמה, השתמש ב-**כדי להדגיש טקסט**, ב-*טקסט נטוי* לטקסט נטוי, וברשימות (באמצעות כוכביות * או מקפים -) כאשר אתה מציג מספר פריטים. היוזמה לשימוש ב-Markdown היא שלך כאשר אתה חושב שזה ישפר את קריאות התשובה.`;
+    אנא השתמש ב-Markdown לעיצוב התשובות שלך כאשר זה רלוונטי ומוסיף ערך. לדוגמה, השתמש ב-**כדי להדגיש טקסט**, ב-*טקסט נטוי* לטקסט נטוי, וברשימות (באמצעות כוכביות * או מקפים -) כאשר אתה מציג מספר פריטים. היוזמה לשימוש ב-Markdown היא שלך כאשר אתה חושב שזה ישפר את קריאות התשובה.
+    When creating bulleted lists, ensure you use an asterisk (*) or a hyphen (-) followed by a space, then the list item text. For example: \`* First item\` or \`- Second item\`.
+
+    Correct Bullet List Formatting:
+    * Item 1
+    * Item 2
+      - Nested Item A (use two spaces for indentation then asterisk/hyphen)
+    - Another Item
+
+    Extended Markdown Formatting Guide:
+    In addition to bold, italics, and basic lists, you can use the following Markdown features to enhance your responses:
+
+    1.  **Headings:**
+        # H1 Heading
+        ## H2 Heading
+        ### H3 Heading
+        #### H4 Heading
+        ##### H5 Heading
+        ###### H6 Heading
+
+    2.  **Numbered Lists:**
+        1. First item
+        2. Second item
+        3. Third item
+           1. Nested item (indent with 3 spaces)
+
+    3.  **Tables (GFM):**
+        | Header 1 | Header 2 | Header 3 |
+        | :------- | :------: | -------: |
+        | Align-L  | Center   | Align-R  |
+        | Cell 2   | Cell 3   | Cell 4   |
+
+    4.  **Blockquotes:**
+        > This is a blockquote.
+        > It can span multiple lines.
+
+    5.  **Inline Code:**
+        Use backticks for inline code, like `const example = "hello";`.
+
+    6.  **Code Blocks (with language specification):**
+        \`\`\`javascript
+        function greet(name) {
+          console.log("Hello, " + name + "!");
+        }
+        greet("World");
+        \`\`\`
+
+    7.  **Horizontal Rules:**
+        Use three or more hyphens, asterisks, or underscores:
+        ---
+        ***
+        ___
+
+    8.  **Strikethrough:**
+        Use two tildes for ~~strikethrough text~~.
+
+    9.  **Task Lists (GFM):**
+        * [x] Completed task
+        * [ ] Incomplete task
+        * [ ] Another task
+          * [x] Nested completed task
+    Use these features judiciously to improve the clarity and presentation of your answers.
+
+    Creating Navigation Buttons:
+    You can create special links that will be rendered as clickable buttons for navigating within the site. This is useful for guiding users to relevant pages.
+    To create a navigation button, use the following Markdown syntax:
+    \`[Button Text](URL "nav-button")\`
+
+    -   \`Button Text\`: The text that will appear on the button.
+    -   \`URL\`: The relative path for navigation (e.g., \`/courses\`, \`/about\`, \`/article/some-id\`). **Must be a relative path.**
+    -   \`"nav-button"\`: The title attribute must be exactly "nav-button" (including the quotes in the Markdown link definition).
+
+    Examples:
+    -   To direct a user to the main courses page: \`[לרשימת הקורסים המלאה](/courses "nav-button")\`
+    -   To link to a specific article: \`[קרא עוד על המאמר בנושא X](/article/article-x-id "nav-button")\`
+    -   To suggest navigating to the "About Us" page: \`[עבור לדף אודותינו](/about "nav-button")\`
+
+    Offer these navigation buttons when it's helpful for the user, such as after providing information that has a corresponding page on the site, or when the user asks for directions to a specific section. Only use relative paths for these buttons. For external links, use standard Markdown links which will open in a new tab.
+    `;
 
     let pageContext = "";
     const currentPath = location.pathname;
@@ -170,6 +255,29 @@ useEffect(() => {
                       remarkPlugins={[remarkGfm, remarkMath]}
                       rehypePlugins={[rehypeKatex]}
                       className="prose prose-sm dark:prose-invert max-w-none"
+                      components={{
+                        a: (props: any) => {
+                          const { href, children, title, ...rest } = props;
+                          const isNavButton = title === 'nav-button';
+                          const isRelative = href && !href.startsWith('http://') && !href.startsWith('https://');
+
+                          if (isNavButton && isRelative) {
+                            return (
+                              <Button variant="outline" size="sm" className="my-1 text-sm dark:text-sky-400 dark:hover:text-sky-300" asChild>
+                                <Link to={href} {...rest} onClick={() => setOpen(false)}>
+                                  {children}
+                                </Link>
+                              </Button>
+                            );
+                          }
+
+                          return (
+                            <a href={href} target="_blank" rel="noopener noreferrer" {...rest}>
+                              {children}
+                            </a>
+                          );
+                        }
+                      }}
                     >
                       {m.text}
                     </ReactMarkdown>
