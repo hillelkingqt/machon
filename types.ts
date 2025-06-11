@@ -29,10 +29,7 @@ export interface Article {
     id: string;
     title: string;
     date: string;
-    imageUrl?: string;
-    excerpt: string;
     category?: string;
-    author?: string;
     fullContent?: string; // Added for full article text
     // fullContentLink?: string; // For future expansion
 }

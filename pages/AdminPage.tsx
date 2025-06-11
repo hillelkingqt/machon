@@ -18,10 +18,7 @@ interface Article {
   title: string;
   body: string;
   author_id?: string | null;
-  author_name?: string;
   category?: string;
-  excerpt?: string;
-  image_url?: string;
 }
 
 interface QAItem {
@@ -97,7 +94,7 @@ const AdminPage: React.FC = () => {
   }, [isAuthenticated, fetchArticles, fetchQAItems]);
 
   const handleOpenArticleModal = (article: Article | null = null) => {
-    setCurrentArticle(article ? { ...article } : { id: '', title: '', body: '', category: '', author_name: '', excerpt: '', image_url: '' });
+    setCurrentArticle(article ? { ...article } : { id: '', title: '', body: '', category: '' });
     setShowArticleModal(true);
   };
   const handleCloseArticleModal = () => { setShowArticleModal(false); setCurrentArticle(null); setErrorArticles(null); };
@@ -109,7 +106,7 @@ const AdminPage: React.FC = () => {
     e.preventDefault();
     if (!currentArticle || !supabase) return;
     setIsSubmittingArticle(true); setErrorArticles(null);
-    const articleData = { title: currentArticle.title, body: currentArticle.body, excerpt: currentArticle.excerpt || null, category: currentArticle.category || null, author_name: currentArticle.author_name || null, image_url: currentArticle.image_url || null };
+    const articleData = { title: currentArticle.title, body: currentArticle.body, category: currentArticle.category || null };
     try {
       const { error } = currentArticle.id ? await supabase.from('articles').update(articleData).eq('id', currentArticle.id) : await supabase.from('articles').insert([articleData]);
       if (error) throw error;
@@ -252,10 +249,8 @@ const AdminPage: React.FC = () => {
                     <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-1">{article.title}</h3>
                     <div className="text-xs text-slate-500 dark:text-slate-400 mb-2">
                       {article.category && <span className="font-medium bg-slate-200 dark:bg-slate-600 px-1.5 py-0.5 rounded-full">{article.category}</span>}
-                      {article.author_name && <span className="mx-1.5">|</span>}
-                      {article.author_name && <span>מחבר: {article.author_name}</span>}
                     </div>
-                    <p className="text-sm text-slate-600 dark:text-slate-300 mb-3 clamp-2">{article.excerpt || article.body.substring(0,120) + (article.body.length > 120 ? '...' : '')}</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-300 mb-3 clamp-2">{article.body.substring(0,120) + (article.body.length > 120 ? '...' : '')}</p>
                     <div className="flex gap-x-2 mt-3">
                       <button onClick={() => handleOpenArticleModal(article)} className="px-3 py-1.5 text-xs font-medium rounded-md flex items-center transition-colors bg-sky-500 hover:bg-sky-600 text-white"><Edit2 size={14} className="ml-1.5" />ערוך</button>
                       <button onClick={() => handleDeleteArticle(article.id)} className="px-3 py-1.5 text-xs font-medium rounded-md flex items-center transition-colors bg-red-500 hover:bg-red-600 text-white"><Trash2 size={14} className="ml-1.5" />מחק</button>
@@ -315,23 +310,11 @@ const AdminPage: React.FC = () => {
                   <label htmlFor="body" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">תוכן מלא</label>
                   <textarea name="body" id="body" value={currentArticle.body} onChange={handleArticleFormChange} rows={6} className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white shadow-sm text-sm sm:text-base" required />
                 </div>
-                <div>
-                  <label htmlFor="excerpt" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">תקציר (אופציונלי)</label>
-                  <textarea name="excerpt" id="excerpt" value={currentArticle.excerpt || ''} onChange={handleArticleFormChange} rows={3} className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white shadow-sm text-sm sm:text-base" />
-                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="category" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">קטגוריה</label>
                     <input type="text" name="category" id="category" value={currentArticle.category || ''} onChange={handleArticleFormChange} className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white shadow-sm text-sm sm:text-base" />
                   </div>
-                  <div>
-                    <label htmlFor="author_name" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">שם המחבר</label>
-                    <input type="text" name="author_name" id="author_name" value={currentArticle.author_name || ''} onChange={handleArticleFormChange} className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white shadow-sm text-sm sm:text-base" />
-                  </div>
-                </div>
-                <div>
-                  <label htmlFor="image_url" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">כתובת URL של תמונה (אופציונלי)</label>
-                  <input type="url" name="image_url" id="image_url" value={currentArticle.image_url || ''} onChange={handleArticleFormChange} className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white shadow-sm text-sm sm:text-base ltr" placeholder="https://example.com/image.jpg" />
                 </div>
                 <div className="flex justify-end gap-x-3 pt-5 mt-auto border-t border-slate-300 dark:border-slate-700">
                   <button type="button" onClick={handleCloseArticleModal} className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-lg transition-colors" disabled={isSubmittingArticle}>ביטול</button>
