@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Course } from '../types';
-import { ExternalLink, Info } from 'lucide-react'; // Changed ChevronLeft to Info for better context if needed
+import { Info } from 'lucide-react'; // Using the Info icon to indicate more details
 import { motion } from 'framer-motion';
 import Button from './ui/Button'; // Assuming Button component is appropriately set up for this usage
 
