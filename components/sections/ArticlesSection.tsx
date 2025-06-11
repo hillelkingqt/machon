@@ -1,11 +1,11 @@
-
-import React from 'react';
-import { Link } from 'react-router-dom'; // Import Link for direct navigation
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ARTICLES_DATA } from '../../constants';
-import { Article } from '../../types';
+import { Article } from '../../types'; // Ensure Article type is imported
 import AnimatedDiv from '../ui/AnimatedDiv';
 import Button from '../ui/Button';
 import { CalendarDays, UserCircle, Tag, ChevronLeft } from 'lucide-react';
+import { supabase } from '../../utils/supabaseClient'; // Import supabase client
 
 interface ArticleCardProps {
     article: Article;
@@ -79,7 +79,61 @@ interface ArticlesSectionProps {
 }
 
 const ArticlesSection: React.FC<ArticlesSectionProps> = ({ maxItems, showTitle = true }) => {
-    const articlesToDisplay = maxItems ? ARTICLES_DATA.slice(0, maxItems) : ARTICLES_DATA;
+    const [allArticles, setAllArticles] = useState<Article[]>(ARTICLES_DATA);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchArticles = async () => {
+            try {
+                // Assuming 'articles' is your table name in Supabase
+                // and columns match the Article type.
+                // Ensure Supabase returns `id` as string or cast it.
+                // Ensure date format is consistent or parse/format it.
+                const { data: supabaseArticles, error: supabaseError } = await supabase
+                    .from('articles') // Make sure this table name is correct
+                    .select('*'); // Select all columns, adjust if needed
+
+                if (supabaseError) {
+                    console.error('Error fetching articles from Supabase:', supabaseError);
+                    setError('Failed to load articles from database. Error: ' + supabaseError.message);
+                    // Keep existing articles if fetch fails
+                    setAllArticles(ARTICLES_DATA);
+                    return;
+                }
+
+                if (supabaseArticles) {
+                    // Type assertion for Supabase articles if necessary, or data transformation
+                    const fetchedArticles: Article[] = supabaseArticles.map(article => ({
+                        ...article,
+                        // Ensure date is a string. Supabase might return it as Date object or ISO string.
+                        date: article.date ? new Date(article.date).toLocaleDateString('he-IL') : 'N/A',
+                        // Ensure id is a string
+                        id: String(article.id)
+                    }));
+
+                    // Combine and remove duplicates (preferring Supabase articles if IDs clash)
+                    const combinedArticles = [
+                        ...fetchedArticles,
+                        ...ARTICLES_DATA.filter(localArticle =>
+                            !fetchedArticles.find(fetched => String(fetched.id) === String(localArticle.id))
+                        )
+                    ];
+                    setAllArticles(combinedArticles);
+                } else {
+                    // No articles from Supabase, just use local ones
+                    setAllArticles(ARTICLES_DATA);
+                }
+            } catch (err) {
+                console.error('Error in fetchArticles:', err);
+                setError('An unexpected error occurred while fetching articles.');
+                setAllArticles(ARTICLES_DATA); // Fallback to local data
+            }
+        };
+
+        fetchArticles();
+    }, []);
+
+    const articlesToDisplay = maxItems ? allArticles.slice(0, maxItems) : allArticles;
 
     return (
         <section className="py-16 sm:py-20 md:py-24 bg-slate-100 dark:bg-slate-900">
@@ -93,13 +147,25 @@ const ArticlesSection: React.FC<ArticlesSectionProps> = ({ maxItems, showTitle =
                     </AnimatedDiv>
                 )}
 
+                {error && (
+                    <AnimatedDiv animation="fadeInUp" className="text-center mb-8">
+                        <p className="text-red-500 dark:text-red-400 bg-red-100 dark:bg-red-900/30 p-4 rounded-md">{error}</p>
+                    </AnimatedDiv>
+                )}
+
+                {articlesToDisplay.length === 0 && !error && (
+                     <AnimatedDiv animation="fadeInUp" className="text-center mb-8">
+                        <p className="text-slate-600 dark:text-slate-400">לא נמצאו מאמרים כרגע.</p>
+                    </AnimatedDiv>
+                )}
+
                 <div className={`grid grid-cols-1 sm:grid-cols-2 ${maxItems === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-2 xl:grid-cols-3'} gap-6 md:gap-8`}>
                     {articlesToDisplay.map((article) => (
                         <ArticleCard key={article.id} article={article} />
                     ))}
                 </div>
 
-                {maxItems && ARTICLES_DATA.length > maxItems && (
+                {maxItems && allArticles.length > maxItems && (
                     <AnimatedDiv animation="fadeInUp" delay={0.5} className="text-center mt-12 sm:mt-16">
                         <Button href="/articles" variant="primary" size="lg">
                             לכל המאמרים
