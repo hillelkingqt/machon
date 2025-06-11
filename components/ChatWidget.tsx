@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import { MessageSquare, Send } from 'lucide-react';
@@ -9,7 +9,7 @@ import { Article, Course, FAQCategory } from '../types.ts';
 
 // Simple chat widget using Gemini API
 const GEMINI_API_KEY = 'AIzaSyA4TppVdydykoU7bCPGr-IeyAbhCJZQDBM';
-const GEMINI_MODEL = 'gemini-2.5-flash-preview-05-20';
+const GEMINI_MODEL = 'gemini-2.0-flash-thinking-exp';
 
 interface Message {
   role: 'user' | 'ai';
@@ -22,11 +22,19 @@ const ChatWidget: React.FC = () => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const location = useLocation();
+  const messagesRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (messagesRef.current) {
+      messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+    }
+  }, [messages, open]);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
     const userMsg = { role: 'user', text: input } as Message;
-    setMessages(prev => [...prev, userMsg]);
+    const updatedMessages = [...messages, userMsg];
+    setMessages(updatedMessages);
     setInput('');
     setLoading(true);
 
@@ -91,8 +99,8 @@ const ChatWidget: React.FC = () => {
             role: 'model' as const,
             parts: [{ text: 'הבנתי את ההקשר. כיצד אוכל לסייע לך?' }],
         },
-        // Actual conversation history (which now includes the latest userMsg as its last element)
-        ...messages.map(msg => ({ // 'messages' is the state variable, now updated
+        // Actual conversation history (which now includes the latest user message)
+        ...updatedMessages.map(msg => ({
             role: msg.role === 'ai' ? 'model' : 'user',
             parts: [{ text: msg.text }],
         })),
@@ -126,8 +134,8 @@ const ChatWidget: React.FC = () => {
         onClick={() => setOpen(o => !o)}
         className="bg-gradient-to-br from-primary to-primary-dark text-white rounded-full p-3 shadow-xl focus:outline-none flex items-center"
       >
-        <MessageSquare size={24} />
         <span className="ml-2">צ'אט</span>
+        <MessageSquare size={24} />
       </motion.button>
       <AnimatePresence>
         {open && (
@@ -144,7 +152,7 @@ const ChatWidget: React.FC = () => {
                 ✕
               </button>
             </div>
-            <div className="flex-grow p-4 space-y-3 overflow-y-auto">
+            <div ref={messagesRef} className="flex-grow p-4 space-y-3 overflow-y-auto">
               {messages.map((m, i) => (
                 <motion.div
                   key={i}
@@ -186,8 +194,8 @@ const ChatWidget: React.FC = () => {
                 disabled={loading}
                 className="bg-sky-500 hover:bg-sky-600 text-white font-medium rounded-md px-4 py-2 text-sm disabled:opacity-60 transition-colors duration-150 flex items-center justify-center"
               >
+                <span className="mr-2">שלח</span>
                 <Send size={18} />
-                <span className="ml-2">שלח</span>
               </motion.button>
             </div>
           </motion.div>
