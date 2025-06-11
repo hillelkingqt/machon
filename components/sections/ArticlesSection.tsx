@@ -12,7 +12,7 @@ interface ArticleCardProps {
 }
 
 const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
-    const articleLink = `/article/${article.id}`;
+    const articleLink = `/article/${article.artag || article.id}`;
 
     return (
         <AnimatedDiv

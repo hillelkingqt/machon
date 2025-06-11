@@ -36,6 +36,7 @@ export interface Article {
     excerpt: string;
     author?: string;
     imageUrl?: string;
+    artag?: string;
 }
 
 // Added FAQ Types
