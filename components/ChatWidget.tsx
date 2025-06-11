@@ -205,8 +205,8 @@ const ChatWidget: React.FC = () => {
     // -- 🎨 MODIFIED LINE --
     // This container is now full-width on mobile with padding, and aligns items to the center.
     // On desktop, it reverts to the original corner positioning.
-    <div className="fixed inset-x-2 bottom-2 sm:inset-x-auto sm:right-4 sm:bottom-4 z-50 flex flex-col items-center sm:items-end" dir="rtl">
-      <AnimatePresence>
+<div className="fixed inset-x-2 bottom-2 sm:inset-x-auto sm:right-4 sm:bottom-4 z-50 flex flex-col items-end" dir="rtl">
+  <AnimatePresence>
         {open && (
           <motion.div
             initial={{ opacity: 0, y: 40, scale: 0.9 }}
