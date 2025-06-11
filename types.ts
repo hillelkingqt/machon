@@ -1,5 +1,6 @@
 
 import { LucideIcon } from 'lucide-react';
+import React from 'react'; // Added for React.ElementType
 
 export interface NavItem {
     label: string;
@@ -32,4 +33,21 @@ export interface Article {
     category?: string;
     fullContent?: string; // Added for full article text
     // fullContentLink?: string; // For future expansion
+    excerpt: string;
+    author?: string;
+    imageUrl?: string;
+}
+
+// Added FAQ Types
+export interface FAQItem {
+    id: string;
+    question: string;
+    answer: string;
+}
+
+export interface FAQCategory {
+    id: string;
+    title: string;
+    icon?: React.ElementType;
+    questions: FAQItem[];
 }
