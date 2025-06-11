@@ -424,3 +424,122 @@ export const ARTICLES_DATA: Article[] = [
 `
     }
 ]
+
+export const PREVIEW_SECTIONS = [
+    {
+        id: 'courses-preview',
+        icon: GraduationCap,
+        subtitle: 'הקורסים המובילים שלנו',
+        description: 'גלו את קורסי ההנה המקיפים שלנו',
+        link: '/courses',
+        linkLabel: 'לכל הקורסים',
+    },
+    {
+        id: 'articles-preview',
+        icon: Edit3,
+        subtitle: 'מאמרים וכתבות אחרונים',
+        description: 'קראו תובנות ומידע מקצועי',
+        link: '/articles',
+        linkLabel: 'לכל המאמרים',
+    },
+    {
+        id: 'about-preview',
+        icon: UsersIcon,
+        subtitle: 'קצת עלינו',
+        description: 'מכון אביב הוא בית להכנה למצוינות',
+        link: '/about',
+        linkLabel: 'קראו עוד עלינו',
+    }
+];
+
+export const COURSES_DATA: Course[] = [
+    {
+        id: 'gifted-prep-2-3',
+        title: "הכנה למבחן מחוננים שלב ב' - כיתות ב'-ג'",
+        icon: Brain,
+        description: 'קורס מקיף להכנה למבחן מחוננים שלב ב\'',
+        links: [{ label: 'למידע נוסף', href: '/shop' }],
+        color: 'bg-gradient-to-br from-teal-500 to-cyan-600',
+        price: '₪790'
+    },
+    {
+        id: 'bar-ilan-acceleration',
+        title: 'הכנה לתוכנית ההאצה של אוניברסיטת בר-אילן',
+        icon: TrendingUp,
+        description: 'קורס הכנה ייעודי למבחני קבלה לתוכנית ההאצה.',
+        links: [{ label: 'למידע נוסף', href: '/shop' }],
+        color: 'bg-gradient-to-br from-indigo-500 to-purple-600',
+        price: '₪850'
+    },
+    {
+        id: 'odyssey-program-prep',
+        title: 'הכנה לתוכנית אודיסאה',
+        icon: Rocket,
+        description: 'קורס ממוקד למבחני הקבלה של תוכנית אודיסאה.',
+        links: [{ label: 'למידע נוסף', href: '/shop' }],
+        color: 'bg-gradient-to-br from-purple-500 to-pink-600',
+        price: '₪900'
+    }
+];
+
+export const TEAM_MEMBERS_DATA = [
+    { name: 'דניאל אביב', role: 'מייסד ומנהל פדגוגי', imageUrl: 'https://www.machon-aviv.co.il/wp-content/uploads/2018/08/team2.jpg' },
+    { name: 'ד"ר אלה שור', role: 'מומחית למחוננים ופיתוח חשיבה', imageUrl: 'https://www.machon-aviv.co.il/wp-content/uploads/2018/08/team1.jpg' },
+    { name: 'יעל כהן', role: 'מרכזת תוכניות ופיתוח תוכן', imageUrl: 'https://www.machon-aviv.co.il/wp-content/uploads/2024/01/WhatsApp-Image-2024-01-08-at-10.32.51-1.jpeg' },
+    { name: 'צוות מורים מנוסה', role: 'ליווי והדרכה מקצועית', imageUrl: 'https://www.machon-aviv.co.il/wp-content/uploads/2018/08/team4.jpg' }
+];
+
+export const ABOUT_STATS = [
+    { icon: UsersIcon, value: '15,000+', label: 'תלמידים מרוצים' },
+    { icon: Smile, value: '95%', label: 'שביעות רצון לקוחות' },
+    { icon: AwardIcon, value: '10+', label: 'שנות ניסיון' },
+    { icon: BookOpenCheck, value: '50+', label: 'קורסים וסדנאות' }
+];
+
+export const SOCIAL_LINKS = [
+    { name: 'Facebook', href: '#', Icon: Facebook },
+    { name: 'Instagram', href: '#', Icon: Instagram },
+    { name: 'WhatsApp', href: '#', Icon: MessageCircle }
+];
+
+export const CONTACT_DETAILS = {
+    address: 'רחוב המדע 14, רחובות (פארק המדע)',
+    mapLink: '#',
+    phone: '055-9851905',
+    phoneLink: 'tel:+972559851905',
+    email: 'office@machon-aviv.co.il',
+    workingHours: 'א׳-ה׳: 09:00-18:00, ו׳: 09:00-13:00'
+};
+
+export interface FAQItem {
+    id: string;
+    question: string;
+    answer: string;
+}
+
+export interface FAQCategory {
+    id: string;
+    title: string;
+    icon?: React.ElementType;
+    questions: FAQItem[];
+}
+
+export const FAQ_DATA: FAQCategory[] = [
+    {
+        id: 'general-odyssey',
+        title: 'שאלות ותשובות על תוכנית אודיסאה',
+        icon: HelpCircle,
+        questions: [
+            {
+                id: 'q1',
+                question: 'מהי תוכנית אודיסאה?',
+                answer: 'תוכנית מצוינות ארצית ללימודים אקדמיים כבר בחטיבת הביניים.'
+            },
+            {
+                id: 'q2',
+                question: 'איך נרשמים?',
+                answer: 'ההרשמה מתבצעת דרך אתר משרד החינוך וכוללת מבחן קבלה.'
+            }
+        ]
+    }
+];
