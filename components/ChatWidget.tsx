@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // Simple chat widget using Gemini API
 const GEMINI_API_KEY = 'AIzaSyA4TppVdydykoU7bCPGr-IeyAbhCJZQDBM';
+const GEMINI_MODEL = 'gemini-2.5-flash-preview-05-20';
 
 interface Message {
   role: 'user' | 'ai';
@@ -23,7 +24,7 @@ const ChatWidget: React.FC = () => {
     setLoading(true);
     try {
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -43,24 +44,36 @@ const ChatWidget: React.FC = () => {
 
   return (
     <div className="fixed bottom-4 right-4 z-50 text-right" dir="rtl">
-      <button
+      <motion.button
+        whileHover={{ scale: 1.1, rotate: 5 }}
+        whileTap={{ scale: 0.95 }}
         onClick={() => setOpen(o => !o)}
-        className="bg-primary text-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all"
+        className="bg-gradient-to-br from-primary to-primary-dark text-white rounded-full p-4 shadow-xl focus:outline-none"
       >
         צ'אט
-      </button>
+      </motion.button>
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            className="w-80 h-96 bg-white dark:bg-secondary-light rounded-lg shadow-lg overflow-hidden flex flex-col mt-2"
+            initial={{ opacity: 0, y: 40, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 40, scale: 0.9 }}
+            transition={{ type: 'spring', stiffness: 250, damping: 25 }}
+            className="w-80 h-96 bg-white dark:bg-secondary-light rounded-xl shadow-2xl overflow-hidden flex flex-col mt-3"
           >
+            <div className="flex justify-between items-center p-2 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="font-semibold text-lg">צ'אט</h3>
+              <button onClick={() => setOpen(false)} aria-label="סגור" className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white transition-colors">
+                ✕
+              </button>
+            </div>
             <div className="flex-grow p-2 space-y-2 overflow-y-auto">
               {messages.map((m, i) => (
-                <div
+                <motion.div
                   key={i}
+                  initial={{ opacity: 0, x: m.role === 'user' ? 50 : -50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                   className={`p-2 rounded-lg whitespace-pre-wrap ${
                     m.role === 'user'
                       ? 'bg-primary/20 text-right'
@@ -79,13 +92,15 @@ const ChatWidget: React.FC = () => {
                 onKeyDown={e => e.key === 'Enter' && sendMessage()}
                 placeholder="כתבו הודעה..."
               />
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={sendMessage}
                 disabled={loading}
                 className="bg-primary text-white rounded px-3 py-1 disabled:opacity-50"
               >
                 שלח
-              </button>
+              </motion.button>
             </div>
           </motion.div>
         )}
