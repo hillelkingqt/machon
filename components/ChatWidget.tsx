@@ -24,11 +24,16 @@ const ChatWidget: React.FC = () => {
   const location = useLocation();
   const messagesRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    if (messagesRef.current) {
-      messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
-    }
-  }, [messages, open]);
+useEffect(() => {
+  const container = messagesRef.current;
+  if (container) {
+    // גלילה אוטומטית לסוף עם מרווח קטן למטה
+    const offset = 40;
+    const targetScroll = container.scrollHeight - container.clientHeight - offset;
+    container.scrollTop = Math.max(targetScroll, 0);
+  }
+}, [messages, open]);
+
 
   const sendMessage = async () => {
     if (!input.trim()) return;
