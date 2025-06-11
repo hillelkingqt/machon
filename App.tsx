@@ -12,6 +12,7 @@ import ShopPage from './pages/ShopPage';
 import ContactPage from './pages/ContactPage';
 import FullArticlePage from './pages/FullArticlePage'; // Import FullArticlePage
 import FAQPage from './pages/FAQPage'; // Import FAQPage
+import AdminPage from './pages/AdminPage'; // Import AdminPage
 import { DarkModeContext, DarkMode } from './contexts/DarkModeContext';
 
 // Utility component to scroll to top on route change
@@ -68,6 +69,7 @@ const App: React.FC = () => {
                             <Route path="/shop" element={<ShopPage />} /> {/* Changed component to element */}
                             <Route path="/contact" element={<ContactPage />} /> {/* Changed component to element */}
                             <Route path="/faq" element={<FAQPage />} /> {/* Changed component to element */}
+                            <Route path="/admin" element={<AdminPage />} /> {/* Add AdminPage route */}
                             {/* Add a fallback route for 404 if needed */}
                             {/* <Route path="*" element={<NotFoundPage />} /> */}
                         </Routes> {/* Changed Switch to Routes */}
