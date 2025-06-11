@@ -2,14 +2,18 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation, Link } from 'react-router-dom';
 import { MessageSquare, Send } from 'lucide-react';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import Button from './ui/Button';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 
-import { APP_NAME, ARTICLES_DATA, COURSES_DATA, FAQ_DATA, PREVIEW_SECTIONS } from '../constants.tsx';
+import { APP_NAME, ARTICLES_DATA, COURSES_DATA, FAQ_DATA, PREVIEW_SECTIONS, SUPABASE_URL, SUPABASE_ANON_KEY } from '../constants.tsx';
 import { Article, Course, FAQCategory } from '../types.ts';
+
+// Initialize Supabase client
+const supabase: SupabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Simple chat widget using Gemini API
 const GEMINI_API_KEY = 'AIzaSyA4TppVdydykoU7bCPGr-IeyAbhCJZQDBM';
@@ -28,6 +32,18 @@ const ChatWidget: React.FC = () => {
   const location = useLocation();
   const messagesRef = useRef<HTMLDivElement | null>(null);
 
+  // New state variables
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [adminPasswordInput, setAdminPasswordInput] = useState('');
+  const [articleTitle, setArticleTitle] = useState('');
+  const [articleBody, setArticleBody] = useState('');
+  const [questionText, setQuestionText] = useState('');
+  const [answerText, setAnswerText] = useState('');
+  const [adminError, setAdminError] = useState('');
+  const [submissionStatus, setSubmissionStatus] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const initialAiMessage = "שלום לך! \n במה אנו יכולים לעזור לך היום?";
 
   useEffect(() => {
@@ -44,6 +60,16 @@ const ChatWidget: React.FC = () => {
 
   const sendMessage = async () => {
     if (!input.trim()) return;
+
+    if (input.trim().toLowerCase() === 'admin') {
+      setMessages([]);
+      setShowAdminLogin(true);
+      setInput('');
+      // Optionally, close the chat widget if you want admin login to take full focus
+      // setOpen(false);
+      return;
+    }
+
     const userMsg = { role: 'user', text: input } as Message;
     const updatedMessages = [...messages, userMsg];
     setMessages(updatedMessages);
@@ -201,6 +227,98 @@ const ChatWidget: React.FC = () => {
     }
   };
 
+  const handleAdminLoginSubmit = () => {
+    if (adminPasswordInput === '8725') {
+      setShowAdminLogin(false);
+      setShowAdminPanel(true);
+      setAdminPasswordInput('');
+      setAdminError('');
+    } else {
+      setAdminError('סיסמה שגויה. נסה שוב.');
+    }
+  };
+
+  const handleArticleSubmit = async () => {
+    if (articleTitle.trim() === '' || articleBody.trim() === '') {
+      setSubmissionStatus('כותרת ותוכן המאמר נדרשים.');
+      setTimeout(() => setSubmissionStatus(''), 3000);
+      return;
+    }
+    setIsSubmitting(true);
+    setSubmissionStatus('מעבד ושולח מאמר...');
+    try {
+      const { data, error } = await supabase
+        .from('articles')
+        .insert([{
+          title: articleTitle,
+          body: articleBody,
+          author_id: null // Assuming author_id can be null or handle accordingly
+        }]);
+
+      if (error) {
+        throw error;
+      }
+      setSubmissionStatus('מאמר פורסם בהצלחה!');
+      setArticleTitle('');
+      setArticleBody('');
+    } catch (error: any) {
+      console.error('Error publishing article:', error);
+      setSubmissionStatus(`שגיאה בפרסום המאמר: ${error.message || 'Unknown error'}`);
+    } finally {
+      setIsSubmitting(false);
+      setTimeout(() => setSubmissionStatus(''), 5000); // Clear status after 5 seconds
+    }
+  };
+
+  const handleQASubmit = async () => {
+    if (questionText.trim() === '') {
+      setSubmissionStatus('שדה השאלה נדרש.');
+      setTimeout(() => setSubmissionStatus(''), 3000);
+      return;
+    }
+    setIsSubmitting(true);
+    setSubmissionStatus('מעבד ושולח שאלה ותשובה...');
+    try {
+      const { data, error } = await supabase
+        .from('qa')
+        .insert([{
+          question_text: questionText,
+          answer_text: answerText.trim() === '' ? null : answerText,
+          created_by: null // Assuming created_by can be null or handle accordingly
+        }]);
+
+      if (error) {
+        throw error;
+      }
+      setSubmissionStatus('שאלה ותשובה פורסמו בהצלחה!');
+      setQuestionText('');
+      setAnswerText('');
+    } catch (error: any) {
+      console.error('Error publishing Q&A:', error);
+      setSubmissionStatus(`שגיאה בפרסום שאלה ותשובה: ${error.message || 'Unknown error'}`);
+    } finally {
+      setIsSubmitting(false);
+      setTimeout(() => setSubmissionStatus(''), 5000); // Clear status after 5 seconds
+    }
+  };
+
+  const resetAdminPanelStates = () => {
+    setShowAdminPanel(false);
+    setArticleTitle('');
+    setArticleBody('');
+    setQuestionText('');
+    setAnswerText('');
+    setSubmissionStatus('');
+    setIsSubmitting(false); // Reset submitting state as well
+  };
+
+  const resetAdminLoginStates = () => {
+    setShowAdminLogin(false);
+    setAdminError('');
+    setAdminPasswordInput('');
+  };
+
+
   return (
     // -- 🎨 MODIFIED LINE --
     // This container is now full-width on mobile with padding, and aligns items to the center.
@@ -219,81 +337,190 @@ const ChatWidget: React.FC = () => {
             className="w-full sm:w-96 h-[70vh] sm:h-[550px] max-h-[calc(100vh-120px)] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col absolute bottom-full sm:right-0 mb-2"
           >
             <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-primary dark:text-sky-400 font-semibold text-lg">נציג מכון אביב</h3>
-              <button onClick={() => setOpen(false)} aria-label="סגור" className="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors">
+              <h3 className="text-primary dark:text-sky-400 font-semibold text-lg">
+                {showAdminPanel ? 'מערכת ניהול תוכן' : showAdminLogin ? 'Admin Login' : 'נציג מכון אביב'}
+              </h3>
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  if (showAdminLogin) resetAdminLoginStates();
+                  if (showAdminPanel) resetAdminPanelStates();
+                }}
+                aria-label="סגור"
+                className="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
+              >
                 ✕
               </button>
             </div>
-            <div ref={messagesRef} className="flex-grow p-4 space-y-3 overflow-y-auto">
-              {messages.map((m, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: m.role === 'user' ? 50 : -50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                  className={`p-3 rounded-md max-w-[85%] text-sm leading-relaxed ${
-                    m.role === 'user'
-                      ? 'bg-sky-500 text-white ml-auto text-right whitespace-pre-wrap'
-                      : 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200 mr-auto text-right'
-                  }`}
-                >
-                  {m.role === 'user' ? (
-                    m.text
-                  ) : (
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm, remarkMath]}
-                      rehypePlugins={[rehypeKatex]}
-                      className="prose prose-sm dark:prose-invert max-w-none"
-                      components={{
-                        a: (props: any) => {
-                          const { href, children, title, ...rest } = props;
-                          const isNavButton = title === 'nav-button';
-                          const isRelative = href && !href.startsWith('http://') && !href.startsWith('https://');
 
-                          if (isNavButton && isRelative) {
-                            return (
-                              <Button variant="outline" size="sm" className="my-1 text-sm dark:text-sky-400 dark:hover:text-sky-300" asChild>
-                                <Link to={href} {...rest} onClick={() => setOpen(false)}>
-                                  {children}
-                                </Link>
-                              </Button>
-                            );
-                          }
-
-                          return (
-                            <a href={href} target="_blank" rel="noopener noreferrer" {...rest}>
-                              {children}
-                            </a>
-                          );
-                        }
-                      }}
-                    >
-                      {m.text}
-                    </ReactMarkdown>
+            {showAdminPanel ? (
+              <div className="p-4 flex-grow overflow-y-auto space-y-4 dark:text-gray-100">
+                <div className="min-h-[40px] flex items-center justify-center">
+                  {submissionStatus && (
+                    <p className={`w-full text-center p-2 rounded-md text-sm ${
+                      submissionStatus.includes('בהצלחה') ? 'bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-100'
+                      : submissionStatus.includes('שגיאה') || submissionStatus.includes('נדרשים') || submissionStatus.includes('נדרש') ? 'bg-red-100 dark:bg-red-800 text-red-700 dark:text-red-100'
+                      : 'bg-sky-100 dark:bg-sky-800 text-sky-700 dark:text-sky-100' // For loading/processing messages
+                    }`}>
+                      {submissionStatus}
+                    </p>
                   )}
-                </motion.div>
-              ))}
-              {loading && <div className="p-3 text-center text-xs text-gray-400 dark:text-gray-500">מטעין...</div>}
-            </div>
-            <div className="p-3 border-t border-gray-200 dark:border-gray-700 flex items-center gap-2">
-              <input
-                className="flex-grow bg-white dark:bg-slate-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none dark:placeholder-gray-400"
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && sendMessage()}
-                placeholder="כתבו הודעה..."
-              />
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={sendMessage}
-                disabled={loading}
-                className="bg-sky-500 hover:bg-sky-600 text-white font-medium rounded-md px-4 py-2 text-sm disabled:opacity-60 transition-colors duration-150 flex items-center justify-center"
-              >
-                <span className="mr-2">שלח</span>
-                <Send size={18} />
-              </motion.button>
-            </div>
+                </div>
+
+                {/* New Article Form */}
+                <div className="space-y-4 p-4 border rounded-md dark:border-gray-700">
+                  <h4 className="text-xl font-semibold text-gray-800 dark:text-white border-b dark:border-gray-600 pb-2 mb-3">פרסום מאמר חדש</h4>
+                  <div>
+                    <label htmlFor="articleTitle" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">כותרת</label>
+                    <input
+                      type="text"
+                      id="articleTitle"
+                      value={articleTitle}
+                      onChange={(e) => setArticleTitle(e.target.value)}
+                      placeholder="כותרת המאמר"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white text-right"
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="articleBody" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">תוכן המאמר</label>
+                    <textarea
+                      id="articleBody"
+                      value={articleBody}
+                      onChange={(e) => setArticleBody(e.target.value)}
+                      placeholder="כתוב את תוכן המאמר כאן..."
+                      rows={5}
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white text-right"
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                  <Button onClick={handleArticleSubmit} className="w-full bg-primary hover:bg-primary-dark text-white disabled:opacity-50 py-2.5" disabled={isSubmitting}>
+                    {isSubmitting ? 'שולח מאמר...' : 'פרסם מאמר'}
+                  </Button>
+                </div>
+
+                {/* New Q&A Form */}
+                <div className="space-y-4 p-4 border rounded-md dark:border-gray-700 mt-6">
+                  <h4 className="text-xl font-semibold text-gray-800 dark:text-white border-b dark:border-gray-600 pb-2 mb-3">פרסום שאלה ותשובה חדשה</h4>
+                  <div>
+                    <label htmlFor="questionText" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">שאלה</label>
+                    <input
+                      type="text"
+                      id="questionText"
+                      value={questionText}
+                      onChange={(e) => setQuestionText(e.target.value)}
+                      placeholder="הכנס את השאלה"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white text-right"
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="answerText" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">תשובה</label>
+                    <textarea
+                      id="answerText"
+                      value={answerText}
+                      onChange={(e) => setAnswerText(e.target.value)}
+                      placeholder="כתוב את התשובה כאן..."
+                      rows={4}
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white text-right"
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                  <Button onClick={handleQASubmit} className="w-full bg-primary hover:bg-primary-dark text-white disabled:opacity-50 py-2.5" disabled={isSubmitting}>
+                    {isSubmitting ? 'שולח שו"ת...' : 'פרסם שאלה ותשובה'}
+                  </Button>
+                </div>
+              </div>
+            ) : showAdminLogin ? (
+              <div className="p-6 flex flex-col gap-y-5 items-center justify-center h-full">
+                <h4 className="text-2xl font-semibold text-gray-800 dark:text-white mb-2">התחברות למערכת ניהול</h4>
+                <input
+                  type="password"
+                  value={adminPasswordInput}
+                  onChange={(e) => setAdminPasswordInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAdminLoginSubmit()}
+                  placeholder="הכנס סיסמה"
+                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white text-right"
+                />
+                <Button onClick={handleAdminLoginSubmit} className="w-full bg-primary hover:bg-primary-dark text-white py-2.5" disabled={isSubmitting}>
+                  התחבר
+                </Button>
+                {adminError && <p className="text-red-500 text-sm mt-1 text-center">{adminError}</p>}
+              </div>
+            ) : (
+              <>
+                <div ref={messagesRef} className="flex-grow p-4 space-y-3 overflow-y-auto">
+                  {messages.map((m, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: m.role === 'user' ? 50 : -50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                      className={`p-3 rounded-md max-w-[85%] text-sm leading-relaxed ${
+                        m.role === 'user'
+                          ? 'bg-sky-500 text-white ml-auto text-right whitespace-pre-wrap'
+                          : 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200 mr-auto text-right'
+                      }`}
+                    >
+                      {m.role === 'user' ? (
+                        m.text
+                      ) : (
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm, remarkMath]}
+                          rehypePlugins={[rehypeKatex]}
+                          className="prose prose-sm dark:prose-invert max-w-none"
+                          components={{
+                            a: (props: any) => {
+                              const { href, children, title, ...rest } = props;
+                              const isNavButton = title === 'nav-button';
+                              const isRelative = href && !href.startsWith('http://') && !href.startsWith('https://');
+
+                              if (isNavButton && isRelative) {
+                                return (
+                                  <Button variant="outline" size="sm" className="my-1 text-sm dark:text-sky-400 dark:hover:text-sky-300" asChild>
+                                    <Link to={href} {...rest} onClick={() => setOpen(false)}>
+                                      {children}
+                                    </Link>
+                                  </Button>
+                                );
+                              }
+
+                              return (
+                                <a href={href} target="_blank" rel="noopener noreferrer" {...rest}>
+                                  {children}
+                                </a>
+                              );
+                            }
+                          }}
+                        >
+                          {m.text}
+                        </ReactMarkdown>
+                      )}
+                    </motion.div>
+                  ))}
+                  {loading && <div className="p-3 text-center text-xs text-gray-400 dark:text-gray-500">מטעין...</div>}
+                </div>
+                <div className="p-3 border-t border-gray-200 dark:border-gray-700 flex items-center gap-2">
+                  <input
+                    className="flex-grow bg-white dark:bg-slate-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none dark:placeholder-gray-400"
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && sendMessage()}
+                    placeholder="כתבו הודעה..."
+                  />
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={sendMessage}
+                    disabled={loading}
+                    className="bg-sky-500 hover:bg-sky-600 text-white font-medium rounded-md px-4 py-2 text-sm disabled:opacity-60 transition-colors duration-150 flex items-center justify-center"
+                  >
+                    <span className="mr-2">שלח</span>
+                    <Send size={18} />
+                  </motion.button>
+                </div>
+              </>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

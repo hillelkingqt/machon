@@ -452,6 +452,8 @@ export const PREVIEW_SECTIONS = [
     }
 ];
 
+export const SUPABASE_URL = 'https://rgkrmmgddvbgmchylhkj.supabase.co';
+export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJna3JtbWdkZHZiZ21jaHlsaGtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk2NzAwNzIsImV4cCI6MjA2NTI0NjA3Mn0.DBtw2iHjjOQkh7kaVuv8HXFYeyVfG8_fr2kcym0fvPE';
 export const COURSES_DATA: Course[] = [
     {
         id: 'gifted-prep-2-3',
