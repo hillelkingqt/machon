@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { HashRouter, Routes, Route, useLocation } from 'react-router-dom'; // Changed Switch to Routes
 import Header from './components/Header';
 import Footer from './components/Footer';
+import ChatWidget from './components/ChatWidget';
 import HomePage from './pages/HomePage';
 import AboutPage from './pages/AboutPage';
 import CoursesPage from './pages/CoursesPage';
@@ -72,6 +73,7 @@ const App: React.FC = () => {
                         </Routes> {/* Changed Switch to Routes */}
                     </main>
                     <Footer />
+                    <ChatWidget />
                 </div>
             </HashRouter>
         </DarkModeContext.Provider>
