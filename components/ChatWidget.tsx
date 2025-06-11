@@ -97,24 +97,16 @@ useEffect(() => {
     5.  **Inline Code:**
         Use backticks for inline code, like \`const example = "hello";\`.
 
-    6.  **Code Blocks (with language specification):**
-        \`\`\`javascript
-        function greet(name) {
-          console.log("Hello, " + name + "!");
-        }
-        greet("World");
-        \`\`\`
-
-    7.  **Horizontal Rules:**
+    6.  **Horizontal Rules:**
         Use three or more hyphens, asterisks, or underscores:
         ---
         ***
         ___
 
-    8.  **Strikethrough:**
+    7.  **Strikethrough:**
         Use two tildes for ~~strikethrough text~~.
 
-    9.  **Task Lists (GFM):**
+    8.  **Task Lists (GFM):**
         * [x] Completed task
         * [ ] Incomplete task
         * [ ] Another task
