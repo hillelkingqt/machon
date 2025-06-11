@@ -2,7 +2,11 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "ESNext",
-    "lib": [ "DOM", "DOM.Iterable", "ES2020" ],
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ES2020"
+    ],
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "esModuleInterop": true,
@@ -19,11 +23,19 @@
     "noFallthroughCasesInSwitch": true,
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
-
     "paths": {
-      "@/*": [ "./*" ]
+      "@/*": [
+        "./*"
+      ]
     }
   },
-  "include": [ "src", "index.d.ts" ],
-  "exclude": [ "node_modules", "dist" ]
+  "include": [
+    "src",
+    "index.d.ts",
+    "tests"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }
