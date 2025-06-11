@@ -293,7 +293,7 @@ const ChatWidget: React.FC = () => {
       setQuestionText('');
       setAnswerText('');
     } catch (error: any) {
-      console.error('Error publishing Q&A:', error);
+console.error('Error publishing Q&A:', JSON.stringify(error, null, 2));
       setSubmissionStatus(`שגיאה בפרסום שאלה ותשובה: ${error.message || 'Unknown error'}`);
     } finally {
       setIsSubmitting(false);
