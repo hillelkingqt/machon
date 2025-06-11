@@ -19,8 +19,8 @@ const FAQPage: React.FC = () => {
         // 'category_id_for_ordering' can be a simple string like "general", "technical" for grouping
         // and 'category_icon' (optional, string name of a Lucide icon)
         const { data: supabaseFaqItems, error: supabaseError } = await supabase
-          .from('faq_items') // Make sure this table name is correct
-          .select('id, question, answer, category_title, category_id_for_ordering, category_icon'); // Adjust columns as needed
+          .from('qa') // Make sure this table name is correct
+          .select('id, question_text, answer_text'); // Adjust columns as needed
 
         if (supabaseError) {
           console.error('Error fetching FAQ data from Supabase:', supabaseError);
@@ -31,23 +31,23 @@ const FAQPage: React.FC = () => {
 
         if (supabaseFaqItems && supabaseFaqItems.length > 0) {
           const supabaseCategories: { [key: string]: FAQCategory } = {};
+          const defaultCategoryId = 'supabase_qa';
+          const defaultCategoryTitle = 'שאלות מהמאגר';
 
           supabaseFaqItems.forEach(item => {
-            const categoryId = item.category_id_for_ordering || 'general'; // Default category ID
-            const categoryTitle = item.category_title || 'שאלות כלליות'; // Default category title
-
-            if (!supabaseCategories[categoryId]) {
-              supabaseCategories[categoryId] = {
-                id: categoryId,
-                title: categoryTitle,
-                // icon: item.category_icon ? item.category_icon : HelpCircle, // Example: How to handle icon dynamically
+            // All items from 'qa' table will go into a single default category
+            if (!supabaseCategories[defaultCategoryId]) {
+              supabaseCategories[defaultCategoryId] = {
+                id: defaultCategoryId,
+                title: defaultCategoryTitle,
+                // icon: HelpCircle, // You can assign a default icon if you have one
                 questions: [],
               };
             }
-            supabaseCategories[categoryId].questions.push({
+            supabaseCategories[defaultCategoryId].questions.push({
               id: String(item.id),
-              question: item.question,
-              answer: item.answer,
+              question: item.question_text, // Map from question_text
+              answer: item.answer_text || '', // Map from answer_text, provide fallback for null
             });
           });
 

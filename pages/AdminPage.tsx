@@ -19,6 +19,8 @@ interface Article {
   body: string;
   author_id?: string | null;
   category?: string;
+  artag?: string;
+  imageUrl?: string;
 }
 
 interface QAItem {
@@ -94,7 +96,7 @@ const AdminPage: React.FC = () => {
   }, [isAuthenticated, fetchArticles, fetchQAItems]);
 
   const handleOpenArticleModal = (article: Article | null = null) => {
-    setCurrentArticle(article ? { ...article } : { id: '', title: '', body: '', category: '' });
+    setCurrentArticle(article ? { ...article } : { id: '', title: '', body: '', category: '', artag: '', imageUrl: '' });
     setShowArticleModal(true);
   };
   const handleCloseArticleModal = () => { setShowArticleModal(false); setCurrentArticle(null); setErrorArticles(null); };
@@ -106,7 +108,13 @@ const AdminPage: React.FC = () => {
     e.preventDefault();
     if (!currentArticle || !supabase) return;
     setIsSubmittingArticle(true); setErrorArticles(null);
-    const articleData = { title: currentArticle.title, body: currentArticle.body, category: currentArticle.category || null };
+    const articleData = {
+      title: currentArticle.title,
+      body: currentArticle.body,
+      category: currentArticle.category || null,
+      artag: currentArticle.artag || null,
+      imageUrl: currentArticle.imageUrl || null,
+    };
     try {
       const { error } = currentArticle.id ? await supabase.from('articles').update(articleData).eq('id', currentArticle.id) : await supabase.from('articles').insert([articleData]);
       if (error) throw error;
@@ -315,6 +323,14 @@ const AdminPage: React.FC = () => {
                     <label htmlFor="category" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">קטגוריה</label>
                     <input type="text" name="category" id="category" value={currentArticle.category || ''} onChange={handleArticleFormChange} className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white shadow-sm text-sm sm:text-base" />
                   </div>
+                  <div>
+                    <label htmlFor="imageUrl" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">קישור לתמונה</label>
+                    <input type="text" name="imageUrl" id="imageUrl" value={currentArticle.imageUrl || ''} onChange={handleArticleFormChange} className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white shadow-sm text-sm sm:text-base" />
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="artag" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">תג מאמר (באנגלית לקישור)</label>
+                  <input type="text" name="artag" id="artag" value={currentArticle.artag || ''} onChange={handleArticleFormChange} className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white shadow-sm text-sm sm:text-base" />
                 </div>
                 <div className="flex justify-end gap-x-3 pt-5 mt-auto border-t border-slate-300 dark:border-slate-700">
                   <button type="button" onClick={handleCloseArticleModal} className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-lg transition-colors" disabled={isSubmittingArticle}>ביטול</button>

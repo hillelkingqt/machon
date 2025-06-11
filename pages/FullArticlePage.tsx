@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ARTICLES_DATA, APP_NAME } from '../constants';
+import { APP_NAME } from '../constants';
 import AnimatedDiv from '../components/ui/AnimatedDiv';
 import Button from '../components/ui/Button';
 import { CalendarDays, UserCircle, Tag, ArrowLeft, Edit3, Share2, ChevronsLeft, Award, SearchX } from 'lucide-react';
+import { supabase } from '../utils/supabaseClient'; // Adjust path if necessary
+import { Article } from '../types'; // Ensure Article type is imported
 
 // Helper function to check if a key is a valid key of an object
 function isKeyOfObject<T extends object>(key: string | number | symbol, obj: T): key is keyof T {
@@ -158,7 +160,68 @@ const formatArticleContentToHtml = (text: string | undefined): string => {
 const FullArticlePage: React.FC = () => {
     const { articleId } = useParams<{ articleId: string }>();
     const navigate = useNavigate();
-    const article = ARTICLES_DATA.find(art => art.id === articleId);
+
+    const [article, setArticle] = useState<Article | null | undefined>(undefined); // undefined for loading, null for not found
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchArticle = async () => {
+            if (!articleId) {
+                setError("מזהה המאמר חסר.");
+                setLoading(false);
+                setArticle(null);
+                return;
+            }
+            setLoading(true);
+            try {
+                const { data, error: supabaseError } = await supabase
+                    .from('articles')
+                    .select('*')
+                    .eq('artag', articleId) // Use 'artag' for querying
+                    .single(); // Expecting a single article
+
+                if (supabaseError) {
+                    if (supabaseError.code === 'PGRST116') { // PostgREST error for "No rows found"
+                         setArticle(null); // Article not found
+                    } else {
+                        throw supabaseError;
+                    }
+                } else if (data) {
+                    setArticle(data as Article);
+                } else {
+                     setArticle(null); // Article not found
+                }
+            } catch (err: any) {
+                console.error('שגיאה בטעינת המאמר:', err);
+                setError(`שגיאה בטעינת המאמר: ${err.message}`);
+                setArticle(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchArticle();
+    }, [articleId]);
+
+    if (loading) {
+        return (
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+                <p className="text-2xl text-slate-600 dark:text-slate-300">טוען מאמר...</p> {/* Replace with a proper loader component if available */}
+            </div>
+        );
+    }
+
+    if (error && !article) { // Show error if article is null and error exists
+         return (
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+                <SearchX size={72} className="text-primary dark:text-primary-light mx-auto mb-8" strokeWidth={1.5} />
+                <h1 className="text-5xl font-extrabold text-slate-700 dark:text-slate-200 mb-6">שגיאה בטעינת המאמר</h1>
+                <p className="text-xl text-slate-500 dark:text-slate-400 mb-12 leading-relaxed">{error}</p>
+                <Button onClick={() => navigate('/articles')} variant="primary" size="xl" icon={<ChevronsLeft size={24} />} iconPosition="leading">חזרה למאמרים</Button>
+            </div>
+        );
+    }
 
     if (!article) {
         return (
@@ -185,10 +248,10 @@ const FullArticlePage: React.FC = () => {
     }
 
     const handleShare = () => {
-        if (navigator.share) {
+        if (navigator.share && article) {
             navigator.share({
                 title: article.title,
-                text: article.excerpt,
+                text: article.excerpt, // Make sure Article type from Supabase includes excerpt
                 url: window.location.href,
             }).catch(console.error);
         } else {
@@ -198,6 +261,8 @@ const FullArticlePage: React.FC = () => {
         }
     };
 
+    // Ensure article.fullContent is available and used. `select('*')` should provide it.
+    // Also ensure `article.excerpt` is available for the share function.
     const processedContent = formatArticleContentToHtml(article.fullContent);
 
     return (
