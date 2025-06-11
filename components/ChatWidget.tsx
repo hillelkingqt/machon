@@ -135,16 +135,6 @@ useEffect(() => {
 
   return (
     <div className="fixed bottom-4 right-4 z-50 text-right relative" dir="rtl">
-      <motion.button
-        whileHover={{ scale: 1.1, rotate: 5 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => setOpen(o => !o)}
-        className="bg-gradient-to-br from-primary to-primary-dark text-white rounded-full p-3 shadow-xl focus:outline-none flex items-center"
-      >
-        <span className="ml-2">צ'אט</span>
-        <MessageSquare size={24} />
-      </motion.button>
-
       <AnimatePresence>
         {open && (
           <motion.div
@@ -210,15 +200,17 @@ useEffect(() => {
           </motion.div>
         )}
       </AnimatePresence>
-      <motion.button
-        whileHover={{ scale: 1.1, rotate: 5 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => setOpen(o => !o)}
-        className="bg-gradient-to-br from-primary to-primary-dark text-white rounded-full p-3 shadow-xl focus:outline-none flex items-center"
-      >
-        <span className="ml-2">צ'אט</span>
-        <MessageSquare size={24} />
-      </motion.button>
+      {!open && (
+        <motion.button
+          whileHover={{ scale: 1.1, rotate: 5 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setOpen(true)}
+          className="bg-gradient-to-br from-primary to-primary-dark text-white rounded-full p-3 shadow-xl focus:outline-none flex items-center"
+        >
+          <span className="ml-2">צ'אט</span>
+          <MessageSquare size={24} />
+        </motion.button>
+      )}
     </div>
   );
 };
