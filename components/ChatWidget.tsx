@@ -7,6 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+
 import { APP_NAME, ARTICLES_DATA, COURSES_DATA, FAQ_DATA, PREVIEW_SECTIONS } from '../constants.tsx';
 import { Article, Course, FAQCategory } from '../types.ts';
 
@@ -29,20 +30,17 @@ const ChatWidget: React.FC = () => {
 
   const initialAiMessage = "שלום לך! \n במה אנו יכולים לעזור לך היום?";
 
-useEffect(() => {
-  const container = messagesRef.current;
-  if (container) {
-    // גלילה אוטומטית לסוף עם מרווח קטן למטה
-    const offset = 40;
-    const targetScroll = container.scrollHeight - container.clientHeight - offset;
-    container.scrollTop = Math.max(targetScroll, 0);
-  }
+  useEffect(() => {
+    const container = messagesRef.current;
+    if (container) {
+      // גלילה אוטומטית לסוף
+      container.scrollTop = container.scrollHeight;
+    }
 
-  if (open && messages.length === 0) {
-    setMessages([{ role: 'ai', text: initialAiMessage }]);
-  }
-}, [messages, open]);
-
+    if (open && messages.length === 0) {
+      setMessages([{ role: 'ai', text: initialAiMessage }]);
+    }
+  }, [messages, open]);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -145,7 +143,7 @@ useEffect(() => {
         pageContext = `המשתמש נמצא כעת בדף 'הקורסים שלנו'. רשימת הקורסים שאנו מציעים:
 - ${courseTitlesList}
 ניתן לשאול על כל קורס באופן ספציפי, למשל מה הוא כולל, למי הוא מיועד, מה המחיר וכו'.`;
-    } else if (currentPath === "/articles") { // New case for the main articles page
+    } else if (currentPath === "/articles") {
         const articleTitles = ARTICLES_DATA.map(article => article.title).join('\n- ');
         pageContext = `המשתמש נמצא כעת בדף המאמרים הראשי. רשימת המאמרים הזמינים באתר:
 - ${articleTitles}
@@ -169,21 +167,15 @@ useEffect(() => {
         pageContext = `המשתמש נמצא כעת בדף החנות. בדף זה ניתן לרכוש את קורסי ההכנה שלנו ומוצרים נוספים.`;
     }
 
-    // Constructing the API payload with history
     const apiPayloadContents = [
-        // Priming Turn 1 (User): System prompt and page context
         {
             role: 'user' as const,
-            parts: [{ text: `${baseSystemPrompt}
-
-מידע על הדף הנוכחי: ${pageContext}` }],
+            parts: [{ text: `${baseSystemPrompt}\n\nמידע על הדף הנוכחי: ${pageContext}` }],
         },
-        // Priming Turn 2 (Model): Acknowledgement of context
         {
             role: 'model' as const,
             parts: [{ text: 'הבנתי את ההקשר. כיצד אוכל לסייע לך?' }],
         },
-        // Actual conversation history (which now includes the latest user message)
         ...updatedMessages.map(msg => ({
             role: msg.role === 'ai' ? 'model' : 'user',
             parts: [{ text: msg.text }],
@@ -200,8 +192,7 @@ useEffect(() => {
         }
       );
       const data = await res.json();
-      const text =
-        data.candidates?.[0]?.content?.parts?.[0]?.text || '❌ אירעה שגיאה';
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '❌ אירעה שגיאה';
       setMessages(prev => [...prev, { role: 'ai', text }]);
     } catch {
       setMessages(prev => [...prev, { role: 'ai', text: '❌ אירעה שגיאה' }]);
@@ -211,7 +202,10 @@ useEffect(() => {
   };
 
   return (
-    <div className="fixed bottom-2 right-2 sm:bottom-4 sm:right-4 z-50 text-right flex flex-col items-end" dir="rtl">
+    // -- 🎨 MODIFIED LINE --
+    // This container is now full-width on mobile with padding, and aligns items to the center.
+    // On desktop, it reverts to the original corner positioning.
+    <div className="fixed inset-x-2 bottom-2 sm:inset-x-auto sm:right-4 sm:bottom-4 z-50 flex flex-col items-center sm:items-end" dir="rtl">
       <AnimatePresence>
         {open && (
           <motion.div
@@ -219,7 +213,10 @@ useEffect(() => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 40, scale: 0.9 }}
             transition={{ type: 'spring', stiffness: 250, damping: 25 }}
-            className="w-[90vw] max-w-full sm:w-96 h-[70vh] sm:h-[550px] max-h-[90vh] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col absolute bottom-full right-0 mb-2"
+            // -- 🎨 MODIFIED LINE --
+            // Width is now `w-full` on mobile to fill the parent, with a robust `max-h` calculation.
+            // On desktop (`sm:`), it uses a fixed width. `sm:right-0` ensures it's aligned correctly on desktop.
+            className="w-full sm:w-96 h-[70vh] sm:h-[550px] max-h-[calc(100vh-120px)] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col absolute bottom-full sm:right-0 mb-2"
           >
             <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-primary dark:text-sky-400 font-semibold text-lg">נציג מכון אביב</h3>
