@@ -95,7 +95,7 @@ useEffect(() => {
         > It can span multiple lines.
 
     5.  **Inline Code:**
-        Use backticks for inline code, like `const example = "hello";`.
+        Use backticks for inline code, like \`const example = "hello";\`.
 
     6.  **Code Blocks (with language specification):**
         \`\`\`javascript
