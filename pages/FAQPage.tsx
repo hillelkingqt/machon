@@ -32,7 +32,7 @@ const FAQPage: React.FC = () => {
         if (supabaseFaqItems && supabaseFaqItems.length > 0) {
           const supabaseCategories: { [key: string]: FAQCategory } = {};
           const defaultCategoryId = 'supabase_qa';
-          const defaultCategoryTitle = 'שאלות מהמאגר';
+          const defaultCategoryTitle = 'שאלות שאתם שאלתם אותנו';
 
           supabaseFaqItems.forEach(item => {
             // All items from 'qa' table will go into a single default category

@@ -178,8 +178,8 @@ const FullArticlePage: React.FC = () => {
                 const { data, error: supabaseError } = await supabase
                     .from('articles')
                     .select('*')
-                    .eq('artag', articleId) // Use 'artag' for querying
-                    .single(); // Expecting a single article
+                    .eq('artag', articleId)
+                    .single();
 
                 if (supabaseError) {
                     if (supabaseError.code === 'PGRST116') { // PostgREST error for "No rows found"
@@ -188,7 +188,18 @@ const FullArticlePage: React.FC = () => {
                         throw supabaseError;
                     }
                 } else if (data) {
-                    setArticle(data as Article);
+                    const created = (data as any).date || (data as any).created_at;
+                    const bodyText: string = (data as any).fullContent || (data as any).body || '';
+                    const transformed: Article = {
+                        ...(data as any),
+                        fullContent: bodyText,
+                        excerpt: (data as any).excerpt || bodyText.substring(0, 150),
+                        author: (data as any).author || 'צוות מכון אביב',
+                        imageUrl: (data as any).imageUrl,
+                        date: created ? new Date(created).toLocaleDateString('he-IL') : 'N/A',
+                        id: String((data as any).id),
+                    };
+                    setArticle(transformed);
                 } else {
                      setArticle(null); // Article not found
                 }

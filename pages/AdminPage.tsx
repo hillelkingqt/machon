@@ -114,6 +114,7 @@ const AdminPage: React.FC = () => {
       category: currentArticle.category || null,
       artag: currentArticle.artag || null,
       imageUrl: currentArticle.imageUrl || null,
+      date: new Date().toLocaleDateString('he-IL'),
     };
     try {
       const { error } = currentArticle.id ? await supabase.from('articles').update(articleData).eq('id', currentArticle.id) : await supabase.from('articles').insert([articleData]);
