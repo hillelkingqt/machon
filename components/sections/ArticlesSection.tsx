@@ -102,14 +102,21 @@ const ArticlesSection: React.FC<ArticlesSectionProps> = ({ maxItems, showTitle =
                 }
 
                 if (supabaseArticles) {
-                    // Type assertion for Supabase articles if necessary, or data transformation
-                    const fetchedArticles: Article[] = supabaseArticles.map(article => ({
-                        ...article,
-                        // Ensure date is a string. Supabase might return it as Date object or ISO string.
-                        date: article.date ? new Date(article.date).toLocaleDateString('he-IL') : 'N/A',
-                        // Ensure id is a string
-                        id: String(article.id)
-                    }));
+                    // Transform Supabase data to match our Article interface
+                    const fetchedArticles: Article[] = supabaseArticles.map((supaArticle: any) => {
+                        const created = supaArticle.date || supaArticle.created_at;
+                        const bodyText: string = supaArticle.fullContent || supaArticle.body || '';
+
+                        return {
+                            ...supaArticle,
+                            fullContent: bodyText,
+                            excerpt: supaArticle.excerpt || bodyText.substring(0, 150),
+                            author: supaArticle.author || 'צוות מכון אביב',
+                            imageUrl: supaArticle.imageUrl,
+                            date: created ? new Date(created).toLocaleDateString('he-IL') : 'N/A',
+                            id: String(supaArticle.id),
+                        } as Article;
+                    });
 
                     // Combine and remove duplicates (preferring Supabase articles if IDs clash)
                     const combinedArticles = [
