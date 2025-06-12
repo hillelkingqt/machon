@@ -39,14 +39,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       if (currentSession?.user) {
-        // Assuming user_metadata contains these fields from signUp or OAuth
-        const userMetadata = currentSession.user.user_metadata;
+        // Extract profile details from signUp metadata or OAuth provider
+        const m = currentSession.user.user_metadata || {};
+        const firstName = m.first_name || m.given_name || (m.full_name || m.name || '').split(' ')[0];
+        const lastName = m.last_name || m.family_name || (m.full_name || m.name || '').split(' ').slice(1).join(' ');
         setProfile({
           id: currentSession.user.id,
-          firstName: userMetadata.first_name,
-          lastName: userMetadata.last_name,
-          fullName: userMetadata.full_name || `${userMetadata.first_name || ''} ${userMetadata.last_name || ''}`.trim(),
-          avatarUrl: userMetadata.avatar_url, // Standard for Google OAuth
+          firstName,
+          lastName,
+          fullName: m.full_name || m.name || `${firstName || ''} ${lastName || ''}`.trim(),
+          avatarUrl: m.avatar_url || m.picture,
         });
       } else {
         setProfile(null);
@@ -64,17 +66,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(currentUser);
 
         if (currentUser) {
-          // Extract profile information from user_metadata
-          // This metadata comes from `options.data` in `signUp` or from the OAuth provider
-          const userMetadata = currentUser.user_metadata;
+          // Extract profile information from user_metadata or OAuth provider
+          const m = currentUser.user_metadata || {};
+          const firstName = m.first_name || m.given_name || (m.full_name || m.name || '').split(' ')[0];
+          const lastName = m.last_name || m.family_name || (m.full_name || m.name || '').split(' ').slice(1).join(' ');
           const userProfile: UserProfile = {
             id: currentUser.id,
-            firstName: userMetadata.first_name,
-            lastName: userMetadata.last_name,
+            firstName,
+            lastName,
             // Supabase often provides 'full_name' or 'name' from OAuth.
             // For email signup, we constructed 'full_name'.
-            fullName: userMetadata.full_name || userMetadata.name || `${userMetadata.first_name || ''} ${userMetadata.last_name || ''}`.trim(),
-            avatarUrl: userMetadata.avatar_url || userMetadata.picture, // 'picture' is common from Google
+            fullName: m.full_name || m.name || `${firstName || ''} ${lastName || ''}`.trim(),
+            avatarUrl: m.avatar_url || m.picture,
           };
           setProfile(userProfile);
         } else {

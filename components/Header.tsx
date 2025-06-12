@@ -18,11 +18,22 @@ const Header: React.FC = () => {
     const { user, profile, logout, loadingInitial } = useAuth(); // Consume AuthContext
 
     const [activeModal, setActiveModal] = useState<'login' | 'signup' | 'forgotPassword' | null>(null);
+    const [loginPrefill, setLoginPrefill] = useState<{email?: string; password?: string} | null>(null);
 
-    const openLoginModal = () => setActiveModal('login');
+    const openLoginModal = (email?: string, password?: string) => {
+        if (email || password) {
+            setLoginPrefill({ email, password });
+        } else {
+            setLoginPrefill(null);
+        }
+        setActiveModal('login');
+    };
     const openSignupModal = () => setActiveModal('signup');
     const openForgotPasswordModal = () => setActiveModal('forgotPassword');
-    const closeAuthModal = () => setActiveModal(null);
+    const closeAuthModal = () => {
+        setActiveModal(null);
+        setLoginPrefill(null);
+    };
 
     useEffect(() => {
         const handleScroll = () => {
@@ -125,7 +136,7 @@ const Header: React.FC = () => {
             );
         }
         return (
-            <Button onClick={openLoginModal} variant="outline" size="md" icon={<LogInIcon size={18} />}>
+            <Button onClick={() => openLoginModal()} variant="outline" size="md" icon={<LogInIcon size={18} />}>
                 התחברות
             </Button>
         );
@@ -143,7 +154,7 @@ const Header: React.FC = () => {
             );
         }
         return (
-            <Button onClick={openLoginModal} variant="ghost" size="sm" className="!px-2 !py-1.5 me-1" icon={<LogInIcon size={22} />}>
+            <Button onClick={() => openLoginModal()} variant="ghost" size="sm" className="!px-2 !py-1.5 me-1" icon={<LogInIcon size={22} />}>
                 <span className="sr-only">התחברות</span>
             </Button>
         );
@@ -237,6 +248,8 @@ const Header: React.FC = () => {
                 onClose={closeAuthModal}
                 onSwitchToSignup={openSignupModal}
                 onSwitchToForgotPassword={openForgotPasswordModal}
+                prefillEmail={loginPrefill?.email}
+                prefillPassword={loginPrefill?.password}
             />
             <SignupModal
                 isOpen={activeModal === 'signup'}
