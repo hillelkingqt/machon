@@ -1,122 +1,84 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { APP_NAME, ARTICLES_DATA } from '../constants';
+// ARTICLES_DATA is no longer needed here as DataContext handles it.
+// import { APP_NAME, ARTICLES_DATA } from '../constants';
+import { APP_NAME } from '../constants';
 import AnimatedDiv from '../components/ui/AnimatedDiv';
 import Button from '../components/ui/Button';
 import { CalendarDays, UserCircle, Tag, ArrowLeft, Edit3, Share2, ChevronsLeft, Award, SearchX } from 'lucide-react';
-import { supabase } from '../utils/supabaseClient'; // Adjust path if necessary
-import { Article } from '../types'; // Ensure Article type is imported
-import { formatArticleContentToHtml } from '../utils/contentParser'; // Import the centralized formatter
+// supabase client is no longer needed here
+// import { supabase } from '../utils/supabaseClient';
+import { Article } from '../types';
+import { formatArticleContentToHtml } from '../utils/contentParser';
+import { useData } from '../contexts/DataContext'; // Import useData
 
 const FullArticlePage: React.FC = () => {
     const { articleId } = useParams<{ articleId: string }>();
     const navigate = useNavigate();
+    const { articles, loading: dataLoading, error: dataError } = useData(); // Get global state
 
-    const [article, setArticle] = useState<Article | null | undefined>(undefined); // undefined for loading, null for not found
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [currentArticle, setCurrentArticle] = useState<Article | null | undefined>(undefined); // undefined: loading/searching, null: not found
+    const [localError, setLocalError] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchArticle = async () => {
-            if (!articleId) {
-                setError("מזהה המאמר חסר.");
-                setLoading(false);
-                setArticle(null);
-                return;
+        if (!articleId) {
+            setLocalError("מזהה המאמר חסר.");
+            setCurrentArticle(null);
+            return;
+        }
+
+        if (articles && articles.length > 0) {
+            // Try finding by artag or id. Prioritize artag if available.
+            const foundArticle = articles.find(a => a.artag === articleId) || articles.find(a => String(a.id) === articleId);
+
+            if (foundArticle) {
+                setCurrentArticle(foundArticle);
+                setLocalError(null);
+            } else {
+                setCurrentArticle(null);
+                setLocalError("המאמר לא נמצא במערכת.");
             }
-            setLoading(true);
-            try {
-                // First try to fetch by the custom slug (artag)
-                let { data, error: supabaseError } = await supabase
-                    .from('articles')
-                    .select('*')
-                    .eq('artag', articleId)
-                    .single();
-
-                // If not found by slug, attempt fetching by numeric id only
-                if (supabaseError && supabaseError.code === 'PGRST116' && /^\d+$/.test(articleId)) {
-                    const byId = await supabase
-                        .from('articles')
-                        .select('*')
-                        .eq('id', articleId)
-                        .single();
-                    data = byId.data ?? data;
-                    supabaseError = byId.error;
-                }
-
-                if (supabaseError) {
-                    if (supabaseError.code === 'PGRST116') { // No rows found
-                        // Try to find the article in local constants as a fallback
-                        const localArticle = ARTICLES_DATA.find(a => (a.artag || a.id) === articleId);
-                        if (localArticle) {
-                            setArticle(localArticle);
-                        } else {
-                            setArticle(null); // Article not found anywhere
-                        }
-                    } else {
-                        throw supabaseError;
-                    }
-                } else if (data) {
-                    const created = (data as any).date || (data as any).created_at;
-                    const bodyText: string = (data as any).fullContent || (data as any).body || '';
-                    const transformed: Article = {
-                        ...(data as any),
-                        fullContent: bodyText,
-                        excerpt: (data as any).excerpt || bodyText.substring(0, 150),
-                        author: (data as any).author || 'צוות מכון אביב',
-                        imageUrl: (data as any).imageUrl,
-                        date: created ? new Date(created).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'N/A',
-                        id: String((data as any).id),
-                    };
-                    setArticle(transformed);
-                } else {
-                    // If not found in Supabase, try local constants
-                    const localArticle = ARTICLES_DATA.find(a => (a.artag || a.id) === articleId);
-                    if (localArticle) {
-                        setArticle(localArticle);
-                    } else {
-                        setArticle(null); // Article not found
-                    }
-                }
-            } catch (err: any) {
-                console.error('שגיאה בטעינת המאמר:', err);
-                setError(`שגיאה בטעינת המאמר: ${err.message}`);
-                setArticle(null);
-            } finally {
-                setLoading(false);
+        } else if (!dataLoading) {
+            // Articles loaded from context, but empty or articleId not found
+            setCurrentArticle(null);
+            if (!dataError) { // Only set local error if no global error explains absence of data
+                 setLocalError("המאמר לא נמצא או שעדיין אין מאמרים טעונים.");
             }
-        };
+        }
+    }, [articleId, articles, dataLoading, dataError]);
 
-        fetchArticle();
-    }, [articleId]);
+    // Overall loading state: true if context is loading, or if context is done but we haven't found/not-found the article yet
+    const isLoading = dataLoading || currentArticle === undefined;
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-                <p className="text-2xl text-slate-600 dark:text-slate-300">טוען מאמר...</p> {/* Replace with a proper loader component if available */}
+                <p className="text-2xl text-slate-600 dark:text-slate-300">טוען מאמר...</p>
             </div>
         );
     }
 
-    if (error && !article) { // Show error if article is null and error exists
+    // Error display: prioritize global error, then local "not found" error
+    const displayError = dataError || localError;
+    if (displayError && !currentArticle) { // Added !currentArticle to ensure it only shows if article is not found
          return (
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
                 <SearchX size={72} className="text-primary dark:text-primary-light mx-auto mb-8" strokeWidth={1.5} />
                 <h1 className="text-5xl font-extrabold text-slate-700 dark:text-slate-200 mb-6">שגיאה בטעינת המאמר</h1>
-                <p className="text-xl text-slate-500 dark:text-slate-400 mb-12 leading-relaxed">{error}</p>
+                <p className="text-xl text-slate-500 dark:text-slate-400 mb-12 leading-relaxed">{displayError}</p>
                 <Button onClick={() => navigate('/articles')} variant="primary" size="xl" icon={<ChevronsLeft size={24} />} iconPosition="leading">חזרה למאמרים</Button>
             </div>
         );
     }
 
-    if (!article) {
+    if (!currentArticle) { // Should be covered by displayError logic if not found, but as a fallback
         return (
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
                 <AnimatedDiv animation="fadeInUp">
                     <SearchX size={72} className="text-primary dark:text-primary-light mx-auto mb-8" strokeWidth={1.5} />
                     <h1 className="text-5xl font-extrabold text-slate-700 dark:text-slate-200 mb-6">מאמר לא נמצא</h1>
                     <p className="text-xl text-slate-500 dark:text-slate-400 mb-12 leading-relaxed">
-                        מצטערים, לא הצלחנו למצוא את המאמר שחיפשת. ייתכן שהקישור שבור או שהמאמר הוסר.
+                        מצטערים, לא הצלחנו למצוא את המאמר שחיפשת.
                     </p>
                     <Button
                         onClick={() => navigate('/articles')}
@@ -133,23 +95,23 @@ const FullArticlePage: React.FC = () => {
         );
     }
 
+    // Share function and content processing remain similar, using 'currentArticle'
     const handleShare = () => {
-        if (navigator.share && article) {
+        if (navigator.share && currentArticle) {
             navigator.share({
-                title: article.title,
-                text: article.excerpt, // Make sure Article type from Supabase includes excerpt
+                title: currentArticle.title,
+                text: currentArticle.excerpt,
                 url: window.location.href,
             }).catch(console.error);
         } else {
+            // Fallback for browsers that do not support navigator.share
             navigator.clipboard.writeText(window.location.href)
                 .then(() => alert('הקישור למאמר הועתק! שתפו אותו.'))
                 .catch(() => alert('שיתוף אינו נתמך בדפדפן זה. ניתן להעתיק את הקישור משורת הכתובת.'));
         }
     };
 
-    // Ensure article.fullContent is available and used. `select('*')` should provide it.
-    // Also ensure `article.excerpt` is available for the share function.
-    const processedContent = formatArticleContentToHtml(article.fullContent);
+    const processedContent = formatArticleContentToHtml(currentArticle.fullContent || '');
 
     return (
         <div className="py-1 sm:py-2 selection:bg-primary/30 selection:text-primary-dark dark:selection:bg-primary-light/30 dark:selection:text-primary-light">
@@ -170,24 +132,24 @@ const FullArticlePage: React.FC = () => {
                 </div>
 
                 <header className="mb-10 sm:mb-12 md:mb-14">
-                    {article.category && (
+                    {currentArticle.category && (
                         <AnimatedDiv animation="fadeInDown" delay={0.15} className="uppercase text-base font-bold text-primary dark:text-primary-light flex items-center tracking-wider group mb-5">
                             <Tag size={18} className="me-2.5 opacity-90 group-hover:opacity-100 transition-opacity" strokeWidth={2.5} />
-                            <span>{article.category}</span>
+                            <span>{currentArticle.category}</span>
                         </AnimatedDiv>
                     )}
 
                     <h1 className="text-5xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight">
-                        {article.title}
+                        {currentArticle.title}
                     </h1>
 
                     <AnimatedDiv animation="fadeInUp" delay={0.35} className="mt-10 sm:mt-12 text-base text-slate-600 dark:text-slate-400 flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-x-8 gap-y-4 border-t-2 border-b-2 border-slate-200 dark:border-slate-700 py-6 sm:py-8">
                         <div className="flex items-center font-medium text-slate-700 dark:text-slate-200">
-                            <CalendarDays size={22} className="me-2.5 text-primary/80 dark:text-primary-light/80" strokeWidth={2.5} /> {article.date}
+                            <CalendarDays size={22} className="me-2.5 text-primary/80 dark:text-primary-light/80" strokeWidth={2.5} /> {currentArticle.date}
                         </div>
-                        {article.author && (
+                        {currentArticle.author && (
                             <div className="flex items-center font-medium text-slate-700 dark:text-slate-200">
-                                <UserCircle size={22} className="me-2.5 text-primary/80 dark:text-primary-light/80" strokeWidth={2.5} /> מאת: {article.author}
+                                <UserCircle size={22} className="me-2.5 text-primary/80 dark:text-primary-light/80" strokeWidth={2.5} /> מאת: {currentArticle.author}
                             </div>
                         )}
                         <div className="flex items-center font-medium text-slate-700 dark:text-slate-200">
@@ -199,9 +161,9 @@ const FullArticlePage: React.FC = () => {
                     </AnimatedDiv>
                 </header>
 
-                {article.imageUrl && (
+                {currentArticle.imageUrl && (
                     <AnimatedDiv animation="fadeIn" delay={0.45} className="my-12 sm:my-16 md:my-20 rounded-3xl overflow-hidden shadow-2xl dark:shadow-black/30 aspect-[16/9] sm:aspect-[16/8] md:aspect-[16/7] border-8 border-white dark:border-slate-700/60">
-                        <img src={article.imageUrl} alt={article.title} className="w-full h-full object-cover" />
+                        <img src={currentArticle.imageUrl} alt={currentArticle.title} className="w-full h-full object-cover" />
                     </AnimatedDiv>
                 )}
 

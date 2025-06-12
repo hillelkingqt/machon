@@ -14,6 +14,7 @@ import FAQPage from './pages/FAQPage';
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 import { DarkModeContext, DarkMode } from './contexts/DarkModeContext';
 import { AuthProvider } from './contexts/AuthContext'; // Import AuthProvider
+import { DataProvider } from './contexts/DataContext'; // Import DataProvider
 
 // Utility component to scroll to top on route change
 const ScrollToTop: React.FC = () => {
@@ -55,36 +56,38 @@ const App: React.FC = () => {
 
     return (
         <DarkModeContext.Provider value={{ darkMode, toggleDarkMode }}>
-            <AuthProvider> {/* Wrap HashRouter with AuthProvider */}
-                <HashRouter>
-                    <ScrollToTop />
-                    <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
-                        <Header />
-                        <main className="flex-grow pt-20 sm:pt-24"> {/* Padding top for fixed header */}
-                            <Routes>
-                                <Route path="/" element={<HomePage />} />
-                                <Route path="/about" element={<AboutPage />} />
-                                <Route path="/courses" element={<CoursesPage />} />
-                                <Route path="/articles" element={<ArticlesPage />} />
-                                <Route path="/article/:articleId" element={<FullArticlePage />} />
-                                <Route path="/shop" element={<ShopPage />} />
-                                <Route path="/contact" element={<ContactPage />} />
-                                <Route path="/faq" element={<FAQPage />} />
-                                <Route
-                                    path="/admin"
-                                    element={
-                                        <Suspense fallback={<div>Loading...</div>}>
-                                            <AdminPage />
-                                        </Suspense>
-                                    }
-                                />
-                                {/* <Route path="*" element={<NotFoundPage />} /> */}
-                            </Routes>
-                        </main>
-                        <Footer />
-                        <ChatWidget />
-                    </div>
-                </HashRouter>
+            <AuthProvider>
+                <DataProvider> {/* Wrap HashRouter (and thus all routes) with DataProvider */}
+                    <HashRouter>
+                        <ScrollToTop />
+                        <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+                            <Header />
+                            <main className="flex-grow pt-20 sm:pt-24"> {/* Padding top for fixed header */}
+                                <Routes>
+                                    <Route path="/" element={<HomePage />} />
+                                    <Route path="/about" element={<AboutPage />} />
+                                    <Route path="/courses" element={<CoursesPage />} />
+                                    <Route path="/articles" element={<ArticlesPage />} />
+                                    <Route path="/article/:articleId" element={<FullArticlePage />} />
+                                    <Route path="/shop" element={<ShopPage />} />
+                                    <Route path="/contact" element={<ContactPage />} />
+                                    <Route path="/faq" element={<FAQPage />} />
+                                    <Route
+                                        path="/admin"
+                                        element={
+                                            <Suspense fallback={<div>Loading...</div>}>
+                                                <AdminPage />
+                                            </Suspense>
+                                        }
+                                    />
+                                    {/* <Route path="*" element={<NotFoundPage />} /> */}
+                                </Routes>
+                            </main>
+                            <Footer />
+                            <ChatWidget />
+                        </div>
+                    </HashRouter>
+                </DataProvider>
             </AuthProvider>
         </DarkModeContext.Provider>
     );
