@@ -9,6 +9,12 @@ export interface NavItem {
     isButton?: boolean;
     icon?: LucideIcon; // Optional icon for nav items
 }
+export interface SiteAdmin {
+  id: string; // Assuming UUID from Supabase, can be number if auto-incrementing
+  email: string;
+  expires_at?: string | null; // ISO date string
+  created_at: string; // ISO date string
+}
 
 export interface Course {
     id: string;
