@@ -124,7 +124,11 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
 
     } catch (err: any) {
       console.error('Error in DataProvider fetchData:', err);
-      setError('An unexpected error occurred while fetching data: ' + err.message);
+      const errMsg = typeof err?.message === 'string' ? err.message : String(err);
+      const networkHint = errMsg.includes('Failed to fetch')
+        ? ' This may be caused by network connectivity problems or CORS configuration issues.'
+        : '';
+      setError('An unexpected error occurred while fetching data: ' + errMsg + networkHint);
     } finally {
       setLoading(false);
     }
