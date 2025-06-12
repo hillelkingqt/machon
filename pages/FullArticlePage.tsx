@@ -26,14 +26,26 @@ const FullArticlePage: React.FC = () => {
             }
             setLoading(true);
             try {
-                const { data, error: supabaseError } = await supabase
+                // First try to fetch by the custom slug (artag)
+                let { data, error: supabaseError } = await supabase
                     .from('articles')
                     .select('*')
                     .eq('artag', articleId)
                     .single();
 
+                // If not found by slug, attempt fetching by id
+                if (supabaseError && supabaseError.code === 'PGRST116') {
+                    const byId = await supabase
+                        .from('articles')
+                        .select('*')
+                        .eq('id', articleId)
+                        .single();
+                    data = byId.data ?? data;
+                    supabaseError = byId.error;
+                }
+
                 if (supabaseError) {
-                    if (supabaseError.code === 'PGRST116') { // PostgREST error for "No rows found"
+                    if (supabaseError.code === 'PGRST116') { // No rows found
                         // Try to find the article in local constants as a fallback
                         const localArticle = ARTICLES_DATA.find(a => (a.artag || a.id) === articleId);
                         if (localArticle) {
