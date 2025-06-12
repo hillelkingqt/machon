@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { supabase } from '../utils/supabaseClient'; // Added import
 import { SUPABASE_URL, SUPABASE_ANON_KEY, APP_NAME } from '../constants';
 import { PlusCircle, Edit2, Trash2, XCircle, Loader2, Sparkles as SparklesIcon } from 'lucide-react'; // Added SparklesIcon
 import { useEditor, EditorContent } from '@tiptap/react';
@@ -10,6 +9,14 @@ import { Markdown } from 'tiptap-markdown';
 import EditorToolbar from '../components/ui/EditorToolbar'; // Import the toolbar
 import AlertBlockNode from '../extensions/AlertBlockNode'; // Import the custom node
 import { preparseAlertBlocks, postserializeAlertBlocks } from '../utils/alertBlockMarkdownParser'; // Import pre and post serializers
+
+// Initialize Supabase client
+let supabase: SupabaseClient | null = null;
+if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+  supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} else {
+  console.error('Supabase URL or Anon Key is missing. Admin page might not work correctly.');
+}
 
 interface Article {
   id: string;
