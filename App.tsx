@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -11,7 +11,7 @@ import ShopPage from './pages/ShopPage';
 import ContactPage from './pages/ContactPage';
 import FullArticlePage from './pages/FullArticlePage';
 import FAQPage from './pages/FAQPage';
-import AdminPage from './pages/AdminPage';
+const AdminPage = lazy(() => import('./pages/AdminPage'));
 import { DarkModeContext, DarkMode } from './contexts/DarkModeContext';
 import { AuthProvider } from './contexts/AuthContext'; // Import AuthProvider
 
@@ -70,7 +70,14 @@ const App: React.FC = () => {
                                 <Route path="/shop" element={<ShopPage />} />
                                 <Route path="/contact" element={<ContactPage />} />
                                 <Route path="/faq" element={<FAQPage />} />
-                                <Route path="/admin" element={<AdminPage />} />
+                                <Route
+                                    path="/admin"
+                                    element={
+                                        <Suspense fallback={<div>Loading...</div>}>
+                                            <AdminPage />
+                                        </Suspense>
+                                    }
+                                />
                                 {/* <Route path="*" element={<NotFoundPage />} /> */}
                             </Routes>
                         </main>
