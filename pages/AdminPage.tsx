@@ -33,6 +33,13 @@ const AdminPage: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const navigate = useNavigate();
 
+  const [qaItems, setQaItems] = useState<QAItem[]>([]);
+  const [isLoadingQA, setIsLoadingQA] = useState(false);
+  const [errorQA, setErrorQA] = useState<string | null>(null);
+  const [showQAModal, setShowQAModal] = useState(false);
+  const [currentQAItem, setCurrentQAItem] = useState<QAItem | null>(null);
+  const [isSubmittingQA, setIsSubmittingQA] = useState(false);
+
   const [articles, setArticles] = useState<Article[]>([]);
   const [isLoadingArticles, setIsLoadingArticles] = useState(false);
   const [errorArticles, setErrorArticles] = useState<string | null>(null);
@@ -349,13 +356,6 @@ const AdminPage: React.FC = () => {
       qaEditor.storage.markdownInitialized = false;
     }
   }, [currentQAItem?.answer_text, qaEditor, showQAModal, currentQAItem]); // Added currentQAItem to deps
-
-  const [qaItems, setQaItems] = useState<QAItem[]>([]);
-  const [isLoadingQA, setIsLoadingQA] = useState(false);
-  const [errorQA, setErrorQA] = useState<string | null>(null);
-  const [showQAModal, setShowQAModal] = useState(false);
-  const [currentQAItem, setCurrentQAItem] = useState<QAItem | null>(null);
-  const [isSubmittingQA, setIsSubmittingQA] = useState(false);
 
   // State for AI Article Generation Modal
   const [showAiPromptModal, setShowAiPromptModal] = useState(false);
