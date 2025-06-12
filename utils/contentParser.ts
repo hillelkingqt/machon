@@ -17,8 +17,8 @@ export const formatArticleContentToHtml = (text: string | undefined): string => 
     const applyInlineStyles = (str: string): string => {
         // Bold: **text**
         str = str.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        // Italics: *text* (not surrounded by word characters)
-        str = str.replace(/(?<!\w)\*(?!\*)([^*]+?)\*(?!\w|\*)/g, '<em>$1</em>');
+        // Italics: *text* (avoid lookbehind for better browser support)
+        str = str.replace(/(^|[^*\\w])\*([^*]+)\*(?!\*)/g, '$1<em>$2</em>');
         // Strikethrough: ~~text~~
         str = str.replace(/~~(.*?)~~/g, '<del>$1</del>');
         // Inline Code: `code`
