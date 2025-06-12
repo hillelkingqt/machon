@@ -398,8 +398,8 @@ const AdminPage: React.FC = () => {
       try {
         const { data, error } = await supabase
           .from('admin')
-          .select('id, gmail, expires_at') // Ensure 'gmail' is the correct column name
-          .eq('gmail', user.email) // Query by the user's email
+          .select('id, email, expires_at') // Ensure 'email' is the correct column name
+          .eq('email', user.email) // Query by the user's email
           .single();
 
         if (error && error.code !== 'PGRST116') { // PGRST116: No rows found
@@ -414,14 +414,25 @@ const AdminPage: React.FC = () => {
             if (expiryDate > new Date()) {
               setIsAuthorized(true); // Temporary admin, still valid
             } else {
-              setIsAuthorized(false); // Temporary admin, expired
+              // Temporary admin, expired
+              // Check if email is in authorizedEmails as a fallback
+              if (authorizedEmails.includes(user.email!)) {
+                setIsAuthorized(true);
+              } else {
+                setIsAuthorized(false);
+              }
             }
           } else {
             setIsAuthorized(true); // Permanent admin (no expiry date)
           }
         } else {
           // No admin record found for this email
-          setIsAuthorized(false);
+          // Check if email is in authorizedEmails as a fallback
+          if (authorizedEmails.includes(user.email!)) {
+            setIsAuthorized(true);
+          } else {
+            setIsAuthorized(false);
+          }
         }
       } catch (err) {
         console.error('Exception fetching admin status:', err);
