@@ -58,7 +58,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setLoadingInitial(false); // Ensure loading stops on error too
     });
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(
+    const {
+      data: { subscription: authListener },
+    } = supabase.auth.onAuthStateChange(
       async (_event, newSession) => {
         setLoadingInitial(true); // Set loading true during auth state change processing
         setSession(newSession);
@@ -88,7 +90,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     );
 
     return () => {
-      authListener?.unsubscribe();
+      authListener.unsubscribe();
     };
   }, []);
 
