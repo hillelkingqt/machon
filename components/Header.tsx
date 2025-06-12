@@ -5,11 +5,11 @@ import { NavItem } from '../types';
 import DarkModeToggle from './DarkModeToggle';
 import { Menu, X, ExternalLink as ExternalLinkIcon, BookOpenCheck, LogIn as LogInIcon, LogOut as LogOutIcon, UserCircle, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Button from '../ui/Button';
-import LoginModal from '../auth/LoginModal';
-import SignupModal from '../auth/SignupModal';
-import ForgotPasswordModal from '../auth/ForgotPasswordModal';
-import { useAuth } from '../../contexts/AuthContext'; // Import useAuth
+import Button from './ui/Button';
+import LoginModal from './auth/LoginModal';
+import SignupModal from './auth/SignupModal';
+import ForgotPasswordModal from './auth/ForgotPasswordModal';
+import { useAuth } from '../contexts/AuthContext';
 
 const Header: React.FC = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
