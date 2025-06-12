@@ -11,7 +11,7 @@ import LoginModal from './auth/LoginModal';
 import SignupModal from './auth/SignupModal';
 import ForgotPasswordModal from './auth/ForgotPasswordModal';
 import { useAuth } from '../contexts/AuthContext';
-import { ProfileModal } from '../profile'; // Step 1: Import ProfileModal
+import { ProfileModal } from './profile'; // Step 1: Import ProfileModal
 
 const Header: React.FC = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
