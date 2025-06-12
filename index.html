@@ -461,6 +461,13 @@ html.dark ::-webkit-scrollbar-corner {
             display: inline-block;
             vertical-align: middle;
         }
+
+        html.dark input:-webkit-autofill,
+        html.dark textarea:-webkit-autofill,
+        html.dark select:-webkit-autofill {
+            box-shadow: 0 0 0px 1000px #0f172a inset !important;
+            -webkit-text-fill-color: #ffffff !important;
+        }
     </style>
     <script>
         // Tailwind dark mode configuration

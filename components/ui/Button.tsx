@@ -97,9 +97,13 @@ const Button: React.FC<ButtonProps> = ({
 
     const content = (
         <>
-            {icon && iconPosition === 'leading' && <span className="flex-shrink-0">{icon}</span>}
+            {icon && iconPosition === 'leading' && (
+                <span className="flex-shrink-0">{icon}</span>
+            )}
             {children}
-            {icon && iconPosition === 'trailing' && <span className="flex-shrink-0">{icon}</span>}
+            {icon && iconPosition === 'trailing' && (
+                <span className="flex-shrink-0">{icon}</span>
+            )}
         </>
     );
 
@@ -123,6 +127,7 @@ const Button: React.FC<ButtonProps> = ({
                     target={target || '_blank'}
                     rel={target === '_blank' || external ? 'noopener noreferrer' : undefined}
                     className={combinedClassName}
+                    dir="ltr"
                     {...motionAnimProps}
                     {...anchorRest}
                 >
@@ -147,6 +152,7 @@ const Button: React.FC<ButtonProps> = ({
                     to={href}
                     target={target}
                     className={combinedClassName}
+                    dir="ltr"
                     {...motionAnimProps}
                     {...restForRouterLink}
                 >
@@ -165,6 +171,7 @@ const Button: React.FC<ButtonProps> = ({
         <motion.button
             type={type}
             className={combinedClassName}
+            dir="ltr"
             {...motionAnimProps}
             {...buttonRest}
         >
