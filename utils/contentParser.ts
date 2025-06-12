@@ -136,22 +136,46 @@ export const formatArticleContentToHtml = (text: string | undefined): string => 
         }
 
         // Default: Paragraphs
-        // Collect consecutive lines that are not any other block type
-        let paraLines: string[] = [];
-        while (i < lines.length) {
-            const lineTrimmed = lines[i].trim();
-            if (lineTrimmed === '' || lineTrimmed.match(/^(#|>|- |\* |\d+\. |---|\*\*\*|___|>>> )/)) {
-                break; // Start of a new block or empty line
-            }
-            paraLines.push(applyInlineStyles(lineTrimmed));
+        // This section handles lines that are not explicitly matched by other block types.
+        const lineThatLedToParagraph = lines[i].trim();
+
+        if (lineThatLedToParagraph === '') {
+            // This case should ideally be caught by `if (currentLine === '')` at the top of the outer loop.
+            // If reached, it implies currentLine (from outer scope) was non-empty, but lines[i].trim() is empty.
+            // Or, the initial empty check in the outer loop was modified/missing.
+            // Safely advance 'i' and let the outer loop continue.
             i++;
+            continue; // Continue the main while loop
         }
-        if (paraLines.length > 0) {
-            // Join lines with a space for typical paragraph flow, unless they were intended as hard breaks.
-            // The current `applyInlineStyles` and this simple join won't convert single newlines within a paragraph to <br>.
-            // This behavior is standard for Markdown paragraphs.
-            htmlBlocks.push(`<p class="text-base sm:text-lg text-slate-700 dark:text-slate-300 leading-relaxed my-5 hyphens-auto text-justify break-words">${paraLines.join(' ')}</p>`);
+
+        // Check if the line that led to paragraph processing is itself a "hidden" block starter
+        // (e.g., "#NoSpaceHeading", "##NoSpaceToo") that wasn't caught by specific `startsWith` checks.
+        if (lineThatLedToParagraph.match(/^(#|>|- |\* |\d+\. |---|\*\*\*|___|>>> )/)) {
+            // This line resembles a block starter (e.g., starts with '#', '>', etc.)
+            // but wasn't handled by the more specific block type checks above.
+            // This is a key scenario that could lead to an infinite loop if 'i' isn't advanced.
+            // We'll treat its content as a simple paragraph and ensure 'i' advances.
+            htmlBlocks.push(`<p class="text-base sm:text-lg text-slate-700 dark:text-slate-300 leading-relaxed my-5 hyphens-auto text-justify break-words">${applyInlineStyles(lineThatLedToParagraph)}</p>`);
+            i++; // CRITICAL: Advance 'i' to prevent infinite loop.
+            continue; // Continue the main while loop
         }
+
+        // If we are here, lineThatLedToParagraph is deemed valid content for the start of a new paragraph.
+        let paraLines: string[] = [applyInlineStyles(lineThatLedToParagraph)];
+        i++; // Advance 'i' past the first line of this new paragraph.
+
+        // Collect subsequent lines that belong to this paragraph.
+        while (i < lines.length) {
+            const subsequentLineTrimmed = lines[i].trim();
+            if (subsequentLineTrimmed === '' || subsequentLineTrimmed.match(/^(#|>|- |\* |\d+\. |---|\*\*\*|___|>>> )/)) {
+                // An empty line or a line starting a new block type signifies the end of the current paragraph.
+                break;
+            }
+            paraLines.push(applyInlineStyles(subsequentLineTrimmed));
+            i++; // Advance 'i' past the consumed line.
+        }
+        htmlBlocks.push(`<p class="text-base sm:text-lg text-slate-700 dark:text-slate-300 leading-relaxed my-5 hyphens-auto text-justify break-words">${paraLines.join(' ')}</p>`);
+        // No 'continue' here, as 'i' has been advanced, and the outer loop will proceed normally.
     }
     return htmlBlocks.join('\n');
 };
