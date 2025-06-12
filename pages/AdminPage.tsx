@@ -5,6 +5,7 @@ import { SupabaseClient } from '@supabase/supabase-js'; // createClient removed
 import { supabase } from '../utils/supabaseClient'; // Added import
 import { APP_NAME } from '../constants'; // SUPABASE_URL, SUPABASE_ANON_KEY removed
 import { PlusCircle, Edit2, Trash2, XCircle, Loader2, Sparkles as SparklesIcon } from 'lucide-react'; // Added SparklesIcon
+import { SiteAdmin } from '../src/types'; // Corrected path
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Markdown } from 'tiptap-markdown';
@@ -37,6 +38,14 @@ const AdminPage: React.FC = () => {
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null); // Renamed for clarity
 
   const authorizedEmails = ['hillelben14@gmail.com', 'hagben@gmail.com'];
+
+  const [adminsList, setAdminsList] = useState<SiteAdmin[]>([]);
+  const [isLoadingAdmins, setIsLoadingAdmins] = useState(false);
+  const [errorAdmins, setErrorAdmins] = useState<string | null>(null);
+  const [showAdminModal, setShowAdminModal] = useState(false);
+  const [newAdminEmail, setNewAdminEmail] = useState('');
+  const [newAdminExpiresAt, setNewAdminExpiresAt] = useState('');
+  const [isSubmittingAdmin, setIsSubmittingAdmin] = useState(false);
 
   const [qaItems, setQaItems] = useState<QAItem[]>([]);
   const [isLoadingQA, setIsLoadingQA] = useState(false);
@@ -378,20 +387,50 @@ const AdminPage: React.FC = () => {
 
     if (!user || !session) {
       setIsAuthorized(false);
-      // Optional: navigate to home or login page
-      // navigate('/');
       return;
     }
 
-    if (user.email && authorizedEmails.includes(user.email)) {
-      setIsAuthorized(true);
-    } else {
-      setIsAuthorized(false);
-      // Optional: Log out user and navigate, or just show access denied
-      // authLogout();
-      // navigate('/');
-    }
-  }, [user, session, loadingInitial, navigate, authLogout, authorizedEmails]); // Added authorizedEmails to dependencies
+    const checkAdminStatus = async () => {
+      if (!user?.email) {
+        setIsAuthorized(false);
+        return;
+      }
+      try {
+        const { data, error } = await supabase
+          .from('admin')
+          .select('id, gmail, expires_at') // Ensure 'gmail' is the correct column name
+          .eq('gmail', user.email) // Query by the user's email
+          .single();
+
+        if (error && error.code !== 'PGRST116') { // PGRST116: No rows found
+          console.error('Error fetching admin status:', error);
+          setIsAuthorized(false); // Deny access on unexpected error
+          return;
+        }
+
+        if (data) {
+          if (data.expires_at) {
+            const expiryDate = new Date(data.expires_at);
+            if (expiryDate > new Date()) {
+              setIsAuthorized(true); // Temporary admin, still valid
+            } else {
+              setIsAuthorized(false); // Temporary admin, expired
+            }
+          } else {
+            setIsAuthorized(true); // Permanent admin (no expiry date)
+          }
+        } else {
+          // No admin record found for this email
+          setIsAuthorized(false);
+        }
+      } catch (err) {
+        console.error('Exception fetching admin status:', err);
+        setIsAuthorized(false);
+      }
+    };
+
+    checkAdminStatus();
+  }, [user, session, loadingInitial, supabase]); // Added supabase to dependencies, removed navigate, authLogout, authorizedEmails
 
   const handleAiArticleGenerate = async () => {
     if (!aiArticleTopic.trim()) return;
@@ -701,6 +740,95 @@ ${currentBody}
     }
   }, [isAuthorized, fetchArticles, fetchQAItems]); // Changed isAuthenticated to isAuthorized
 
+  const fetchAdmins = useCallback(async () => {
+    if (!supabase) return;
+    setIsLoadingAdmins(true);
+    setErrorAdmins(null);
+    try {
+      const { data, error } = await supabase.from('admin').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+      // Assuming 'gmail' column in 'admin' table needs to be mapped to 'email' in SiteAdmin
+      setAdminsList(data ? data.map(item => ({ ...item, email: item.gmail || item.email })) : []);
+    } catch (err: any) {
+      setErrorAdmins(`שגיאה בטעינת רשימת המנהלים: ${err.message}`);
+    } finally {
+      setIsLoadingAdmins(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isAuthorized && supabase) {
+      fetchArticles();
+      fetchQAItems();
+      fetchAdmins(); // Call fetchAdmins here
+    }
+  }, [isAuthorized, fetchArticles, fetchQAItems, fetchAdmins]); // Add fetchAdmins to dependency array
+
+  const handleRemoveAdmin = async (adminId: string, adminEmail: string) => {
+    if (user?.email === adminEmail) {
+      alert("אינך יכול להסיר את עצמך.");
+      return;
+    }
+    if (!window.confirm(`האם אתה בטוח שברצונך להסיר את המנהל עם האימייל ${adminEmail}? פעולה זו אינה ניתנת לשחזור.`)) return;
+
+    setIsLoadingAdmins(true); // Use general loading state for list modification
+    setErrorAdmins(null);
+
+    try {
+      const { error } = await supabase.from('admin').delete().eq('id', adminId);
+      if (error) throw error;
+      alert('מנהל הוסר בהצלחה!');
+      fetchAdmins(); // Refresh the admin list
+    } catch (err: any) {
+      setErrorAdmins(`שגיאה בהסרת מנהל: ${err.message}`);
+    } finally {
+      setIsLoadingAdmins(false);
+    }
+  };
+
+  const handleAddAdminSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAdminEmail.includes('@')) {
+      setErrorAdmins('כתובת אימייל לא תקינה.');
+      return;
+    }
+    setIsSubmittingAdmin(true);
+    setErrorAdmins(null);
+
+    const adminData: { gmail: string; expires_at?: string } = { gmail: newAdminEmail };
+
+    if (newAdminExpiresAt.trim()) {
+      const expiryDate = new Date(newAdminExpiresAt.trim());
+      if (isNaN(expiryDate.getTime())) {
+        setErrorAdmins('תאריך תפוגה אינו תקין. אנא השתמש בפורמט YYYY-MM-DD HH:MM:SS או השאר ריק.');
+        setIsSubmittingAdmin(false);
+        return;
+      }
+      adminData.expires_at = expiryDate.toISOString();
+    }
+
+    try {
+      const { error } = await supabase.from('admin').insert([adminData]);
+      if (error) {
+        if (error.code === '23505') { // Unique constraint violation
+          setErrorAdmins('מנהל עם כתובת אימייל זו כבר קיים.');
+        } else {
+          throw error;
+        }
+      } else {
+        alert('מנהל נוסף בהצלחה!');
+        setShowAdminModal(false);
+        setNewAdminEmail('');
+        setNewAdminExpiresAt('');
+        fetchAdmins(); // Refresh the admin list
+      }
+    } catch (err: any) {
+      setErrorAdmins(`שגיאה בהוספת מנהל: ${err.message}`);
+    } finally {
+      setIsSubmittingAdmin(false);
+    }
+  };
+
   const handleOpenArticleModal = (article: Article | null = null) => {
     setCurrentArticle(article ? { ...article } : { id: '', title: '', body: '', category: '', artag: '', imageUrl: '', excerpt: '' });
     setShowArticleModal(true);
@@ -931,6 +1059,57 @@ ${currentBody}
           </section>
         </div>
 
+        {/* Admin Management Section */}
+        <section className="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-xl shadow-lg mt-6 sm:mt-8">
+          <div className="flex justify-between items-center border-b border-slate-300 dark:border-slate-700 pb-4 mb-6">
+            <h2 className="text-xl sm:text-2xl font-semibold text-primary dark:text-sky-500">ניהול מנהלים</h2>
+            {user?.email && authorizedEmails.includes(user.email) && (
+              <button 
+                onClick={() => setShowAdminModal(true)}
+                className="px-3.5 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg flex items-center shadow-md text-sm font-medium transition-colors"
+              >
+                <PlusCircle size={18} className="ml-2" /> הוסף מנהל
+              </button>
+            )}
+          </div>
+          {isLoadingAdmins && (
+            <div className="flex flex-col items-center justify-center p-6 text-slate-600 dark:text-slate-400">
+              <Loader2 className="h-10 w-10 animate-spin text-primary dark:text-sky-400" />
+              <p className="mt-3 text-sm">טוען רשימת מנהלים...</p>
+            </div>
+          )}
+          {errorAdmins && <div className="p-3 my-3 text-sm rounded-lg border bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700">{errorAdmins}</div>}
+          {!isLoadingAdmins && !errorAdmins && adminsList.length === 0 && (
+            <p className="text-slate-500 dark:text-slate-400 text-center py-6 text-sm">לא נמצאו מנהלים.</p>
+          )}
+          {!isLoadingAdmins && !errorAdmins && adminsList.length > 0 && (
+            <div className="space-y-3">
+              {adminsList.map(admin => (
+                <div key={admin.id} className="p-3.5 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm bg-slate-50 dark:bg-slate-700/40 flex justify-between items-center">
+                  <div>
+                    <p className="text-md font-semibold text-slate-800 dark:text-slate-100">{admin.email}</p>
+                    {admin.expires_at && (
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        תוקף: {new Date(admin.expires_at).toLocaleDateString('he-IL')} {new Date(admin.expires_at).toLocaleTimeString('he-IL')}
+                      </p>
+                    )}
+                  </div>
+                  {user?.email && authorizedEmails.includes(user.email) && (
+                    <button
+                      onClick={() => handleRemoveAdmin(admin.id, admin.email)}
+                      className="px-3 py-1.5 text-xs font-medium rounded-md flex items-center transition-colors bg-red-500 hover:bg-red-600 text-white"
+                      disabled={isSubmittingAdmin || isLoadingAdmins || (user?.email === admin.email)} // Prevent self-removal and disable during other operations
+                    >
+                      <Trash2 size={14} className="ml-1.5" />
+                      הסר מנהל
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
         {showArticleModal && currentArticle && (
           <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex justify-center items-center z-[100] p-4" dir="rtl">
             <div className="bg-white dark:bg-slate-800 p-5 sm:p-8 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
@@ -1039,6 +1218,87 @@ ${currentBody}
       <footer className="bg-white dark:bg-slate-800 mt-8 sm:mt-12 py-6 text-center border-t border-slate-200 dark:border-slate-700">
         <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">&copy; {new Date().getFullYear()} {APP_NAME} Admin Panel</p>
       </footer>
+
+      {/* Add Admin Modal */}
+      {showAdminModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex justify-center items-center z-[100] p-4" dir="rtl">
+          <div className="bg-white dark:bg-slate-800 p-5 sm:p-8 rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
+            <div className="flex justify-between items-center border-b border-slate-300 dark:border-slate-700 pb-4 mb-6">
+              <h3 className="text-xl sm:text-2xl font-semibold text-primary dark:text-sky-400">הוספת מנהל חדש</h3>
+              <button
+                onClick={() => {
+                  setShowAdminModal(false);
+                  setNewAdminEmail('');
+                  setNewAdminExpiresAt('');
+                  setErrorAdmins(null); // Clear previous errors specific to admin operations
+                }}
+                className="text-slate-400 hover:text-slate-600 dark:text-slate-300 dark:hover:text-slate-100 transition-colors"
+                disabled={isSubmittingAdmin}
+              >
+                <XCircle size={26} />
+              </button>
+            </div>
+            <form onSubmit={handleAddAdminSubmit} className="overflow-y-auto space-y-5 pr-1 sm:pr-2 flex-grow">
+              {errorAdmins && <div className="p-3 text-sm rounded-lg border bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700">{errorAdmins}</div>}
+              
+              <div>
+                <label htmlFor="newAdminEmail" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">כתובת אימייל</label>
+                <input
+                  type="email"
+                  name="newAdminEmail"
+                  id="newAdminEmail"
+                  value={newAdminEmail}
+                  onChange={(e) => setNewAdminEmail(e.target.value)}
+                  className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white shadow-sm text-sm sm:text-base"
+                  required
+                  disabled={isSubmittingAdmin}
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="newAdminExpiresAt" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">תאריך תפוגה (אופציונלי)</label>
+                <input
+                  type="text" // Using text for simplicity, could be date/datetime-local
+                  name="newAdminExpiresAt"
+                  id="newAdminExpiresAt"
+                  value={newAdminExpiresAt}
+                  onChange={(e) => setNewAdminExpiresAt(e.target.value)}
+                  className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white shadow-sm text-sm sm:text-base"
+                  placeholder="YYYY-MM-DD HH:MM:SS (לדוגמה: 2024-12-31 23:59:59)"
+                  disabled={isSubmittingAdmin}
+                />
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  השאר ריק למנהל קבוע. אם תזין תאריך, המנהל יפוג בתאריך זה.
+                </p>
+              </div>
+              
+              <div className="flex justify-end gap-x-3 pt-5 mt-auto border-t border-slate-300 dark:border-slate-700">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAdminModal(false);
+                    setNewAdminEmail('');
+                    setNewAdminExpiresAt('');
+                    setErrorAdmins(null);
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-lg transition-colors"
+                  disabled={isSubmittingAdmin}
+                >
+                  ביטול
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-dark rounded-lg flex items-center disabled:opacity-70 transition-colors"
+                  disabled={isSubmittingAdmin || !newAdminEmail.trim()}
+                >
+                  {isSubmittingAdmin && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                  {isSubmittingAdmin ? 'מוסיף...' : 'הוסף מנהל'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* AI Prompt Modal */}
       {showAiPromptModal && (
