@@ -162,7 +162,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
               className="font-medium !p-0 !shadow-none !text-primary dark:!text-primary-light hover:!underline"
               disabled={anyLoading}
             >
-              שכחת סיסמה?
+              ?שכחת סיסמה
             </Button>
           </div>
 
