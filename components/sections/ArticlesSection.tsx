@@ -52,7 +52,11 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
                 </p>
                 <div className="text-xs text-slate-500 dark:text-slate-400 mt-auto space-y-2 pt-3 border-t border-slate-200 dark:border-slate-700/50">
                     <div className="flex items-center">
-                        <CalendarDays size={14} className="me-1.5" /> <span className="font-medium">{article.date}</span>
+                        <CalendarDays size={14} className="me-1.5" /> <span className="font-medium">
+                            {article.date === null || article.date === undefined || article.date === "" || article.date === "Invalid Date"
+                                ? "תאריך לא זמין"
+                                : article.date}
+                        </span>
                     </div>
                     {article.author && (
                         <div className="flex items-center">
