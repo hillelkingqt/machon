@@ -3,9 +3,8 @@
  * that Tiptap's AlertBlockNode can parse.
  */
 
-const ALERT_TYPES = ['INFO', 'TIP', 'NOTE', 'WARNING'];
-
 export function preparseAlertBlocks(markdown: string): string {
+  const ALERT_TYPES = ['INFO', 'TIP', 'NOTE', 'WARNING']; // Add this line
   if (!markdown) {
     return '';
   }
@@ -39,6 +38,7 @@ export function preparseAlertBlocks(markdown: string): string {
  * This version attempts a more robust replacement strategy.
  */
 export function postserializeAlertBlocks(htmlOutput: string): string {
+  const ALERT_TYPES = ['INFO', 'TIP', 'NOTE', 'WARNING']; // Add this line
   if (typeof window === 'undefined' || !htmlOutput) {
     return htmlOutput;
   }
