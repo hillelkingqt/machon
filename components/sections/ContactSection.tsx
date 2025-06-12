@@ -10,16 +10,30 @@ type SubmissionStatus = 'idle' | 'loading' | 'success' | 'error';
 const WORKER_URL = 'https://machon.hillelben14.workers.dev/';
 
 const ContactSection: React.FC = () => {
-    const { user } = useAuth();
+    const { user, profile } = useAuth();
     const [formData, setFormData] = useState({ name: '', email: '', message: '' });
     const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus>('idle');
     const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
 
     useEffect(() => {
-        if (user?.email && user.email.toLowerCase().endsWith('@gmail.com')) {
-            setFormData(prev => prev.email ? prev : { ...prev, email: user.email! });
-        }
-    }, [user]);
+        setFormData(prev => {
+            let newEmail = prev.email;
+            let newName = prev.name;
+
+            if (user?.email && !prev.email) {
+                newEmail = user.email;
+            }
+
+            if (profile?.fullName && !prev.name) {
+                newName = profile.fullName;
+            }
+            // Only update state if something actually changed to avoid potential infinite loops
+            if (newEmail !== prev.email || newName !== prev.name) {
+               return { ...prev, email: newEmail, name: newName };
+            }
+            return prev; // No changes needed
+        });
+    }, [user, profile]); // Add profile to dependency array
 
 
     const getWhatsAppNumber = (phone: string) => {

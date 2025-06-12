@@ -4,6 +4,7 @@ import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { MessageSquare, Send } from 'lucide-react';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import Button from './ui/Button';
+import { useAuth } from '../../contexts/AuthContext';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -29,6 +30,7 @@ interface Message {
 }
 
 const ChatWidget: React.FC = () => {
+  const { session, user, profile } = useAuth();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -62,6 +64,45 @@ const ChatWidget: React.FC = () => {
       setMessages([{ role: 'ai', text: initialAiMessage }]);
     }
   }, [messages, open]);
+
+  const sendTelegramMessageToOwner = async (messageContent: string) => {
+    if (!user?.email || !profile?.fullName) {
+      console.error('User email or profile name is missing. Cannot send Telegram message.');
+      setMessages(prev => [...prev, { role: 'ai', text: 'שגיאה: פרטי המשתמש שלך (שם ואימייל) חסרים. לא ניתן לשלוח הודעה כעת.' }]);
+      return;
+    }
+
+    setMessages(prev => [...prev, { role: 'ai', text: 'שולח הודעה לבעלי האתר...' }]);
+
+    const TELEGRAM_WORKER_URL = 'https://machon.hillelben14.workers.dev/send-telegram'; // Conceptual endpoint
+
+    try {
+      const response = await fetch(TELEGRAM_WORKER_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: profile.fullName,
+          email: user.email,
+          message: messageContent,
+        }),
+      });
+
+      // Assuming the worker returns { success: true } or an error object
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setMessages(prev => [...prev, { role: 'ai', text: 'ההודעה שלך נשלחה בהצלחה לבעלי האתר.' }]);
+      } else {
+        console.error('Failed to send Telegram message:', result);
+        setMessages(prev => [...prev, { role: 'ai', text: `אירעה שגיאה בשליחת ההודעה: ${result.error || 'נסה שנית מאוחר יותר.'}` }]);
+      }
+    } catch (error) {
+      console.error('Error sending Telegram message:', error);
+      setMessages(prev => [...prev, { role: 'ai', text: 'אירעה שגיאה קריטית בשליחת ההודעה. אנא בדוק את חיבור האינטרנט שלך ונסה שוב.' }]);
+    }
+  };
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -159,6 +200,25 @@ const ChatWidget: React.FC = () => {
     Offer these navigation buttons when it's helpful for the user, such as after providing information that has a corresponding page on the site, or when the user asks for directions to a specific section. Only use relative paths for these buttons. For external links, use standard Markdown links which will open in a new tab.
     `;
 
+    let currentSystemPrompt = baseSystemPrompt;
+
+    if (session && user && profile?.fullName && user?.email) {
+      const loggedInInstructions = `\n\n**Special Capability: Sending Messages to Site Owner**
+You have a special ability: if the user asks you to send a message to the website owner or administrator, you can do this. The message will be sent via Telegram.
+When you use this ability, their name ('${profile.fullName}') and email ('${user.email}') will be automatically included with their message.
+To initiate this, after confirming the message content with the user, your *entire response to the system* must be ONLY the following command on a new line, without any other text before or after it:
+\`\`\`
+ACTION_SEND_TELEGRAM_MESSAGE_TO_OWNER: {message_content_here}
+\`\`\`
+Replace \`{message_content_here}\` with the exact message the user wants to send. Do not include their name or email in \`{message_content_here}\` as it will be added automatically by the system.
+For example, if the user says 'Tell the owner I need help with course X', you should first confirm the message with them. If they agree, your *entire response to the system* should be ONLY the command, like this:
+\`\`\`
+ACTION_SEND_TELEGRAM_MESSAGE_TO_OWNER: I need help with course X
+\`\`\`
+Only use this command when the user explicitly wants to send a message to the owner and has confirmed its content. Do not offer this proactively unless they are trying to contact the owner. If the user is not logged in, or if their name/email is missing, you cannot use this feature.`;
+      currentSystemPrompt += loggedInInstructions;
+    }
+
     let pageContext = "";
     const currentPath = location.pathname;
 
@@ -201,7 +261,7 @@ const ChatWidget: React.FC = () => {
     const apiPayloadContents = [
         {
             role: 'user' as const,
-            parts: [{ text: `${baseSystemPrompt}\n\nמידע על הדף הנוכחי: ${pageContext}` }],
+            parts: [{ text: `${currentSystemPrompt}\n\nמידע על הדף הנוכחי: ${pageContext}` }],
         },
         {
             role: 'model' as const,
@@ -236,13 +296,17 @@ const ChatWidget: React.FC = () => {
       }
     }
 
-    if (responseText) {
-      setMessages(prev => [...prev, { role: 'ai', text: responseText! }]);
-    } else {
-      setMessages(prev => [...prev, { role: 'ai', text: '❌ אירעה שגיאה' }]);
-    }
+    setLoading(false); // AI has responded
 
-    setLoading(false);
+    const commandPrefix = 'ACTION_SEND_TELEGRAM_MESSAGE_TO_OWNER:';
+    if (responseText && responseText.trim().startsWith(commandPrefix)) {
+        const messageContent = responseText.trim().substring(commandPrefix.length).trim();
+        await sendTelegramMessageToOwner(messageContent);
+    } else if (responseText) { // Ensure responseText is not null before adding
+        setMessages(prev => [...prev, { role: 'ai', text: responseText }]);
+    } else { // Handle case where responseText is null (error from Gemini)
+        setMessages(prev => [...prev, { role: 'ai', text: '❌ אירעה שגיאה בתקשורת עם ה-AI.' }]);
+    }
   };
 
   const handleAdminLoginSubmit = () => {
