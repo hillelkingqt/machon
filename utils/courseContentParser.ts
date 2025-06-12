@@ -37,7 +37,7 @@ export const formatCourseDetailedContentToHtml = (text: string | undefined): str
     const applyInlineStyles = (str: string): string => {
         return str
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
-            .replace(/(?<!\w)(?<!\*)\*(?!\*)([^*]+?)(?<!\*)\*(?!\w)(?!\*)/g, '<em>$1</em>') // Italic
+            .replace(/(^|[^*\\w])\*([^*]+)\*(?!\*)/g, '$1<em>$2</em>') // Italic without lookbehind
             .replace(/<sup>(.*?)<\/sup>/g, '<sup class="text-xs opacity-70 ms-0.5">$1</sup>'); // Superscript for citations
     };
 
