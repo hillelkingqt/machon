@@ -13,6 +13,9 @@
     "@supabase/auth-ui-react": "^0.4.7",
     "@supabase/auth-ui-shared": "^0.1.8",
     "@supabase/supabase-js": "^2.50.0",
+    "@tiptap/pm": "^2.14.0",
+    "@tiptap/react": "^2.14.0",
+    "@tiptap/starter-kit": "^2.14.0",
     "framer-motion": "^12.16.0",
     "katex": "^0.16.10",
     "lucide-react": "^0.513.0",
@@ -24,7 +27,8 @@
     "rehype-katex": "^6.0.2",
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
-    "tailwind-scrollbar": "^4.0.2"
+    "tailwind-scrollbar": "^4.0.2",
+    "tiptap-markdown": "^0.8.10"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
