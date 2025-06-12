@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { APP_NAME } from '../constants';
+import { APP_NAME, ARTICLES_DATA } from '../constants';
 import AnimatedDiv from '../components/ui/AnimatedDiv';
 import Button from '../components/ui/Button';
 import { CalendarDays, UserCircle, Tag, ArrowLeft, Edit3, Share2, ChevronsLeft, Award, SearchX } from 'lucide-react';
@@ -183,7 +183,13 @@ const FullArticlePage: React.FC = () => {
 
                 if (supabaseError) {
                     if (supabaseError.code === 'PGRST116') { // PostgREST error for "No rows found"
-                         setArticle(null); // Article not found
+                        // Try to find the article in local constants as a fallback
+                        const localArticle = ARTICLES_DATA.find(a => (a.artag || a.id) === articleId);
+                        if (localArticle) {
+                            setArticle(localArticle);
+                        } else {
+                            setArticle(null); // Article not found anywhere
+                        }
                     } else {
                         throw supabaseError;
                     }
@@ -201,7 +207,13 @@ const FullArticlePage: React.FC = () => {
                     };
                     setArticle(transformed);
                 } else {
-                     setArticle(null); // Article not found
+                    // If not found in Supabase, try local constants
+                    const localArticle = ARTICLES_DATA.find(a => (a.artag || a.id) === articleId);
+                    if (localArticle) {
+                        setArticle(localArticle);
+                    } else {
+                        setArticle(null); // Article not found
+                    }
                 }
             } catch (err: any) {
                 console.error('שגיאה בטעינת המאמר:', err);

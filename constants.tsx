@@ -462,6 +462,10 @@ export const COURSES_DATA: Course[] = [
         title: "הכנה למבחן מחוננים שלב ב' - כיתות ב'-ג'",
         icon: Brain,
         description: 'קורס מקיף להכנה למבחן מחוננים שלב ב\'',
+        detailedContent: `## על הקורס
+קורס זה מספק הכנה מקיפה למבחן מחוננים שלב ב'.
+התלמידים מתרגלים סוגי שאלות נפוצים ולומדים אסטרטגיות פתרון יעילות.
+>>> TIP: מומלץ להתחיל להתכונן מספר חודשים מראש.`,
         links: [{ label: 'למידע נוסף', href: '/shop' }],
         color: 'bg-gradient-to-br from-teal-500 to-cyan-600',
         price: '₪790'
@@ -471,6 +475,9 @@ export const COURSES_DATA: Course[] = [
         title: 'הכנה לתוכנית ההאצה של אוניברסיטת בר-אילן',
         icon: TrendingUp,
         description: 'קורס הכנה ייעודי למבחני קבלה לתוכנית ההאצה.',
+        detailedContent: `## מה בתוכנית
+הקורס מתמקד בחומר הנדרש למבחני הסינון של אוניברסיטת בר‑אילן ומעניק כלים להתמודדות עם ראיונות.
+>>> INFO: ההשתתפות מקנה יתרון משמעותי בקבלה לתוכנית.`,
         links: [{ label: 'למידע נוסף', href: '/shop' }],
         color: 'bg-gradient-to-br from-indigo-500 to-purple-600',
         price: '₪850'
@@ -480,6 +487,9 @@ export const COURSES_DATA: Course[] = [
         title: 'הכנה לתוכנית אודיסאה',
         icon: Rocket,
         description: 'קורס ממוקד למבחני הקבלה של תוכנית אודיסאה.',
+        detailedContent: `## למה כדאי
+המסלול כולל שיעורים מעשיים ותרגול בחינות מהעבר.
+התלמידים נחשפים לנושאים מדעיים מתקדמים ומפתחים מיומנויות למידה עצמאית.`,
         links: [{ label: 'למידע נוסף', href: '/shop' }],
         color: 'bg-gradient-to-br from-purple-500 to-pink-600',
         price: '₪900'
