@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { useAuth } from '../contexts/AuthContext'; // Added import
+import { SupabaseClient } from '@supabase/supabase-js'; // createClient removed
 import { supabase } from '../utils/supabaseClient'; // Added import
-import { SUPABASE_URL, SUPABASE_ANON_KEY, APP_NAME } from '../constants';
+import { APP_NAME } from '../constants'; // SUPABASE_URL, SUPABASE_ANON_KEY removed
 import { PlusCircle, Edit2, Trash2, XCircle, Loader2, Sparkles as SparklesIcon } from 'lucide-react'; // Added SparklesIcon
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -30,8 +31,11 @@ interface QAItem {
 }
 
 const AdminPage: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const navigate = useNavigate();
+  const { user, session, logout: authLogout, loadingInitial } = useAuth();
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null); // Renamed for clarity
+
+  const authorizedEmails = ['hillelben14@gmail.com', 'hagben@gmail.com'];
 
   const [qaItems, setQaItems] = useState<QAItem[]>([]);
   const [isLoadingQA, setIsLoadingQA] = useState(false);
@@ -362,6 +366,30 @@ const AdminPage: React.FC = () => {
   const [aiArticleTopic, setAiArticleTopic] = useState('');
   const [isGeneratingAiArticle, setIsGeneratingAiArticle] = useState(false); // For loading state
 
+  // New useEffect for authorization
+  useEffect(() => {
+    if (loadingInitial) {
+      setIsAuthorized(null);
+      return;
+    }
+
+    if (!user || !session) {
+      setIsAuthorized(false);
+      // Optional: navigate to home or login page
+      // navigate('/');
+      return;
+    }
+
+    if (user.email && authorizedEmails.includes(user.email)) {
+      setIsAuthorized(true);
+    } else {
+      setIsAuthorized(false);
+      // Optional: Log out user and navigate, or just show access denied
+      // authLogout();
+      // navigate('/');
+    }
+  }, [user, session, loadingInitial, navigate, authLogout, authorizedEmails]); // Added authorizedEmails to dependencies
+
   const handleAiArticleGenerate = async () => {
     if (!aiArticleTopic.trim()) return;
     setIsGeneratingAiArticle(true);
@@ -487,15 +515,7 @@ Topic: ${aiArticleTopic}
     }
   };
 
-  const adminAuthFlag = sessionStorage.getItem('isAdminAuthenticated');
-  useEffect(() => {
-    if (adminAuthFlag === 'true') {
-      setIsAuthenticated(true);
-    } else {
-      setIsAuthenticated(false);
-      // navigate('/');
-    }
-  }, [navigate, adminAuthFlag]);
+  // Old session-based auth logic removed.
 
   const fetchArticles = useCallback(async () => {
     if (!supabase) return;
@@ -528,11 +548,11 @@ Topic: ${aiArticleTopic}
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated && supabase) {
+    if (isAuthorized && supabase) { // Changed isAuthenticated to isAuthorized
       fetchArticles();
       fetchQAItems();
     }
-  }, [isAuthenticated, fetchArticles, fetchQAItems]);
+  }, [isAuthorized, fetchArticles, fetchQAItems]); // Changed isAuthenticated to isAuthorized
 
   const handleOpenArticleModal = (article: Article | null = null) => {
     setCurrentArticle(article ? { ...article } : { id: '', title: '', body: '', category: '', artag: '', imageUrl: '' });
@@ -638,7 +658,7 @@ Topic: ${aiArticleTopic}
     }
   };
 
-  if (isAuthenticated === null) {
+  if (isAuthorized === null) { // Changed isAuthenticated to isAuthorized
     return (
       <div className="flex flex-col justify-center items-center min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300">
         <Loader2 className="h-12 w-12 animate-spin text-primary dark:text-sky-400" />
@@ -647,13 +667,16 @@ Topic: ${aiArticleTopic}
     );
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthorized) { // Changed isAuthenticated to isAuthorized
     return (
       <div className="p-8 text-center min-h-screen bg-slate-100 dark:bg-slate-900 flex flex-col justify-center items-center">
         <XCircle className="h-16 w-16 text-red-500 mb-4" />
         <h1 className="text-2xl sm:text-3xl font-bold text-red-600 mb-3">גישה נדחתה</h1>
         <p className="text-base sm:text-lg text-slate-700 dark:text-slate-300">
-          אין לך הרשאה לגשת לדף זה. אנא התחבר כמנהל דרך חלונית הצ'אט.
+          {/* Updated message based on user state */}
+          {!loadingInitial && !user
+            ? "אין לך הרשאה לגשת לדף זה. אנא התחבר כמנהל דרך חלונית הצ'אט."
+            : "משתמש אינו מורשה לגשת לדף זה."}
         </p>
         <button onClick={() => navigate('/')} className="mt-8 px-6 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-lg shadow-md transition-colors duration-150 font-medium">
           חזור לדף הבית
@@ -680,7 +703,7 @@ Topic: ${aiArticleTopic}
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <h1 className="text-xl sm:text-2xl font-bold text-primary dark:text-sky-400">לוח ניהול - {APP_NAME}</h1>
-            <button onClick={() => { sessionStorage.removeItem('isAdminAuthenticated'); navigate('/'); }}
+            <button onClick={async () => { await authLogout(); navigate('/'); }}
               className="px-3 sm:px-4 py-1.5 sm:py-2 bg-red-500 hover:bg-red-600 text-white text-xs sm:text-sm font-medium rounded-md shadow-sm transition-colors duration-150 flex items-center">
               <XCircle size={18} className="ml-1.5 sm:ml-2" /> התנתק
             </button>

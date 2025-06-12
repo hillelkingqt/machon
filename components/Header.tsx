@@ -3,16 +3,19 @@ import { Link, useLocation } from 'react-router-dom';
 import { APP_NAME, NAVIGATION_ITEMS } from '../constants';
 import { NavItem } from '../types';
 import DarkModeToggle from './DarkModeToggle';
-import { Menu, X, ExternalLink as ExternalLinkIcon, BookOpenCheck, LogIn as LogInIcon, LogOut as LogOutIcon, UserCircle, Loader2 } from 'lucide-react';
+// LogOutIcon removed, UserCircle is used
+import { Menu, X, ExternalLink as ExternalLinkIcon, BookOpenCheck, LogIn as LogInIcon, UserCircle, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from './ui/Button';
 import LoginModal from './auth/LoginModal';
 import SignupModal from './auth/SignupModal';
 import ForgotPasswordModal from './auth/ForgotPasswordModal';
 import { useAuth } from '../contexts/AuthContext';
+import { ProfileModal } from '../profile'; // Step 1: Import ProfileModal
 
 const Header: React.FC = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isProfileModalOpen, setIsProfileModalOpen] = useState(false); // Step 2: Add state for modal visibility
     const [isScrolled, setIsScrolled] = useState(false);
     const location = useLocation();
     const { user, profile, logout, loadingInitial } = useAuth(); // Consume AuthContext
@@ -34,6 +37,10 @@ const Header: React.FC = () => {
         setActiveModal(null);
         setLoginPrefill(null);
     };
+
+    // Step 2: Helper functions for ProfileModal
+    const openProfileModal = () => setIsProfileModalOpen(true);
+    const closeProfileModal = () => setIsProfileModalOpen(false);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -57,11 +64,12 @@ const Header: React.FC = () => {
         }
     }, [location.pathname, user]); // Added user to dependency array
 
-    const handleLogout = async () => {
-        await logout();
-        closeAuthModal(); // Ensure modals are closed on logout
-    };
+    // const handleLogout = async () => { // Removed as logout is now in ProfileModal
+    //     await logout();
+    //     closeAuthModal();
+    // };
 
+    // Removed commented out handleLogout function for cleaner diff
     const NavLinkContent: React.FC<{ item: NavItem; mobile?: boolean }> = ({ item, mobile }) => {
         const MainIconComponent = item.icon;
         return (
@@ -128,9 +136,9 @@ const Header: React.FC = () => {
         if (user) {
             return (
                 <div className="flex items-center gap-2">
-                     {profile?.firstName && <span className="text-sm text-gray-700 dark:text-gray-300 hidden sm:inline">שלום, {profile.firstName}</span>}
-                    <Button onClick={handleLogout} variant="outline" size="md" icon={<LogOutIcon size={18} />}>
-                        התנתקות
+                    {profile?.firstName && <span className="text-sm text-gray-700 dark:text-gray-300 hidden sm:inline">שלום, {profile.firstName}</span>}
+                    <Button onClick={openProfileModal} variant="outline" size="md" icon={<UserCircle size={18} />}>
+                        פרופיל
                     </Button>
                 </div>
             );
@@ -148,8 +156,8 @@ const Header: React.FC = () => {
         }
         if (user) {
             return (
-                <Button onClick={handleLogout} variant="ghost" size="sm" className="!px-2 !py-1.5 me-1" icon={<LogOutIcon size={22} />}>
-                    <span className="sr-only">התנתקות</span>
+                <Button onClick={openProfileModal} variant="ghost" size="sm" className="!px-2 !py-1.5 me-1" icon={<UserCircle size={22} />}>
+                    <span className="sr-only">פרופיל</span>
                 </Button>
             );
         }
@@ -259,6 +267,11 @@ const Header: React.FC = () => {
             <ForgotPasswordModal
                 isOpen={activeModal === 'forgotPassword'}
                 onClose={closeAuthModal}
+            />
+
+            <ProfileModal
+                isOpen={isProfileModalOpen}
+                onClose={closeProfileModal}
             />
         </>
     );
