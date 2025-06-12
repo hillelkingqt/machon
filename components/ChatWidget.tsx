@@ -16,7 +16,11 @@ import { Article, Course, FAQCategory } from '../types.ts';
 const supabase: SupabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Simple chat widget using Gemini API
-const GEMINI_API_KEY = 'AIzaSyA4TppVdydykoU7bCPGr-IeyAbhCJZQDBM';
+const GEMINI_API_KEYS = [
+  'AIzaSyD5YKvEiSeUPy3HhHjKmvkhB-f6kr1mtKo',
+  'AIzaSyAqgGxBFKXGAbwGOUpXr0ywY2IryANPEBE',
+  'AIzaSyC1E7-eJZ4JY1oLQ9r6d9p5ocxS4KO_-40',
+];
 const GEMINI_MODEL = 'gemini-2.0-flash-thinking-exp';
 
 interface Message {
@@ -209,23 +213,36 @@ const ChatWidget: React.FC = () => {
         })),
     ];
 
-    try {
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: apiPayloadContents }),
+    const shuffledKeys = [...GEMINI_API_KEYS].sort(() => Math.random() - 0.5);
+    let responseText: string | null = null;
+    for (let attempt = 0; attempt < 5 && !responseText; attempt++) {
+      const key = shuffledKeys[attempt % shuffledKeys.length];
+      try {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: apiPayloadContents }),
+          }
+        );
+
+        if (res.ok) {
+          const data = await res.json();
+          responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || null;
         }
-      );
-      const data = await res.json();
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '❌ אירעה שגיאה';
-      setMessages(prev => [...prev, { role: 'ai', text }]);
-    } catch {
-      setMessages(prev => [...prev, { role: 'ai', text: '❌ אירעה שגיאה' }]);
-    } finally {
-      setLoading(false);
+      } catch {
+        // ignore and try next key
+      }
     }
+
+    if (responseText) {
+      setMessages(prev => [...prev, { role: 'ai', text: responseText! }]);
+    } else {
+      setMessages(prev => [...prev, { role: 'ai', text: '❌ אירעה שגיאה' }]);
+    }
+
+    setLoading(false);
   };
 
   const handleAdminLoginSubmit = () => {
