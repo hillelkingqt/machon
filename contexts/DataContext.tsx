@@ -28,7 +28,7 @@ interface DataProviderProps {
 export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   const [articles, setArticles] = useState<Article[]>(ARTICLES_DATA);
   const [faqCategories, setFaqCategories] = useState<FAQCategory[]>(FAQ_DATA);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = async () => {
@@ -131,7 +131,14 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
-    fetchData();
+    const load = () => fetchData();
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      const id = (window as any).requestIdleCallback(load);
+      return () => (window as any).cancelIdleCallback(id);
+    } else {
+      const id = setTimeout(load, 0);
+      return () => clearTimeout(id);
+    }
   }, []);
 
   return (
