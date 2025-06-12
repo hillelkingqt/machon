@@ -421,6 +421,7 @@ Please structure your response as follows, with each part on a new line:
 Title: [Generated Title]
 Slug: [Generated Slug in English, e.g., my-article-topic]
 Preview: [Generated Preview Text, 2-3 sentences, plain text]
+Category: [Generated Category in Hebrew]
 Body:
 [Generated Body Content using the specified Markdown syntax]
 
@@ -457,6 +458,7 @@ Topic: ${aiArticleTopic}
       let generatedSlug = '';
       let generatedPreview = '';
       let generatedBody = '';
+      let generatedCategory = ''; // Added for category
 
       const titleMatch = generatedText.match(/^Title:\s*(.*)/im);
       if (titleMatch) generatedTitle = titleMatch[1].trim();
@@ -464,25 +466,31 @@ Topic: ${aiArticleTopic}
       const slugMatch = generatedText.match(/^Slug:\s*(.*)/im);
       if (slugMatch) generatedSlug = slugMatch[1].trim();
 
-      // Non-greedy match for preview, stopping before Body:, Slug:, Title: or end of string
-      const previewMatch = generatedText.match(/^Preview:\s*([\s\S]*?)(?=^Body:|^Slug:|^Title:|$)/im);
+      // Non-greedy match for preview, stopping before Body:, Slug:, Title:, Category: or end of string
+      const previewMatch = generatedText.match(/^Preview:\s*([\s\S]*?)(?=^Body:|^Slug:|^Title:|^Category:|$)/im);
       if (previewMatch) generatedPreview = previewMatch[1].trim();
+
+      const categoryMatch = generatedText.match(/^Category:\s*(.*)/im);
+      if (categoryMatch && categoryMatch[1]) generatedCategory = categoryMatch[1].trim();
 
       const bodyMatch = generatedText.match(/^Body:\s*([\s\S]*)/im);
       if (bodyMatch) generatedBody = bodyMatch[1].trim();
 
       // Fallbacks and error handling
-      if (!generatedTitle && !generatedSlug && !generatedPreview && !generatedBody && generatedText.length > 0) {
+      // Adjusted condition to include generatedCategory
+      if (!generatedTitle && !generatedSlug && !generatedPreview && !generatedCategory && !generatedBody && generatedText.length > 0) {
         // If no markers found, and there's text, assume it's all body. Title will be derived.
         generatedBody = generatedText;
-        console.warn("AI response did not follow the expected Title/Slug/Preview/Body structure. Assigning full response to body.");
+        console.warn("AI response did not follow the expected Title/Slug/Preview/Category/Body structure. Assigning full response to body.");
       } else {
         // Handle cases where some fields might be missing or body marker was not found correctly
-        if (!generatedBody && (generatedTitle || generatedSlug || generatedPreview)) {
+        // Adjusted condition to include generatedCategory
+        if (!generatedBody && (generatedTitle || generatedSlug || generatedPreview || generatedCategory)) {
             let remainingText = generatedText;
             if (titleMatch) remainingText = remainingText.substring(remainingText.indexOf(titleMatch[0]) + titleMatch[0].length);
             if (slugMatch) remainingText = remainingText.substring(remainingText.indexOf(slugMatch[0]) + slugMatch[0].length);
             if (previewMatch) remainingText = remainingText.substring(remainingText.indexOf(previewMatch[0]) + previewMatch[0].length);
+            if (categoryMatch) remainingText = remainingText.substring(remainingText.indexOf(categoryMatch[0]) + categoryMatch[0].length);
             // The bodyMatch itself would have consumed the rest if it matched "Body:",
             // so if bodyMatch is null but other fields matched, "Body:" was likely missing.
             // In this case, the remainingText after stripping other known sections is the body.
@@ -524,7 +532,8 @@ Topic: ${aiArticleTopic}
               title: generatedTitle,
               artag: generatedSlug,
               excerpt: generatedPreview,
-              body: generatedBody
+              body: generatedBody,
+              category: generatedCategory, // Use generated category
           }));
       } else {
            setCurrentArticle({
@@ -533,7 +542,7 @@ Topic: ${aiArticleTopic}
               artag: generatedSlug,
               excerpt: generatedPreview,
               body: generatedBody,
-              category: '', // Default category
+              category: generatedCategory, // Use generated category
               imageUrl: '', // Default imageUrl
           });
       }
