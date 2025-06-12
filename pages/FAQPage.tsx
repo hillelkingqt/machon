@@ -1,99 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Accordion from '../components/ui/Accordion';
 import AnimatedDiv from '../components/ui/AnimatedDiv';
-import { FAQ_DATA } from '../constants';
-import { FAQCategory, FAQItem } from '../types'; // Import types
-import { supabase } from '../utils/supabaseClient'; // Import supabase client
+import { useData } from '../contexts/DataContext';
 import { Lightbulb, AlertTriangle } from 'lucide-react'; // Example icon + error icon
 
 const FAQ_PAGE_IMAGE_URL = 'https://www.machon-aviv.co.il/wp-content/uploads/2021/03/team-about.jpg';
 
 const FAQPage: React.FC = () => {
-  const [allFaqData, setAllFaqData] = useState<FAQCategory[]>(FAQ_DATA);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchFaqData = async () => {
-      try {
-        // Assuming 'faq_items' table with 'id', 'question', 'answer', 'category_title', 'category_id_for_ordering'
-        // 'category_id_for_ordering' can be a simple string like "general", "technical" for grouping
-        // and 'category_icon' (optional, string name of a Lucide icon)
-        const { data: supabaseFaqItems, error: supabaseError } = await supabase
-          .from('qa') // Make sure this table name is correct
-          .select('id, question_text, answer_text'); // Adjust columns as needed
-
-        if (supabaseError) {
-          console.error('Error fetching FAQ data from Supabase:', supabaseError);
-          setError('Failed to load some Q&A from the database. Error: ' + supabaseError.message);
-          setAllFaqData(FAQ_DATA); // Fallback to local data
-          return;
-        }
-
-        if (supabaseFaqItems && supabaseFaqItems.length > 0) {
-          const supabaseCategories: { [key: string]: FAQCategory } = {};
-          const defaultCategoryId = 'supabase_qa';
-          const defaultCategoryTitle = 'שאלות שאתם שאלתם אותנו';
-
-          supabaseFaqItems.forEach(item => {
-            // All items from 'qa' table will go into a single default category
-            if (!supabaseCategories[defaultCategoryId]) {
-              supabaseCategories[defaultCategoryId] = {
-                id: defaultCategoryId,
-                title: defaultCategoryTitle,
-                // icon: HelpCircle, // You can assign a default icon if you have one
-                questions: [],
-              };
-            }
-            supabaseCategories[defaultCategoryId].questions.push({
-              id: String(item.id),
-              question: item.question_text, // Map from question_text
-              answer: item.answer_text || '', // Map from answer_text, provide fallback for null
-            });
-          });
-
-          const fetchedCategoriesArray = Object.values(supabaseCategories);
-
-          // Combine with local data:
-          // Strategy: Merge questions if category titles match, otherwise add as new categories.
-          // Give precedence to Supabase questions if question ID matches within a merged category (not implemented here for simplicity, just concatenating questions)
-
-          let combinedData = [...FAQ_DATA];
-
-          fetchedCategoriesArray.forEach(supaCategory => {
-            const existingCategoryIndex = combinedData.findIndex(
-              localCat => localCat.title.trim().toLowerCase() === supaCategory.title.trim().toLowerCase()
-            );
-
-            if (existingCategoryIndex > -1) {
-              // Category exists, merge questions (avoiding duplicates by question ID)
-              const existingQuestions = combinedData[existingCategoryIndex].questions;
-              supaCategory.questions.forEach(supaQuestion => {
-                if (!existingQuestions.find(q => q.id === supaQuestion.id)) {
-                  existingQuestions.push(supaQuestion);
-                }
-              });
-              combinedData[existingCategoryIndex].questions = [...existingQuestions]; // Ensure re-render
-            } else {
-              // New category, add it
-              combinedData.push(supaCategory);
-            }
-          });
-
-          setAllFaqData(combinedData);
-
-        } else {
-          // No new FAQ items from Supabase, local data is already set
-          setAllFaqData(FAQ_DATA);
-        }
-      } catch (err) {
-        console.error('Error in fetchFaqData:', err);
-        setError('An unexpected error occurred while fetching Q&A.');
-        setAllFaqData(FAQ_DATA); // Fallback to local data
-      }
-    };
-
-    fetchFaqData();
-  }, []);
+  const { faqs: allFaqData, error } = useData();
 
   return (
     <section className="py-12 sm:py-16 bg-slate-50 dark:bg-slate-900">

@@ -14,6 +14,7 @@ import FAQPage from './pages/FAQPage';
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 import { DarkModeContext, DarkMode } from './contexts/DarkModeContext';
 import { AuthProvider } from './contexts/AuthContext'; // Import AuthProvider
+import { DataProvider } from './contexts/DataContext';
 
 // Utility component to scroll to top on route change
 const ScrollToTop: React.FC = () => {
@@ -55,7 +56,8 @@ const App: React.FC = () => {
 
     return (
         <DarkModeContext.Provider value={{ darkMode, toggleDarkMode }}>
-            <AuthProvider> {/* Wrap HashRouter with AuthProvider */}
+            <AuthProvider>
+                <DataProvider>
                 <HashRouter>
                     <ScrollToTop />
                     <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
@@ -85,6 +87,7 @@ const App: React.FC = () => {
                         <ChatWidget />
                     </div>
                 </HashRouter>
+                </DataProvider>
             </AuthProvider>
         </DarkModeContext.Provider>
     );

@@ -1,94 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { APP_NAME, ARTICLES_DATA } from '../constants';
+import { APP_NAME } from '../constants';
 import AnimatedDiv from '../components/ui/AnimatedDiv';
 import Button from '../components/ui/Button';
 import { CalendarDays, UserCircle, Tag, ArrowLeft, Edit3, Share2, ChevronsLeft, Award, SearchX } from 'lucide-react';
-import { supabase } from '../utils/supabaseClient'; // Adjust path if necessary
-import { Article } from '../types'; // Ensure Article type is imported
 import { formatArticleContentToHtml } from '../utils/contentParser'; // Import the centralized formatter
+import { useData } from '../contexts/DataContext';
 
 const FullArticlePage: React.FC = () => {
     const { articleId } = useParams<{ articleId: string }>();
     const navigate = useNavigate();
+    const { articles, loading, error } = useData();
 
-    const [article, setArticle] = useState<Article | null | undefined>(undefined); // undefined for loading, null for not found
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        const fetchArticle = async () => {
-            if (!articleId) {
-                setError("מזהה המאמר חסר.");
-                setLoading(false);
-                setArticle(null);
-                return;
-            }
-            setLoading(true);
-            try {
-                // First try to fetch by the custom slug (artag)
-                let { data, error: supabaseError } = await supabase
-                    .from('articles')
-                    .select('*')
-                    .eq('artag', articleId)
-                    .single();
-
-                // If not found by slug, attempt fetching by numeric id only
-                if (supabaseError && supabaseError.code === 'PGRST116' && /^\d+$/.test(articleId)) {
-                    const byId = await supabase
-                        .from('articles')
-                        .select('*')
-                        .eq('id', articleId)
-                        .single();
-                    data = byId.data ?? data;
-                    supabaseError = byId.error;
-                }
-
-                if (supabaseError) {
-                    if (supabaseError.code === 'PGRST116') { // No rows found
-                        // Try to find the article in local constants as a fallback
-                        const localArticle = ARTICLES_DATA.find(a => (a.artag || a.id) === articleId);
-                        if (localArticle) {
-                            setArticle(localArticle);
-                        } else {
-                            setArticle(null); // Article not found anywhere
-                        }
-                    } else {
-                        throw supabaseError;
-                    }
-                } else if (data) {
-                    const created = (data as any).date || (data as any).created_at;
-                    const bodyText: string = (data as any).fullContent || (data as any).body || '';
-                    const transformed: Article = {
-                        ...(data as any),
-                        fullContent: bodyText,
-                        excerpt: (data as any).excerpt || bodyText.substring(0, 150),
-                        author: (data as any).author || 'צוות מכון אביב',
-                        imageUrl: (data as any).imageUrl,
-                        date: created ? new Date(created).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'N/A',
-                        id: String((data as any).id),
-                    };
-                    setArticle(transformed);
-                } else {
-                    // If not found in Supabase, try local constants
-                    const localArticle = ARTICLES_DATA.find(a => (a.artag || a.id) === articleId);
-                    if (localArticle) {
-                        setArticle(localArticle);
-                    } else {
-                        setArticle(null); // Article not found
-                    }
-                }
-            } catch (err: any) {
-                console.error('שגיאה בטעינת המאמר:', err);
-                setError(`שגיאה בטעינת המאמר: ${err.message}`);
-                setArticle(null);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchArticle();
-    }, [articleId]);
+    const article = articles.find(a => (a.artag || a.id) === articleId);
 
     if (loading) {
         return (
