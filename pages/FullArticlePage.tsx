@@ -33,8 +33,8 @@ const FullArticlePage: React.FC = () => {
                     .eq('artag', articleId)
                     .single();
 
-                // If not found by slug, attempt fetching by id
-                if (supabaseError && supabaseError.code === 'PGRST116') {
+                // If not found by slug, attempt fetching by numeric id only
+                if (supabaseError && supabaseError.code === 'PGRST116' && /^\d+$/.test(articleId)) {
                     const byId = await supabase
                         .from('articles')
                         .select('*')
