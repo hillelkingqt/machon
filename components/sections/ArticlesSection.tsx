@@ -113,7 +113,7 @@ const ArticlesSection: React.FC<ArticlesSectionProps> = ({ maxItems, showTitle =
                             excerpt: supaArticle.excerpt || bodyText.substring(0, 150),
                             author: supaArticle.author || 'צוות מכון אביב',
                             imageUrl: supaArticle.imageUrl,
-                            date: created ? new Date(created).toLocaleDateString('he-IL') : 'N/A',
+                            date: created ? new Date(created).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'N/A',
                             id: String(supaArticle.id),
                         } as Article;
                     });

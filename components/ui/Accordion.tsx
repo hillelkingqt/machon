@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import type { FAQItem as FAQItemType, FAQCategory as FAQCategoryType } from '../../constants'; // Use existing types if suitable or define locally
+import { formatArticleContentToHtml } from '../../utils/contentParser'; // Import the formatter
 
 interface AccordionItemProps {
   item: FAQItemType;
@@ -38,9 +39,11 @@ const AccordionItem: React.FC<AccordionItemProps> = ({ item, isOpen, onToggle })
             transition={{ duration: 0.3, ease: [0.04, 0.62, 0.23, 0.98] }}
             className="overflow-hidden"
           >
-            <div className="p-4 sm:p-5 text-sm sm:text-base text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-700 leading-relaxed">
-              {item.answer}
-            </div>
+            {/* Apply prose styles for Tailwind Typography if not already global for this section */}
+            <div
+              className="p-4 sm:p-5 text-sm sm:text-base text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-700 leading-relaxed prose dark:prose-invert max-w-none"
+              dangerouslySetInnerHTML={{ __html: formatArticleContentToHtml(item.answer) }}
+            />
           </motion.div>
         )}
       </AnimatePresence>
