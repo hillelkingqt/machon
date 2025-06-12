@@ -21,6 +21,7 @@ interface Article {
   category?: string;
   artag?: string;
   imageUrl?: string;
+  excerpt?: string; // Added field
 }
 
 interface QAItem {
@@ -400,8 +401,8 @@ const AdminPage: React.FC = () => {
     // 1. Construct Detailed Prompt:
     const formattingInstructions = `
 Please generate an article based on the topic below.
-The article should have a clear title and a body.
-Format the article using the following Markdown-like syntax:
+The article should have a clear title, a URL-friendly slug in English, a short preview text (2-3 sentences, plain text), and a body.
+Format the article body using the following Markdown-like syntax:
 - Headings: Use # for H1, ## for H2, ### for H3, #### for H4.
 - Bold: **text**
 - Italics: *text*
@@ -416,7 +417,13 @@ Format the article using the following Markdown-like syntax:
   (Alert block content can span multiple lines after the initial ">>> TYPE: " line.)
 - Horizontal Rules: Use --- or ***
 
-Please structure your response starting with "Title: " followed by the title, then a newline, then "Body: " followed by a newline, and then the article body using the specified formatting.
+Please structure your response as follows, with each part on a new line:
+Title: [Generated Title]
+Slug: [Generated Slug in English, e.g., my-article-topic]
+Preview: [Generated Preview Text, 2-3 sentences, plain text]
+Body:
+[Generated Body Content using the specified Markdown syntax]
+
 Topic: ${aiArticleTopic}
 `;
 
@@ -447,59 +454,87 @@ Topic: ${aiArticleTopic}
 
       // 3. Process Response
       let generatedTitle = '';
+      let generatedSlug = '';
+      let generatedPreview = '';
       let generatedBody = '';
 
-      const titleMatch = generatedText.match(/^Title:\s*(.*)/i);
-      if (titleMatch && titleMatch[1]) {
-        generatedTitle = titleMatch[1].trim();
-        // Adjust regex to capture body after "Body:" marker, allowing for optional newline before actual content
-        const bodyMatch = generatedText.substring(titleMatch[0].length).match(/^\s*Body:\s*([\s\S]*)/i);
-        if (bodyMatch && bodyMatch[1]) {
-          generatedBody = bodyMatch[1].trim();
-        } else {
-          // If "Body:" marker not found after title, assume rest is body
-          generatedBody = generatedText.substring(titleMatch[0].length).trim();
-        }
+      const titleMatch = generatedText.match(/^Title:\s*(.*)/im);
+      if (titleMatch) generatedTitle = titleMatch[1].trim();
+
+      const slugMatch = generatedText.match(/^Slug:\s*(.*)/im);
+      if (slugMatch) generatedSlug = slugMatch[1].trim();
+
+      // Non-greedy match for preview, stopping before Body:, Slug:, Title: or end of string
+      const previewMatch = generatedText.match(/^Preview:\s*([\s\S]*?)(?=^Body:|^Slug:|^Title:|$)/im);
+      if (previewMatch) generatedPreview = previewMatch[1].trim();
+
+      const bodyMatch = generatedText.match(/^Body:\s*([\s\S]*)/im);
+      if (bodyMatch) generatedBody = bodyMatch[1].trim();
+
+      // Fallbacks and error handling
+      if (!generatedTitle && !generatedSlug && !generatedPreview && !generatedBody && generatedText.length > 0) {
+        // If no markers found, and there's text, assume it's all body. Title will be derived.
+        generatedBody = generatedText;
+        console.warn("AI response did not follow the expected Title/Slug/Preview/Body structure. Assigning full response to body.");
       } else {
-        // If no "Title:" marker, assume first line is title, rest is body (less robust)
-        const lines = generatedText.split('\n');
-        generatedTitle = lines[0] || 'Untitled AI Article';
-        generatedBody = lines.slice(1).join('\n').trim();
+        // Handle cases where some fields might be missing or body marker was not found correctly
+        if (!generatedBody && (generatedTitle || generatedSlug || generatedPreview)) {
+            let remainingText = generatedText;
+            if (titleMatch) remainingText = remainingText.substring(remainingText.indexOf(titleMatch[0]) + titleMatch[0].length);
+            if (slugMatch) remainingText = remainingText.substring(remainingText.indexOf(slugMatch[0]) + slugMatch[0].length);
+            if (previewMatch) remainingText = remainingText.substring(remainingText.indexOf(previewMatch[0]) + previewMatch[0].length);
+            // The bodyMatch itself would have consumed the rest if it matched "Body:",
+            // so if bodyMatch is null but other fields matched, "Body:" was likely missing.
+            // In this case, the remainingText after stripping other known sections is the body.
+            remainingText = remainingText.replace(/^Body:\s*/im, '').trim(); // Remove "Body:" if it's there but bodyMatch failed
+            if(remainingText.length > 0 && !generatedBody) {
+                generatedBody = remainingText;
+                console.warn("Body marker might be missing or misplaced. Inferred body from remaining text.");
+            }
+        }
       }
 
-      if (!generatedBody) { // If body is still empty, maybe the whole thing was meant as body if title was short
-          if (generatedTitle.length < 100 && generatedText.length > generatedTitle.length) { // arbitrary length
-              generatedBody = generatedText; // Use whole text as body, title can be refined by user
-              // Optionally clear the title if the whole text is now body, or keep it as a suggestion
-              // generatedTitle = "Refine Title: " + generatedTitle;
-          } else {
-              // If still no body, it's an issue.
-              // But if generatedTitle itself is long, it might be the whole article.
-              if (generatedTitle.length >=100 && !generatedBody) {
-                generatedBody = generatedTitle; // Assume title was actually the whole article
-                generatedTitle = `Review Content: ${aiArticleTopic.substring(0,30)}...`; // Create a placeholder title
-              } else {
-                throw new Error('AI did not generate a recognizable body.');
-              }
-          }
+      if (!generatedBody) {
+        if (generatedPreview.length > 250 && generatedBody.length < 10) { // Arbitrary threshold
+            generatedBody = generatedPreview; // Use preview as body
+            generatedPreview = generatedBody.replace(/#.*$/gm, '').replace(/>.*$/gm, '').replace(/\*.*$/gm, '').replace(/---.*$/gm, '').replace(/>>>.*$/gm, '').replace(/\n\s*\n/g, ' ').replace(/\s\s+/g, ' ').trim().substring(0, 150) + "..."; // Create a new short preview
+            console.warn("Generated body was empty, but preview was long. Used preview for body and created a new short preview.");
+        } else {
+             throw new Error('AI did not generate a recognizable body. Ensure Title, Slug, Preview, and Body markers are used by the AI, or the content is substantial.');
+        }
+      }
+      if (!generatedTitle) {
+          generatedTitle = aiArticleTopic.substring(0, 50) + (aiArticleTopic.length > 50 ? "..." : "") + " (AI Generated)";
+          console.warn("AI did not provide a title. Generated one from the topic.");
+      }
+      if (!generatedSlug && generatedTitle) {
+          generatedSlug = generatedTitle.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '').substring(0, 70);
+          console.warn("AI did not provide a slug. Generated one from the title.");
+      }
+      if (!generatedPreview && generatedBody) {
+          generatedPreview = generatedBody.replace(/#.*$/gm, '').replace(/>.*$/gm, '').replace(/\*.*$/gm, '').replace(/---.*$/gm, '').replace(/>>>.*$/gm, '').replace(/\n\s*\n/g, ' ').replace(/\s\s+/g, ' ').trim().substring(0, 200) + (generatedBody.length > 200 ? "..." : "");
+          console.warn("AI did not provide a preview. Generated one from the body.");
       }
 
-      // 4. Update Editor
+
+      // 4. Update Editor state
       if (currentArticle) {
           setCurrentArticle(prev => ({
-              ...prev, // Spread previous properties like id, category etc.
+              ...prev,
               title: generatedTitle,
+              artag: generatedSlug,
+              excerpt: generatedPreview,
               body: generatedBody
           }));
       } else {
-           // This case might occur if user clicks "Add Article" then immediately "AI Generate"
-           // before any currentArticle shell is properly initialized by handleOpenArticleModal.
-           // Ensure a default structure is created.
            setCurrentArticle({
-              id: '',
+              id: '', // New article
               title: generatedTitle,
+              artag: generatedSlug,
+              excerpt: generatedPreview,
               body: generatedBody,
-              category: '', artag: '', imageUrl: '', // Initialize other fields
+              category: '', // Default category
+              imageUrl: '', // Default imageUrl
           });
       }
 
@@ -658,7 +693,7 @@ ${currentBody}
   }, [isAuthorized, fetchArticles, fetchQAItems]); // Changed isAuthenticated to isAuthorized
 
   const handleOpenArticleModal = (article: Article | null = null) => {
-    setCurrentArticle(article ? { ...article } : { id: '', title: '', body: '', category: '', artag: '', imageUrl: '' });
+    setCurrentArticle(article ? { ...article } : { id: '', title: '', body: '', category: '', artag: '', imageUrl: '', excerpt: '' });
     setShowArticleModal(true);
   };
   const handleCloseArticleModal = () => { setShowArticleModal(false); setCurrentArticle(null); setErrorArticles(null); };
@@ -676,6 +711,7 @@ ${currentBody}
       category: currentArticle.category || null,
       artag: currentArticle.artag || null,
       imageUrl: currentArticle.imageUrl || null,
+      excerpt: currentArticle.excerpt || null, // Add this line
       date: new Date().toLocaleDateString('he-IL'),
     };
     try {
@@ -937,6 +973,10 @@ ${currentBody}
                     <label htmlFor="imageUrl" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">קישור לתמונה</label>
                     <input type="text" name="imageUrl" id="imageUrl" value={currentArticle.imageUrl || ''} onChange={handleArticleFormChange} className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white shadow-sm text-sm sm:text-base" />
                   </div>
+                </div>
+                <div>
+                  <label htmlFor="excerpt" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">טקסט מקדים (לתצוגה מקדימה)</label>
+                  <textarea name="excerpt" id="excerpt" value={currentArticle.excerpt || ''} onChange={handleArticleFormChange} rows={3} className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white shadow-sm text-sm sm:text-base" />
                 </div>
                 <div>
                   <label htmlFor="artag" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">תג מאמר (באנגלית לקישור)</label>
