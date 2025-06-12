@@ -11,7 +11,7 @@ export interface NavItem {
 }
 export interface SiteAdmin {
   id: string; // Assuming UUID from Supabase, can be number if auto-incrementing
-  email: string;
+  gmail: string;
   expires_at?: string | null; // ISO date string
   created_at: string; // ISO date string
 }
