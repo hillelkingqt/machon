@@ -25,6 +25,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor }) => {
     <div className="border border-slate-300 dark:border-slate-600 rounded-t-lg p-2 flex flex-wrap gap-1 bg-slate-50 dark:bg-slate-700 items-center">
       {/* Existing buttons */}
       <button
+        type="button"
         onClick={() => editor.chain().focus().toggleBold().run()}
         disabled={!editor.can().chain().focus().toggleBold().run()}
         className={`p-1.5 rounded ${editor.isActive('bold') ? 'bg-slate-200 dark:bg-slate-600' : 'hover:bg-slate-200 dark:hover:bg-slate-600'}`}
@@ -33,6 +34,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor }) => {
         <Bold size={18} />
       </button>
       <button
+        type="button"
         onClick={() => editor.chain().focus().toggleItalic().run()}
         disabled={!editor.can().chain().focus().toggleItalic().run()}
         className={`p-1.5 rounded ${editor.isActive('italic') ? 'bg-slate-200 dark:bg-slate-600' : 'hover:bg-slate-200 dark:hover:bg-slate-600'}`}
@@ -41,6 +43,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor }) => {
         <Italic size={18} />
       </button>
       <button
+        type="button"
         onClick={() => editor.chain().focus().toggleStrike().run()}
         disabled={!editor.can().chain().focus().toggleStrike().run()}
         className={`p-1.5 rounded ${editor.isActive('strike') ? 'bg-slate-200 dark:bg-slate-600' : 'hover:bg-slate-200 dark:hover:bg-slate-600'}`}
@@ -49,6 +52,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor }) => {
         <Strikethrough size={18} />
       </button>
       <button
+        type="button"
         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
         className={`p-1.5 rounded ${editor.isActive('heading', { level: 1 }) ? 'bg-slate-200 dark:bg-slate-600' : 'hover:bg-slate-200 dark:hover:bg-slate-600'}`}
         title="H1"
@@ -56,6 +60,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor }) => {
         <Heading1 size={18} />
       </button>
       <button
+        type="button"
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
         className={`p-1.5 rounded ${editor.isActive('heading', { level: 2 }) ? 'bg-slate-200 dark:bg-slate-600' : 'hover:bg-slate-200 dark:hover:bg-slate-600'}`}
         title="H2"
@@ -63,6 +68,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor }) => {
         <Heading2 size={18} />
       </button>
       <button
+        type="button"
         onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
         className={`p-1.5 rounded ${editor.isActive('heading', { level: 3 }) ? 'bg-slate-200 dark:bg-slate-600' : 'hover:bg-slate-200 dark:hover:bg-slate-600'}`}
         title="H3"
@@ -70,6 +76,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor }) => {
         <Heading3 size={18} />
       </button>
       <button
+        type="button"
         onClick={() => editor.chain().focus().toggleBulletList().run()}
         className={`p-1.5 rounded ${editor.isActive('bulletList') ? 'bg-slate-200 dark:bg-slate-600' : 'hover:bg-slate-200 dark:hover:bg-slate-600'}`}
         title="Bullet List"
@@ -77,6 +84,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor }) => {
         <List size={18} />
       </button>
       <button
+        type="button"
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
         className={`p-1.5 rounded ${editor.isActive('orderedList') ? 'bg-slate-200 dark:bg-slate-600' : 'hover:bg-slate-200 dark:hover:bg-slate-600'}`}
         title="Ordered List"
@@ -84,6 +92,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor }) => {
         <ListOrdered size={18} />
       </button>
       <button
+        type="button"
         onClick={() => editor.chain().focus().toggleBlockquote().run()}
         className={`p-1.5 rounded ${editor.isActive('blockquote') ? 'bg-slate-200 dark:bg-slate-600' : 'hover:bg-slate-200 dark:hover:bg-slate-600'}`}
         title="Blockquote"
@@ -91,6 +100,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor }) => {
         <Quote size={18} />
       </button>
       <button
+        type="button"
         onClick={() => editor.chain().focus().toggleCodeBlock().run()}
         className={`p-1.5 rounded ${editor.isActive('codeBlock') ? 'bg-slate-200 dark:bg-slate-600' : 'hover:bg-slate-200 dark:hover:bg-slate-600'}`}
         title="Code Block"
@@ -98,6 +108,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor }) => {
         <Code size={18} />
       </button>
       <button
+        type="button"
         onClick={() => editor.chain().focus().undo().run()}
         disabled={!editor.can().undo()}
         className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600 disabled:opacity-50"
@@ -106,6 +117,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor }) => {
         <Undo size={18} />
       </button>
       <button
+        type="button"
         onClick={() => editor.chain().focus().redo().run()}
         disabled={!editor.can().redo()}
         className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600 disabled:opacity-50"
@@ -120,6 +132,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor }) => {
       {/* Alert Block Dropdown */}
       <div className="relative inline-block">
         <button
+          type="button"
           onClick={() => setIsAlertDropdownOpen(!isAlertDropdownOpen)}
           className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600 flex items-center"
           title="Insert Alert Block"
@@ -130,6 +143,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor }) => {
           <div className="absolute ltr:left-0 rtl:right-0 mt-1 w-48 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md shadow-lg z-50">
             {alertTypes.map(alert => (
               <button
+                type="button"
                 key={alert.name}
                 onClick={() => {
                   // Uses the command defined in AlertBlockNode.ts
