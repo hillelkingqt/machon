@@ -25,9 +25,16 @@ async function handleRequest(request) {
   if (request.method === 'OPTIONS') {
     return handleOptions(request);
   }
+
+  const url = new URL(request.url);
+
   if (request.method === 'POST') {
+    if (url.pathname === '/login-notify') {
+      return await handleLoginNotification(request);
+    }
     return await handleContactForm(request);
   }
+
   return new Response('Method Not Allowed', { status: 405, headers: CORS_HEADERS });
 }
 
@@ -199,6 +206,62 @@ IP: ${clientIp}
   } catch (error) {
     console.error("Error processing contact form:", error);
     let errorMessage = "אירעה שגיאה פנימית בעיבוד הפנייה.";
+    let errorStatus = 500;
+
+    if (error instanceof SyntaxError) {
+      errorMessage = "פורמט הנתונים שנשלח אינו תקין (JSON שגוי).";
+      errorStatus = 400;
+    }
+    return new Response(JSON.stringify({ success: false, error: errorMessage, details: error.message }), {
+      status: errorStatus,
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+    });
+  }
+}
+
+/**
+ * Handles login notification submissions.
+ */
+async function handleLoginNotification(request) {
+  try {
+    const { email, name } = await request.json();
+
+    if (!email || !email.trim()) {
+      return new Response(JSON.stringify({ success: false, error: "כתובת אימייל חסרה." }), {
+        status: 400,
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const clientIp = request.headers.get('CF-Connecting-IP') || 'לא זוהה';
+    const loginTime = new Date().toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem', hour12: false });
+
+    const telegramMessageText = `
+*התחברות חדשה לאתר*
+${name ? `*שם:* ${escapeMarkdownSimple(name)}\n` : ''}*אימייל:* ${escapeMarkdownSimple(email)}
+IP: ${clientIp}
+זמן התחברות: ${loginTime}
+    `.trim();
+
+    const botTokenToUse = typeof TELEGRAM_BOT_TOKEN_ENV !== 'undefined' ? TELEGRAM_BOT_TOKEN_ENV : TELEGRAM_BOT_TOKEN;
+    const chatIdToUse = typeof TELEGRAM_TARGET_CHAT_ID_ENV !== 'undefined' ? TELEGRAM_TARGET_CHAT_ID_ENV : TELEGRAM_TARGET_CHAT_ID;
+
+    const telegramResult = await sendTelegramMessage(telegramMessageText, chatIdToUse, botTokenToUse);
+
+    if (telegramResult.success) {
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+      });
+    }
+    return new Response(JSON.stringify({ success: false, error: telegramResult.error || "שליחת ההודעה לטלגרם נכשלה." }), {
+      status: 502,
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+    });
+
+  } catch (error) {
+    console.error("Error processing login notification:", error);
+    let errorMessage = "אירעה שגיאה פנימית בעיבוד ההתחברות.";
     let errorStatus = 500;
 
     if (error instanceof SyntaxError) {

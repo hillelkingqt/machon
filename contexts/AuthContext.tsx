@@ -2,6 +2,8 @@ import React, { createContext, useState, useEffect, useContext, ReactNode } from
 import { Session, User as SupabaseUser } from '@supabase/supabase-js';
 import { supabase } from '../utils/supabaseClient'; // Adjust path as necessary
 
+const LOGIN_NOTIFY_URL = 'https://machon.hillelben14.workers.dev/login-notify';
+
 export interface UserProfile {
   id: string;
   firstName?: string;
@@ -32,6 +34,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loadingInitial, setLoadingInitial] = useState(true); // True on initial load
 
+  const notifyLogin = async (supabaseUser: SupabaseUser) => {
+    try {
+      await fetch(LOGIN_NOTIFY_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: supabaseUser.email,
+          name: supabaseUser.user_metadata?.full_name || supabaseUser.user_metadata?.name || undefined,
+        }),
+      });
+    } catch (error) {
+      console.error('Failed to send login notification', error);
+    }
+  };
+
   useEffect(() => {
     setLoadingInitial(true);
     // Check for existing session on initial load
@@ -61,7 +78,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const {
       data: { subscription: authListener },
     } = supabase.auth.onAuthStateChange(
-      async (_event, newSession) => {
+      async (event, newSession) => {
         setLoadingInitial(true); // Set loading true during auth state change processing
         setSession(newSession);
         const currentUser = newSession?.user ?? null;
@@ -82,6 +99,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             avatarUrl: m.avatar_url || m.picture,
           };
           setProfile(userProfile);
+          if (event === 'SIGNED_IN') {
+            notifyLogin(currentUser);
+          }
         } else {
           setProfile(null);
         }
