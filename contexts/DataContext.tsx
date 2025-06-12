@@ -3,6 +3,27 @@ import { supabase } from '../utils/supabaseClient';
 import { Article, FAQCategory, FAQItem } from '../types'; // Assuming these types exist and are comprehensive
 import { ARTICLES_DATA, FAQ_DATA } from '../constants'; // Local fallback data
 
+const formatArticleDate = (primary?: string | null, fallback?: string | null): string => {
+  const raw = primary || fallback;
+  if (!raw) return 'N/A';
+  let parsed: Date | null = null;
+  if (raw.includes('/')) {
+    const parts = raw.split(/[\/\.\-]/);
+    if (parts.length === 3) {
+      const [day, month, year] = parts.map(p => parseInt(p, 10));
+      if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+        parsed = new Date(year, month - 1, day);
+      }
+    }
+  }
+  if (!parsed) {
+    const temp = new Date(raw);
+    if (!isNaN(temp.getTime())) parsed = temp;
+  }
+  if (!parsed || isNaN(parsed.getTime())) return 'N/A';
+  return parsed.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+};
+
 interface DataContextState {
   articles: Article[];
   faqCategories: FAQCategory[];
@@ -54,7 +75,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
           excerpt: supaArticle.excerpt || (supaArticle.fullContent || supaArticle.body || '').substring(0, 150),
           author: supaArticle.author || 'צוות מכון אביב',
           imageUrl: supaArticle.imageUrl,
-          date: supaArticle.date || supaArticle.created_at ? new Date(supaArticle.date || supaArticle.created_at).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'N/A',
+          date: formatArticleDate(supaArticle.date, supaArticle.created_at),
           id: String(supaArticle.id),
           artag: supaArticle.artag || String(supaArticle.id), // Ensure artag exists
         }));
