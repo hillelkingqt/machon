@@ -6,6 +6,8 @@ import { ExternalLink, Facebook, Instagram, MessageCircle, Rss, ShoppingBag, Inf
 export const LOGO_URL = 'text_logo'; // Indicates text logo is used, actual text comes from APP_NAME
 export const APP_NAME = 'מכון אביב';
 
+export const GOOGLE_CLIENT_ID = "193841266729-4c8nekuot1biu07ogba9il82jcjptcs8.apps.googleusercontent.com";
+
 export const NAVIGATION_ITEMS: NavItem[] = [
     { label: 'אודותינו', href: '/about', icon: Info },
     { label: 'הקורסים שלנו', href: '/courses', icon: BookOpen },
