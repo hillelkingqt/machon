@@ -1,11 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react'; // Removed useEffect, useState
 import { Link } from 'react-router-dom';
-import { ARTICLES_DATA } from '../../constants';
-import { Article } from '../../types'; // Ensure Article type is imported
+// ARTICLES_DATA might still be used by DataContext as a fallback, so keep if no error, otherwise remove.
+// For now, assume DataContext handles the fallback logic entirely.
+// import { ARTICLES_DATA } from '../../constants';
+import { Article } from '../../types';
 import AnimatedDiv from '../ui/AnimatedDiv';
 import Button from '../ui/Button';
 import { CalendarDays, UserCircle, Tag, ChevronLeft } from 'lucide-react';
-import { supabase } from '../../utils/supabaseClient'; // Import supabase client
+// supabase client is no longer needed here
+// import { supabase } from '../../utils/supabaseClient';
+import { useData } from '../../contexts/DataContext'; // Import useData
 
 interface ArticleCardProps {
     article: Article;
@@ -79,68 +83,26 @@ interface ArticlesSectionProps {
 }
 
 const ArticlesSection: React.FC<ArticlesSectionProps> = ({ maxItems, showTitle = true }) => {
-    const [allArticles, setAllArticles] = useState<Article[]>(ARTICLES_DATA);
-    const [error, setError] = useState<string | null>(null);
+    const { articles: allArticles, loading, error } = useData(); // Use DataContext
 
-    useEffect(() => {
-        const fetchArticles = async () => {
-            try {
-                // Assuming 'articles' is your table name in Supabase
-                // and columns match the Article type.
-                // Ensure Supabase returns `id` as string or cast it.
-                // Ensure date format is consistent or parse/format it.
-                const { data: supabaseArticles, error: supabaseError } = await supabase
-                    .from('articles') // Make sure this table name is correct
-                    .select('*'); // Select all columns, adjust if needed
-
-                if (supabaseError) {
-                    console.error('Error fetching articles from Supabase:', supabaseError);
-                    setError('Failed to load articles from database. Error: ' + supabaseError.message);
-                    // Keep existing articles if fetch fails
-                    setAllArticles(ARTICLES_DATA);
-                    return;
-                }
-
-                if (supabaseArticles) {
-                    // Transform Supabase data to match our Article interface
-                    const fetchedArticles: Article[] = supabaseArticles.map((supaArticle: any) => {
-                        const created = supaArticle.date || supaArticle.created_at;
-                        const bodyText: string = supaArticle.fullContent || supaArticle.body || '';
-
-                        return {
-                            ...supaArticle,
-                            fullContent: bodyText,
-                            excerpt: supaArticle.excerpt || bodyText.substring(0, 150),
-                            author: supaArticle.author || 'צוות מכון אביב',
-                            imageUrl: supaArticle.imageUrl,
-                            date: created ? new Date(created).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'N/A',
-                            id: String(supaArticle.id),
-                        } as Article;
-                    });
-
-                    // Combine and remove duplicates (preferring Supabase articles if IDs clash)
-                    const combinedArticles = [
-                        ...fetchedArticles,
-                        ...ARTICLES_DATA.filter(localArticle =>
-                            !fetchedArticles.find(fetched => String(fetched.id) === String(localArticle.id))
-                        )
-                    ];
-                    setAllArticles(combinedArticles);
-                } else {
-                    // No articles from Supabase, just use local ones
-                    setAllArticles(ARTICLES_DATA);
-                }
-            } catch (err) {
-                console.error('Error in fetchArticles:', err);
-                setError('An unexpected error occurred while fetching articles.');
-                setAllArticles(ARTICLES_DATA); // Fallback to local data
-            }
-        };
-
-        fetchArticles();
-    }, []);
+    // The useEffect for fetching articles is removed.
+    // The useState for allArticles and error is removed.
 
     const articlesToDisplay = maxItems ? allArticles.slice(0, maxItems) : allArticles;
+
+    if (loading) {
+        return (
+            <section className="py-16 sm:py-20 md:py-24 bg-slate-100 dark:bg-slate-900">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                    <p className="text-xl text-slate-600 dark:text-slate-300">טוען מאמרים...</p>
+                </div>
+            </section>
+        );
+    }
+
+    // Error display logic can be kept, it will now reflect global errors if articles part of data fetch failed
+    // Or, if DataContext's error is too generic, specific error handling might need adjustment.
+    // For now, assume DataContext's error is sufficient.
 
     return (
         <section className="py-16 sm:py-20 md:py-24 bg-slate-100 dark:bg-slate-900">
@@ -160,7 +122,7 @@ const ArticlesSection: React.FC<ArticlesSectionProps> = ({ maxItems, showTitle =
                     </AnimatedDiv>
                 )}
 
-                {articlesToDisplay.length === 0 && !error && (
+                {articlesToDisplay.length === 0 && !error && !loading && ( // Added !loading condition
                      <AnimatedDiv animation="fadeInUp" className="text-center mb-8">
                         <p className="text-slate-600 dark:text-slate-400">לא נמצאו מאמרים כרגע.</p>
                     </AnimatedDiv>
