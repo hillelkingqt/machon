@@ -1,17 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CONTACT_DETAILS } from '../../constants';
 import { MapPin, Phone, Mail, ExternalLink, Send, Loader2, CheckCircle2, AlertTriangle } from 'lucide-react';
 import AnimatedDiv from '../ui/AnimatedDiv';
 import Button from '../ui/Button';
+import { useAuth } from '../../contexts/AuthContext';
 
 type SubmissionStatus = 'idle' | 'loading' | 'success' | 'error';
 
 const WORKER_URL = 'https://machon.hillelben14.workers.dev/';
 
 const ContactSection: React.FC = () => {
+    const { user } = useAuth();
     const [formData, setFormData] = useState({ name: '', email: '', message: '' });
     const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus>('idle');
     const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (user?.email && user.email.toLowerCase().endsWith('@gmail.com')) {
+            setFormData(prev => prev.email ? prev : { ...prev, email: user.email! });
+        }
+    }, [user]);
 
 
     const getWhatsAppNumber = (phone: string) => {
