@@ -398,8 +398,8 @@ const AdminPage: React.FC = () => {
       try {
         const { data, error } = await supabase
           .from('admin')
-          .select('id, email, expires_at') // Ensure 'email' is the correct column name
-          .eq('email', user.email) // Query by the user's email
+          .select('id, gmail, expires_at') // Ensure 'email' is the correct column name
+          .eq('gmail', user.email) // Query by the user's email
           .single();
 
         if (error && error.code !== 'PGRST116') { // PGRST116: No rows found
@@ -758,8 +758,7 @@ ${currentBody}
     try {
       const { data, error } = await supabase.from('admin').select('*').order('created_at', { ascending: false });
       if (error) throw error;
-      // Assuming 'gmail' column in 'admin' table needs to be mapped to 'email' in SiteAdmin
-      setAdminsList(data ? data.map(item => ({ ...item, email: item.gmail || item.email })) : []);
+      setAdminsList(data || []);
     } catch (err: any) {
       setErrorAdmins(`שגיאה בטעינת רשימת המנהלים: ${err.message}`);
     } finally {
