@@ -8,7 +8,7 @@ import { supabase } from '../../utils/supabaseClient';
 interface SignupModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSwitchToLogin: () => void;
+  onSwitchToLogin: (email?: string, password?: string) => void;
 }
 
 const SignupModal: React.FC<SignupModalProps> = ({
@@ -45,6 +45,8 @@ const SignupModal: React.FC<SignupModalProps> = ({
     if (error) {
       setMessage({ type: 'error', content: `שגיאה ביצירת החשבון: ${error.message}` });
     } else if (data.user) {
+      const prevEmail = email;
+      const prevPassword = password;
       if (data.user.identities?.length === 0 || !data.session) {
          setMessage({ type: 'success', content: "חשבון נוצר בהצלחה! נשלח אליך מייל לאימות החשבון." });
       } else {
@@ -54,6 +56,9 @@ const SignupModal: React.FC<SignupModalProps> = ({
       setLastName('');
       setEmail('');
       setPassword('');
+      setTimeout(() => {
+        onSwitchToLogin(prevEmail, prevPassword);
+      }, 3000);
     } else {
       setMessage({ type: 'error', content: "אירעה שגיאה לא צפויה. נסה שנית." });
     }
@@ -184,7 +189,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
               type="button"
               variant="ghost"
               size="sm"
-              onClick={onSwitchToLogin}
+              onClick={() => onSwitchToLogin()}
               className="font-medium !p-0 !shadow-none !text-primary dark:!text-primary-light hover:!underline"
               icon={<LogIn size={16} />}
               iconPosition="leading"

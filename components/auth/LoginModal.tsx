@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import AuthModalWrapper from './AuthModalWrapper';
 import Button from '../ui/Button';
@@ -20,19 +20,30 @@ interface LoginModalProps {
   onClose: () => void;
   onSwitchToSignup: () => void;
   onSwitchToForgotPassword: () => void;
+  prefillEmail?: string;
+  prefillPassword?: string;
 }
 
 const LoginModal: React.FC<LoginModalProps> = ({
   isOpen,
   onClose,
   onSwitchToSignup,
-  onSwitchToForgotPassword
+  onSwitchToForgotPassword,
+  prefillEmail,
+  prefillPassword
 }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loadingEmailPass, setLoadingEmailPass] = useState(false);
   const [loadingGoogle, setLoadingGoogle] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; content: string } | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      if (prefillEmail) setEmail(prefillEmail);
+      if (prefillPassword) setPassword(prefillPassword);
+    }
+  }, [isOpen, prefillEmail, prefillPassword]);
 
   const anyLoading = loadingEmailPass || loadingGoogle;
 
