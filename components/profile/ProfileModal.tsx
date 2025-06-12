@@ -7,7 +7,7 @@ import { X, UserCircle, Mail, LogOut, Save, Loader2, AlertTriangle, CheckCircle 
 // For now, let's assume AuthModalWrapper provides a structure like:
 // <AuthModalWrapper isOpen={isOpen} onClose={onClose} title="Some Title"> ...modal content... </AuthModalWrapper>
 // And Button is a styled button component.
-import { Button } from '../ui/Button';
+import Button from '../ui/Button';
 import AuthModalWrapper from '../auth/AuthModalWrapper'; // Assuming this path and component
 
 interface ProfileModalProps {
