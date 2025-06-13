@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { MessageSquare, Send } from 'lucide-react';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import Button from './ui/Button';
 import { useAuth } from '../contexts/AuthContext';
 import ReactMarkdown from 'react-markdown';
@@ -10,11 +9,11 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 
-import { APP_NAME, ARTICLES_DATA, COURSES_DATA, FAQ_DATA, PREVIEW_SECTIONS, SUPABASE_URL, SUPABASE_ANON_KEY } from '../constants.tsx';
+import { APP_NAME, ARTICLES_DATA, COURSES_DATA, FAQ_DATA, PREVIEW_SECTIONS } from '../constants.tsx';
+import { supabase } from '../utils/supabaseClient';
 import { Article, Course, FAQCategory } from '../types.ts';
 
-// Initialize Supabase client
-const supabase: SupabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Supabase client is imported
 
 // Simple chat widget using Gemini API
 const GEMINI_API_KEYS = [
