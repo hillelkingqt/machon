@@ -400,7 +400,7 @@ const AdminPage: React.FC = () => {
           .from('admin')
           .select('id, gmail, expires_at') // Ensure 'email' is the correct column name
           .eq('gmail', user.email) // Query by the user's email
-          .single();
+          .maybeSingle();
 
         if (error && error.code !== 'PGRST116') { // PGRST116: No rows found
           console.error('Error fetching admin status:', error);

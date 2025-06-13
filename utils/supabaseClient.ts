@@ -10,4 +10,12 @@ if (!SUPABASE_ANON_KEY) {
   throw new Error("Supabase anonymous key is not defined. Please check your constants.tsx file.");
 }
 
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const customFetch: typeof fetch = (input, init) => {
+  const headers = new Headers(init?.headers);
+  headers.set('Accept', 'application/json');
+  return fetch(input, { ...init, headers });
+};
+
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  global: { fetch: customFetch },
+});
