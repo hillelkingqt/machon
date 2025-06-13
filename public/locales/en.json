@@ -1,0 +1,464 @@
+{
+  "appName": "Aviv Institute",
+  "header": {
+    "loading": "Loading...",
+    "greeting": "Hello, {{name}}",
+    "profile": "Profile",
+    "login": "Login",
+    "logout": "Logout",
+    "loginSignup": "Login / Signup",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
+  },
+  "footer": {
+    "description": "{{appName}} - Professional preparation for gifted tests and excellence programs. We are committed to your children's success and provide the best tools.",
+    "quickLinksTitle": "Quick Navigation",
+    "contactTitle": "Contact Us",
+    "address": "14 Hamada St, Rehovot (Science Park)",
+    "phone": "055-9851905",
+    "email": "office@machon-aviv.co.il",
+    "followUsTitle": "Follow Us",
+    "socialAriaLabel": {
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "whatsapp": "WhatsApp"
+    },
+    "copyright": "© {{year}} {{appName}}. All rights reserved to Aviv Institute."
+  },
+  "nav": {
+    "aboutUs": "About Us",
+    "courses": "Our Courses",
+    "articles": "Articles",
+    "shop": "Shop",
+    "faq": "FAQ",
+    "contact": "Contact Us"
+  },
+  "auth": {
+    "closeModalAriaLabel": "Close modal",
+    "login": {
+      "title": "Login",
+      "emailLabel": "Email Address",
+      "emailPlaceholder": "you@example.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "••••••••",
+      "errorIncorrectCredentials": "Incorrect email or password. Try again.",
+      "successLogin": "Logged in successfully!",
+      "errorUnexpected": "An unexpected error occurred. Try again.",
+      "errorGoogleSignIn": "Error signing in with Google: {{error}}",
+      "submitButton": "Log In",
+      "loadingButton": "Logging in...",
+      "forgotPasswordLink": "Forgot password?",
+      "signupPrompt": "Don't have an account?",
+      "signupLink": "Sign Up",
+      "googleLoginButton": "Sign in with Google",
+      "googleLoadingButton": "Signing in with Google...",
+      "separatorOrContinueWith": "Or continue with"
+    },
+    "signup": {
+      "title": "Create Account",
+      "firstNameLabel": "First Name",
+      "firstNamePlaceholder": "e.g. Moses",
+      "lastNameLabel": "Last Name",
+      "lastNamePlaceholder": "e.g. Cohen",
+      "emailLabel": "Email Address",
+      "emailPlaceholder": "you@example.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "At least 8 characters",
+      "errorCreatingAccount": "Error creating account: {{error}}",
+      "successAccountCreatedConfirmationNeeded": "Account created successfully! Check your email to verify your account.",
+      "successAccountCreatedAndLoggedIn": "Account created and logged in successfully!",
+      "errorUnexpected": "An unexpected error occurred. Try again.",
+      "submitButton": "Create Account",
+      "loadingButton": "Creating account...",
+      "loginPrompt": "Already have an account?",
+      "loginLink": "Log In"
+    },
+    "forgotPassword": {
+      "title": "Reset Password",
+      "instructions": "Enter your email address and we'll send you a link to reset your password.",
+      "emailLabel": "Email Address",
+      "emailPlaceholder": "you@example.com",
+      "errorSendingLink": "Error sending password reset link: {{error}}",
+      "successLinkSent": "If an account exists with this email, a password reset link has been sent.",
+      "submitButton": "Send Reset Link",
+      "loadingButton": "Sending link...",
+      "promptTryLoginAgain": "Want to try logging in again?",
+      "promptRememberedPassword": "Remembered your password?",
+      "backToLoginLink": "Back to Login"
+    }
+  },
+  "heroSection": {
+    "titlePart1": "Perfect Preparation",
+    "titlePart2": "for Entrance and Gifted Exams",
+    "subtitle": "Professionalism, Experience, and Guaranteed Success!",
+    "description": "Online preparation courses for gifted exams, Bar Ilan acceleration program, and Odyssey program. With personalized practice, clear explanations, and professional guidance for success. We have everything your child needs to succeed!",
+    "discoverCoursesButton": "Discover Our Courses",
+    "playVideoButtonAriaLabel": "Play explanation video",
+    "videoThumbnailAlt": "Students learning at Aviv Institute",
+    "watchExplanationVideoText": "Watch Explanation Video",
+    "closeVideoModalAriaLabel": "Close video",
+    "videoIframeTitle": "Explanation Video - Aviv Institute"
+  },
+  "aboutSection": {
+    "whoWeAre": "Who We Are",
+    "mainTitle": "{{appName}}: Preparing Your Children for Excellence and Success",
+    "leadingSiteTitle": "The Leading Site in Israel for Gifted Exams and Unique Programs Preparation",
+    "description1": "At {{appName}}, we specialize in developing innovative digital courses, specifically tailored for children in grades 1-6. Our goal is to provide every child with the best tools to tackle gifted exams, entrance exams for prestigious schools, enrichment programs, and excellence classes.",
+    "description2": "Our courses combine interactive videos, personalized practice, explained solutions, and essential tips for coping with stress, problem-solving strategies, and creative thinking. We aim not only to prepare for the exam but also to develop self-confidence, independent thinking skills, and a love for learning.",
+    "feature1": {
+      "title": "Pedagogical Expertise",
+      "description": "A team of experienced teachers, gifted education experts, and educational psychologists."
+    },
+    "feature2": {
+      "title": "Adapted and Updated Content",
+      "description": "Innovative digital courses with interactive exercises and explained solutions."
+    },
+    "feature3": {
+      "title": "Personalized Support for Success",
+      "description": "Progress tracking, mock exams, and parental guidance throughout the process."
+    },
+    "stats": {
+      "תלמידיםמרוצים": "Satisfied Students",
+      "שביעותרצוןלקוחות": "Customer Satisfaction",
+      "שנותניסיון": "Years of Experience",
+      "קורסיםוסדנאות": "Courses & Workshops"
+    },
+    "ourExpertsTitle": "Our Team of Experts",
+    "testimonialsTitle": "What Our Clients Say",
+    "testimonial1": {
+      "text": "\"The course was excellent! Our son came prepared for the test and did very well. The interactive practice and explanations were very clear. Highly recommend!\"",
+      "author": "- Cohen Family (fictional name)"
+    },
+    "testimonial2": {
+      "text": "\"The course was excellent! Our son came prepared for the test and did very well. The interactive practice and explanations were very clear. Highly recommend!\"",
+      "author": "- Levi Family (fictional name)"
+    },
+    "joinSuccessButton": "Join the Success - Discover Our Courses"
+  },
+  "teamRoles": {
+    "מייסד": "Founder",
+    "ומנהלפדגוגי": "and Pedagogical Director",
+    "מומחית": "Expert",
+    "למחונניםופיתוחחשיבה": "for Gifted Children and Thinking Development",
+    "מרכזת": "Coordinator",
+    "תוכניותופיתוחתוכן": "of Programs and Content Development",
+    "צוות": "Team of",
+    "מוריםמנוסה": "Experienced Teachers"
+  },
+  "articlesSection": {
+    "card": {
+      "dateUnavailable": "Date unavailable",
+      "readMore": "Read More"
+    },
+    "loadingArticles": "Loading articles...",
+    "titlePart1": "Articles & Insights",
+    "titlePart2": "Insights and Important Information from Our Experts",
+    "noArticlesFound": "No articles found at the moment.",
+    "allArticlesButton": "View All Articles"
+  },
+  "contactSection": {
+    "titlePart1": "Contact Us",
+    "titlePart2": "We Are Here For You",
+    "description": "Have questions? Want to consult? Don't hesitate to contact us. We'll be happy to assist you with any matter.",
+    "detailsBox": {
+      "title": "Contact Details",
+      "whatsappButton": "Send WhatsApp Message",
+      "whatsappMessage": "Hello, I came from the Aviv Institute website and would like to get more details."
+    },
+    "formBox": {
+      "title": "Send Us a Message",
+      "nameLabel": "Full Name",
+      "namePlaceholder": "e.g. Israel Israeli",
+      "emailLabel": "Email",
+      "emailPlaceholder": "your@email.com",
+      "messageLabel": "Message",
+      "messagePlaceholder": "Write your inquiry here...",
+      "submitButton": "Send",
+      "loadingButton": "Sending...",
+      "feedbackSuccess": "Message sent successfully! We will contact you soon.",
+      "feedbackErrorDefault": "Failed to send message. Please try again later.",
+      "feedbackErrorUnexpected": "An unexpected error occurred. Please try again later."
+    }
+  },
+  "coursesSection": {
+    "titlePart1": "Our Programs",
+    "titlePart2": "Investing in Your Children's Future",
+    "description": "Click on a course card for detailed information and purchase."
+  },
+  "shopSection": {
+    "card": {
+      "purchaseButton": "Purchase",
+      "detailsButton": "More Details"
+    },
+    "titlePart1": "Our Shop",
+    "titlePart2": "Purchase a Course and Start Learning"
+  },
+  "homePage": {
+    "preview": {
+      "coursespreview": {
+        "subtitle": "Our Leading Courses",
+        "description": "Discover our comprehensive preparation courses.",
+        "linkLabel": "All Courses"
+      },
+      "articlespreview": {
+        "subtitle": "Latest Articles & Posts",
+        "description": "Read insights and professional information.",
+        "linkLabel": "All Articles"
+      },
+      "aboutpreview": {
+        "subtitle": "A Little About Us",
+        "description": "Aviv Institute is a home for excellence preparation.",
+        "linkLabel": "Read More About Us"
+      }
+    }
+  },
+  "adminPage": {
+    "loading": "Loading...",
+    "accessDenied": {
+      "title": "Access Denied",
+      "messageNotLoggedIn": "You do not have permission to access this page. Please log in as an administrator via the chat panel.",
+      "messageNotAuthorized": "User is not authorized to access this page.",
+      "backToHomeButton": "Back to Home Page"
+    },
+    "supabaseError": {
+      "title": "Supabase Configuration Error",
+      "message": "Supabase connection details are missing. Cannot load the admin panel."
+    },
+    "header": {
+      "title": "Admin Panel - {{appName}}",
+      "logoutButton": "Logout"
+    },
+    "welcomeMessage": "Welcome to the Admin Panel. Here you can manage the site's content.",
+    "articles": {
+      "title": "Manage Articles",
+      "addButton": "Add Article",
+      "loading": "Loading articles...",
+      "errorLoading": "Error loading articles: {{message}}",
+      "noArticles": "No articles found.",
+      "editButton": "Edit",
+      "deleteButton": "Delete",
+      "deleteConfirmation": "Are you sure you want to delete this article? This action cannot be undone.",
+      "deleteSuccess": "Article deleted successfully!",
+      "deleteError": "Error deleting article: {{message}}"
+    },
+    "articleModal": {
+      "titleEdit": "Edit Article",
+      "titleAdd": "Add New Article",
+      "labelTitle": "Title",
+      "buttonGenerateAI": "Generate Article with AI (Title & Content)",
+      "buttonImproveAI": "Improve Article with AI",
+      "labelBody": "Full Content",
+      "labelCategory": "Category",
+      "labelImageUrl": "Image URL",
+      "labelExcerpt": "Excerpt (for preview)",
+      "labelArtag": "Article Tag (English for URL)",
+      "buttonCancel": "Cancel",
+      "buttonSaveChanges": "Save Changes",
+      "buttonCreateArticle": "Create Article",
+      "loadingUpdate": "Updating...",
+      "loadingCreate": "Saving...",
+      "successMessage": "Article {{status}} successfully!",
+      "statusUpdated": "updated",
+      "statusCreated": "created",
+      "errorSave": "Error saving article: {{message}}",
+      "alertEmptyBodyImprove": "Article body is empty. Please write content before trying to improve it.",
+      "errorAIGeneration": "Error generating AI article: {{message}}",
+      "errorAIImprovement": "Error improving AI article: {{message}}"
+    },
+    "aiPromptModal": {
+      "titleGenerate": "Generate Article with AI",
+      "instructionsGenerate": "Briefly explain what you want the article to be about (e.g., main topic, key points, target audience). The AI will draft an initial title and content. You can edit the result afterwards.",
+      "placeholderGenerate": "e.g., 'The benefits of remote learning for high school students', 'How to prepare for the gifted test stage A', 'Review of the Odyssey program and its impact on youth'",
+      "loadingMessageGenerate": "Generating article, please wait... This may take up to a minute.",
+      "buttonGenerate": "Generate Article",
+      "buttonGenerating": "Generating..."
+    },
+    "aiImproveModal": {
+      "titleImprove": "Improve Article with AI",
+      "instructionsImprove": "Explain to the AI how you want to improve the existing article. For example: 'Make the text more formal', 'Add examples for each point', 'Shorten the article by half', 'Change the target audience to children'.",
+      "placeholderImprove": "e.g., 'Make the article more beginner-friendly', 'Add a short summary', 'Elaborate more on the benefits of X'",
+      "loadingMessageImprove": "Improving article, please wait... This may take up to a minute.",
+      "buttonImprove": "Improve Article",
+      "buttonImproving": "Improving..."
+    },
+    "faq": {
+      "title": "Manage FAQ",
+      "addButton": "Add FAQ",
+      "loading": "Loading FAQs...",
+      "errorLoading": "Error loading FAQs: {{message}}",
+      "noFaq": "No FAQs found.",
+      "noAnswerYet": "No answer yet",
+      "deleteConfirmation": "Are you sure you want to delete this FAQ? This action cannot be undone.",
+      "deleteSuccess": "FAQ deleted successfully!",
+      "deleteError": "Error deleting FAQ: {{message}}"
+    },
+    "faqModal": {
+      "titleEdit": "Edit FAQ",
+      "titleAdd": "Add New FAQ",
+      "labelQuestion": "Question",
+      "labelAnswer": "Answer",
+      "buttonCreateQA": "Create FAQ",
+      "successMessage": "FAQ {{status}} successfully!",
+      "errorSave": "Error saving FAQ: {{message}}"
+    },
+    "admins": {
+      "title": "Manage Admins",
+      "addButton": "Add Admin",
+      "loading": "Loading admins list...",
+      "errorLoading": "Error loading admins list: {{message}}",
+      "noAdmins": "No admins found.",
+      "labelExpiresAt": "Expires:",
+      "removeAdminButton": "Remove Admin",
+      "alertSelfRemoval": "You cannot remove yourself.",
+      "deleteConfirmation": "Are you sure you want to remove the admin with email {{email}}? This action cannot be undone.",
+      "deleteSuccess": "Admin removed successfully!",
+      "deleteError": "Error removing admin: {{message}}"
+    },
+    "addAdminModal": {
+      "title": "Add New Admin",
+      "labelEmail": "Email Address",
+      "labelExpiresAt": "Expiration Date (Optional)",
+      "placeholderExpiresAt": "YYYY-MM-DD HH:MM:SS (e.g., 2024-12-31 23:59:59)",
+      "helpTextExpiresAt": "Leave empty for a permanent admin. If you enter a date, the admin will expire on that date.",
+      "errorInvalidEmail": "Invalid email address.",
+      "errorInvalidDate": "Invalid expiration date. Please use YYYY-MM-DD HH:MM:SS format or leave empty.",
+      "errorAdminExists": "Admin with this email address already exists.",
+      "addSuccess": "Admin added successfully!",
+      "addError": "Error adding admin: {{message}}",
+      "buttonAdding": "Adding..."
+    },
+    "footer": {
+      "copyright": "© {{year}} {{appName}} Admin Panel"
+    }
+  },
+  "faqPage": {
+    "loadingFaqs": "Loading FAQs...",
+    "title": "Have Questions?",
+    "description": "We're here to help. We've gathered the most common questions in one clear and convenient place.",
+    "noFaqsFound": "No FAQs found at the moment.",
+    "imageAlt": "Aviv Institute Team",
+    "imageCaption": "Aviv Institute team, always at your service."
+  },
+  "fullArticlePage": {
+    "errorMissingId": "Article ID is missing.",
+    "errorNotFoundSystem": "Article not found in the system.",
+    "errorNotFoundOrNotLoaded": "Article not found or no articles loaded yet.",
+    "loadingArticle": "Loading article...",
+    "errorLoadingTitle": "Error Loading Article",
+    "backToArticlesErrorButton": "Back to Articles",
+    "fallbackNotFoundTitle": "Article Not Found",
+    "fallbackNotFoundMessage": "Sorry, we couldn't find the article you were looking for.",
+    "fallbackBackToArticlesButton": "Back to Articles List",
+    "shareCopiedAlert": "Link to the article has been copied! Share it.",
+    "shareNotSupportedAlert": "Sharing is not supported in this browser. You can copy the link from the address bar.",
+    "allArticlesLink": "All Articles",
+    "authorPrefix": "By:",
+    "sourcePrefix": "Source:",
+    "shareLink": "Share",
+    "lovedTheArticleTitle": "Loved the article? We'd appreciate it if you shared!",
+    "shareArticleButton": "Share Article",
+    "whyReadTitle": "Why Read Articles at Aviv Institute?",
+    "benefit1Title": "High Quality & Professional",
+    "benefit1Description": "Our articles are written by experts in the field, providing accurate and high-quality information.",
+    "benefit2Title": "Up-to-date & Comprehensive",
+    "benefit2Description": "We make sure to update content regularly and expand it to include all relevant information."
+  },
+  "courseCard": {
+    "viewDetailsFallback": "More Details"
+  },
+  "courseDetailModal": {
+    "closeButtonAriaLabel": "Close window",
+    "securePurchaseButton": "Secure Purchase"
+  },
+  "chatWidget": {
+    "initialAiMessage": "Hello! How can we help you today?",
+    "errorUserInfoMissing": "Error: Your user details (name and email) are missing. Cannot send message now.",
+    "statusSendingToOwner": "Sending message to site owner...",
+    "telegramSuccess": "Your message has been successfully sent to the site owner.",
+    "telegramErrorResult": "Error sending message: {{error}} Try again later.",
+    "tryAgainLater": "Try again later.",
+    "telegramErrorCritical": "Critical error sending message. Please check your internet connection and try again.",
+    "systemPrompt": {
+      "roleDescription": "You are a customer service representative for the '{{appName}}' website. Your name is 'Aviv Institute Representative'.",
+      "goal": "Your goal is to assist users with their questions about the institute, our courses, articles, and other content on the site.",
+      "behavior": "You should behave professionally, friendly, and helpfully.",
+      "identityConstraint": "**Pay close attention to the context from the current page the user is on (will be provided later) and the full conversation history to provide accurate and relevant answers.**\nUnder no circumstances should you mention that you are a language model, AI, or created by Google. You are solely a service representative of '{{appName}}'.",
+      "siteOfferings": "The site offers preparation courses for gifted exams and excellence programs, professional articles in the field, and a product shop.",
+      "markdownUsage": "Please use Markdown to format your answers when relevant and it adds value. For example, use **to emphasize text**, *italicized text* for italics, and lists (using asterisks * or hyphens -) when presenting multiple items. The initiative to use Markdown is yours when you think it will improve the readability of the answer.\nWhen creating bulleted lists, ensure you use an asterisk (*) or a hyphen (-) followed by a space, then the list item text. For example: `* First item` or `- Second item`.\n\nCorrect Bullet List Formatting:\n* Item 1\n* Item 2\n  - Nested Item A (use two spaces for indentation then asterisk/hyphen)\n- Another Item\n\nExtended Markdown Formatting Guide:\nIn addition to bold, italics, and basic lists, you can use the following Markdown features to enhance your responses:\n\n1.  **Headings:**\n    # H1 Heading\n    ## H2 Heading\n    ### H3 Heading\n    #### H4 Heading\n    ##### H5 Heading\n    ###### H6 Heading\n\n2.  **Numbered Lists:**\n    1. First item\n    2. Second item\n    3. Third item\n       1. Nested item (indent with 3 spaces)\n\n3.  **Tables (GFM):**\n    | Header 1 | Header 2 | Header 3 |\n    | :------- | :------: | -------: |\n    | Align-L  | Center   | Align-R  |\n    | Cell 2   | Cell 3   | Cell 4   |\n\n4.  **Blockquotes:**\n    > This is a blockquote.\n    > It can span multiple lines.\n\n5.  **Inline Code:**\n    Use backticks for inline code, like `const example = \"hello\";`.\n\n6.  **Horizontal Rules:**\n    Use three or more hyphens, asterisks, or underscores:\n    ---\n    ***\n    ___\n\n7.  **Strikethrough:**\n    Use two tildes for ~~strikethrough text~~.\n\n8.  **Task Lists (GFM):**\n    * [x] Completed task\n    * [ ] Incomplete task\n    * [ ] Another task\n      * [x] Nested completed task\nUse these features judiciously to improve the clarity and presentation of your answers.\n\nCreating Navigation Buttons:\nYou can create special links that will be rendered as clickable buttons for navigating within the site. This is useful for guiding users to relevant pages.\nTo create a navigation button, use the following Markdown syntax:\n`[Button Text](URL \"nav-button\")`\n\n-   `Button Text`: The text that will appear on the button.\n-   `URL`: The relative path for navigation (e.g., `/courses`, `/about`, `/article/some-id`). **Must be a relative path.**\n-   `\"nav-button\"`: The title attribute must be exactly \"nav-button\" (including the quotes in the Markdown link definition).\n\nExamples:\n-   To direct a user to the main courses page: `[View All Courses](/courses \"nav-button\")`\n-   To link to a specific article: `[Read more about Article X](/article/article-x-id \"nav-button\")`\n-   To suggest navigating to the \"About Us\" page: `[Go to About Us page](/about \"nav-button\")`\n\nOffer these navigation buttons when it's helpful for the user, such as after providing information that has a corresponding page on the site, or when the user asks for directions to a specific section. Only use relative paths for these buttons. For external links, use standard Markdown links which will open in a new tab.\n",
+      "navButtonExampleCourses": "View All Courses",
+      "navButtonExampleArticle": "Read more about Article X",
+      "navButtonExampleAbout": "Go to About Us page"
+    },
+    "pageContext": {
+      "home": "The user is currently on the homepage. The homepage displays general information about the institute, a preview of courses and articles. Encourage them to ask about courses or specific topics of interest.",
+      "about": "The user is currently on the 'About Us' page. This page describes '{{appName}}': {{description}}. Information about the institute's team and our experience can also be found here.",
+      "courses": "The user is currently on the 'Our Courses' page. The list of courses we offer:\n- {{courseTitlesList}}\nYou can ask about any course specifically, for example, what it includes, who it's for, the price, etc.",
+      "articles": "The user is currently on the main articles page. The list of available articles on the site:\n- {{articleTitles}}\nYou can ask about any of these articles.",
+      "articleDetail": "The user is currently on the article page '{{title}}'. Article summary: {{excerpt}}. You can ask for more details from the article.",
+      "articleNotFound": "The user is currently on an article page, but the specific article was not identified.",
+      "faq": "The user is currently on the 'FAQ' page. The list of FAQs on the site:\n- {{allFaqQuestions}}\nYou can ask about any of these questions.",
+      "contact": "The user is currently on the 'Contact Us' page. On this page, you can find our contact details and send an inquiry.",
+      "shop": "The user is currently on the shop page. On this page, you can purchase our preparation courses and other products."
+    },
+    "initialModelResponse": "Understood the context. How can I assist you?",
+    "errorAiCommunication": "❌ Error communicating with the AI.",
+    "headerAdminLogin": "Admin Login",
+    "headerDefault": "Aviv Institute Representative",
+    "closeButtonAriaLabel": "Close",
+    "adminLogin": {
+      "title": "Admin Panel Login",
+      "passwordPlaceholder": "Enter password",
+      "loginButton": "Login",
+      "errorWrongPassword": "Incorrect password. Try again."
+    },
+    "inputPlaceholder": "Type a message...",
+    "sendButton": "Send",
+    "loadingMessage": "Loading...",
+    "toggleButton": "Chat"
+  },
+  "profileModal": {
+    "title": "User Profile",
+    "fallbackCloseAriaLabel": "Close modal",
+    "loadingName": "Loading name...",
+    "loadingEmail": "Loading email...",
+    "firstNameLabel": "First Name",
+    "firstNamePlaceholder": "Enter first name",
+    "lastNameLabel": "Last Name",
+    "lastNamePlaceholder": "Enter last name",
+    "saveChangesButton": "Save Changes",
+    "savingButton": "Saving...",
+    "logoutButton": "Logout",
+    "errorLogoutFailed": "Logout failed. Try again.",
+    "errorNotAuthenticated": "User not authenticated. Cannot save changes.",
+    "errorNameRequired": "First name and last name are required.",
+    "errorUpdateFailed": "Error updating profile: {{message}}",
+    "successProfileUpdated": "Profile updated successfully!",
+    "switchToEnglish": "Switch to English",
+    "switchToHebrew": "Switch to Hebrew"
+  },
+  "app": {
+    "loadingAdminPage": "Loading..."
+  },
+  "editorToolbar": {
+    "bold": "Bold",
+    "italic": "Italic",
+    "strikethrough": "Strikethrough",
+    "h1": "H1",
+    "h2": "H2",
+    "h3": "H3",
+    "bulletList": "Bullet List",
+    "orderedList": "Ordered List",
+    "blockquote": "Blockquote",
+    "codeBlock": "Code Block",
+    "undo": "Undo",
+    "redo": "Redo",
+    "insertAlertBlock": "Insert Alert Block",
+    "alertsDropdownButton": "Alerts",
+    "alertTypes": {
+      "info": "Info Block",
+      "tip": "Tip Block",
+      "note": "Note Block",
+      "warning": "Warning Block"
+    }
+  }
+}

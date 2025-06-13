@@ -9,12 +9,14 @@ export const APP_NAME = 'מכון אביב';
 export const GOOGLE_CLIENT_ID = "193841266729-4c8nekuot1biu07ogba9il82jcjptcs8.apps.googleusercontent.com";
 
 export const NAVIGATION_ITEMS: NavItem[] = [
-    { label: 'אודותינו', href: '/about', icon: Info },
-    { label: 'הקורסים שלנו', href: '/courses', icon: BookOpen },
-    { label: 'מאמרים', href: '/articles', icon: Rss },
-    { label: 'חנות', href: '/shop', icon: ShoppingBag },
-    { label: 'שאלות', href: '/faq', icon: HelpCircle }, // Changed from "חנות חיצונית"
-    { label: 'צור קשר', href: '/contact', isButton: false, icon: Send },
+    { labelKey: 'nav.aboutUs', defaultLabel: 'אודותינו', href: '/about', icon: Info },
+    { labelKey: 'nav.courses', defaultLabel: 'הקורסים שלנו', href: '/courses', icon: BookOpen },
+    { labelKey: 'nav.articles', defaultLabel: 'מאמרים', href: '/articles', icon: Rss },
+    { labelKey: 'nav.shop', defaultLabel: 'חנות', href: '/shop', icon: ShoppingBag },
+    { labelKey: 'nav.faq', defaultLabel: 'שאלות', href: '/faq', icon: HelpCircle },
+    { labelKey: 'nav.contact', defaultLabel: 'צור קשר', href: '/contact', isButton: false, icon: Send },
+    // Example for a new nav item if needed in the future:
+    // { labelKey: 'nav.home', defaultLabel: 'דף הבית', href: '/', icon: Home },
 ];
 
 export const ARTICLES_DATA: Article[] = [

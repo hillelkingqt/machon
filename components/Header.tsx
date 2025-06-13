@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { APP_NAME, NAVIGATION_ITEMS } from '../constants';
 import { NavItem } from '../types';
@@ -14,6 +15,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { ProfileModal } from './profile'; // Step 1: Import ProfileModal
 
 const Header: React.FC = () => {
+    const { t } = useTranslation();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false); // Step 2: Add state for modal visibility
     const [isScrolled, setIsScrolled] = useState(false);
@@ -74,7 +76,7 @@ const Header: React.FC = () => {
         const MainIconComponent = item.icon;
         return (
             <span className={`flex items-center justify-start ${mobile ? 'w-full' : ''}`}>
-                {item.label}
+                {t(item.labelKey, item.defaultLabel)} {/* Use labelKey and defaultLabel */}
                 {MainIconComponent && !item.isButton && (
                     <MainIconComponent
                         size={mobile ? 22 : 18}
@@ -131,39 +133,39 @@ const Header: React.FC = () => {
 
     const AuthButtonDesktop: React.FC = () => {
         if (loadingInitial) {
-            return <Button variant="outline" size="md" disabled icon={<Loader2 size={18} className="animate-spin" />}>טוען...</Button>;
+            return <Button variant="outline" size="md" disabled icon={<Loader2 size={18} className="animate-spin" />}>{t('header.loading', 'טוען...')}</Button>;
         }
         if (user) {
             return (
                 <div className="flex items-center gap-2">
-                    {profile?.firstName && <span className="text-sm text-gray-700 dark:text-gray-300 hidden sm:inline">שלום, {profile.firstName}</span>}
+                    {profile?.firstName && <span className="text-sm text-gray-700 dark:text-gray-300 hidden sm:inline">{t('header.greeting', 'שלום, {{name}}', { name: profile.firstName })}</span>}
                     <Button onClick={openProfileModal} variant="outline" size="md" icon={<UserCircle size={18} />}>
-                        פרופיל
+                        {t('header.profile', 'פרופיל')}
                     </Button>
                 </div>
             );
         }
         return (
             <Button onClick={() => openLoginModal()} variant="outline" size="md" icon={<LogInIcon size={18} />}>
-                התחברות
+                {t('header.login', 'התחברות')}
             </Button>
         );
     };
 
     const AuthButtonMobile: React.FC = () => {
         if (loadingInitial) {
-            return <Button variant="ghost" size="sm" className="!px-2 !py-1.5 me-1" disabled icon={<Loader2 size={22} className="animate-spin" />}><span className="sr-only">טוען</span></Button>;
+            return <Button variant="ghost" size="sm" className="!px-2 !py-1.5 me-1" disabled icon={<Loader2 size={22} className="animate-spin" />}><span className="sr-only">{t('header.loading', 'טוען')}</span></Button>;
         }
         if (user) {
             return (
                 <Button onClick={openProfileModal} variant="ghost" size="sm" className="!px-2 !py-1.5 me-1" icon={<UserCircle size={22} />}>
-                    <span className="sr-only">פרופיל</span>
+                    <span className="sr-only">{t('header.profile', 'פרופיל')}</span>
                 </Button>
             );
         }
         return (
             <Button onClick={() => openLoginModal()} variant="ghost" size="sm" className="!px-2 !py-1.5 me-1" icon={<LogInIcon size={22} />}>
-                <span className="sr-only">התחברות</span>
+                <span className="sr-only">{t('header.login', 'התחברות')}</span>
             </Button>
         );
     };
@@ -184,7 +186,7 @@ const Header: React.FC = () => {
                                     className="text-primary dark:text-primary-light transition-all duration-300 group-hover:text-primary-dark dark:group-hover:text-primary group-hover:scale-105"
                                     strokeWidth={2}
                                 />
-                                <span className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white ms-2 group-hover:text-primary dark:group-hover:text-primary-light transition-colors duration-300">{APP_NAME}</span>
+                                <span className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white ms-2 group-hover:text-primary dark:group-hover:text-primary-light transition-colors duration-300">{t('appName', APP_NAME)}</span>
                             </Link>
                             <div className="hidden lg:flex ms-6">
                                 <AuthButtonDesktop />
@@ -193,7 +195,7 @@ const Header: React.FC = () => {
 
                         <nav className="hidden lg:flex items-center space-s-1 rtl:space-s-reverse">
                             {NAVIGATION_ITEMS.map((item) => (
-                                <div key={item.label} className="ms-3 rtl:me-3">
+                                <div key={item.labelKey} className="ms-3 rtl:me-3"> {/* Changed key to item.labelKey */}
                                     <NavLink item={item} />
                                 </div>
                             ))}
@@ -208,7 +210,7 @@ const Header: React.FC = () => {
                             <button
                                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                                 className="ms-2 p-2.5 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
-                                aria-label={isMobileMenuOpen ? "סגור תפריט" : "פתח תפריט"}
+                                aria-label={isMobileMenuOpen ? t('header.closeMenu', "סגור תפריט") : t('header.openMenu', "פתח תפריט")}
                                 aria-expanded={isMobileMenuOpen}
                                 aria-controls="mobile-menu"
                             >
@@ -230,17 +232,17 @@ const Header: React.FC = () => {
                         >
                             <nav className="flex flex-col px-2 pt-3 pb-5 space-y-1.5">
                                 {NAVIGATION_ITEMS.map((item) => (
-                                    <NavLink key={item.label} item={item} mobile />
+                                    <NavLink key={item.labelKey} item={item} mobile /> {/* Changed key to item.labelKey */}
                                 ))}
                                 {/* Example of adding auth button to mobile menu if not in toolbar
                                 <div className="px-2 pt-2 border-t border-gray-200 dark:border-gray-700 mt-2">
                                     {user ? (
-                                        <Button onClick={handleLogout} variant="danger" size="lg" className="w-full" icon={<LogOutIcon />}>
-                                            התנתק ({profile?.firstName || user.email})
+                                        <Button onClick={handleLogout} variant="danger" size="lg" className="w-full" icon={<LogOutIcon />}> {/* handleLogout would need t() if text is dynamic */}
+                                            {t('header.logout', 'התנתק')} ({profile?.firstName || user.email})
                                         </Button>
                                     ) : (
                                         <Button onClick={openLoginModal} variant="primary" size="lg" className="w-full" icon={<LogInIcon />}>
-                                            התחברות / הרשמה
+                                            {t('header.loginSignup', 'התחברות / הרשמה')}
                                         </Button>
                                     )}
                                 </div>

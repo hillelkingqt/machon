@@ -1,4 +1,5 @@
 import React from 'react'; // Removed useEffect, useState
+import { useTranslation } from 'react-i18next';
 import Accordion from '../components/ui/Accordion';
 import AnimatedDiv from '../components/ui/AnimatedDiv';
 // FAQ_DATA is no longer needed here as DataContext handles it
@@ -12,6 +13,7 @@ import { useData } from '../contexts/DataContext'; // Import useData
 const FAQ_PAGE_IMAGE_URL = 'https://www.machon-aviv.co.il/wp-content/uploads/2021/03/team-about.jpg';
 
 const FAQPage: React.FC = () => {
+  const { t } = useTranslation();
   const { faqCategories, loading, error } = useData(); // Use DataContext
 
   // Removed useState for allFaqData and error
@@ -21,7 +23,7 @@ const FAQPage: React.FC = () => {
     return (
       <section className="py-12 sm:py-16 bg-slate-50 dark:bg-slate-900">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-xl text-slate-600 dark:text-slate-300">טוען שאלות ותשובות...</p>
+          <p className="text-xl text-slate-600 dark:text-slate-300">{t('faqPage.loadingFaqs', 'טוען שאלות ותשובות...')}</p>
         </div>
       </section>
     );
@@ -36,10 +38,10 @@ const FAQPage: React.FC = () => {
         <AnimatedDiv animation="fadeInUp" className="text-center mb-10 sm:mb-16">
           <Lightbulb className="h-16 w-16 text-primary dark:text-primary-light mx-auto mb-4" strokeWidth={1.5} />
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-3">
-            יש לכם שאלות?
+            {t('faqPage.title', 'יש לכם שאלות?')}
           </h1>
           <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            אנחנו כאן כדי לעזור. ריכזנו עבורכם את השאלות הנפוצות ביותר במקום אחד, ברור ונוח.
+            {t('faqPage.description', 'אנחנו כאן כדי לעזור. ריכזנו עבורכם את השאלות הנפוצות ביותר במקום אחד, ברור ונוח.')}
           </p>
         </AnimatedDiv>
 
@@ -58,7 +60,7 @@ const FAQPage: React.FC = () => {
               {faqCategories.length > 0 ? (
                 <Accordion categories={faqCategories} allowMultipleOpen={false} defaultOpenFirstItem={true} />
               ) : (
-                !error && <p className="text-center text-gray-500 dark:text-gray-400">לא נמצאו שאלות ותשובות כרגע.</p>
+                !error && <p className="text-center text-gray-500 dark:text-gray-400">{t('faqPage.noFaqsFound', 'לא נמצאו שאלות ותשובות כרגע.')}</p>
               )}
             </AnimatedDiv>
           </div>
@@ -66,11 +68,11 @@ const FAQPage: React.FC = () => {
             <AnimatedDiv animation="fadeInUp" delay={0.4} className="sticky top-28">
               <img 
                 src={FAQ_PAGE_IMAGE_URL} 
-                alt="צוות מכון אביב" 
+                alt={t('faqPage.imageAlt', 'צוות מכון אביב')}
                 className="rounded-xl shadow-xl w-full h-auto object-cover aspect-[4/3] border-4 border-white dark:border-slate-700/60"
               />
                <p className="text-sm text-center mt-3 text-gray-500 dark:text-gray-400 italic">
-                צוות מכון אביב, תמיד לשירותכם.
+                {t('faqPage.imageCaption', 'צוות מכון אביב, תמיד לשירותכם.')}
               </p>
             </AnimatedDiv>
           </div>

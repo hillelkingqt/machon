@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 // ARTICLES_DATA is no longer needed here as DataContext handles it.
 // import { APP_NAME, ARTICLES_DATA } from '../constants';
@@ -13,6 +14,7 @@ import { formatArticleContentToHtml } from '../utils/contentParser';
 import { useData } from '../contexts/DataContext'; // Import useData
 
 const FullArticlePage: React.FC = () => {
+    const { t } = useTranslation();
     const { articleId } = useParams<{ articleId: string }>();
     const navigate = useNavigate();
     const { articles, loading: dataLoading, error: dataError } = useData(); // Get global state
@@ -22,7 +24,7 @@ const FullArticlePage: React.FC = () => {
 
     useEffect(() => {
         if (!articleId) {
-            setLocalError("מזהה המאמר חסר.");
+            setLocalError(t('fullArticlePage.errorMissingId', "מזהה המאמר חסר."));
             setCurrentArticle(null);
             return;
         }
@@ -36,16 +38,16 @@ const FullArticlePage: React.FC = () => {
                 setLocalError(null);
             } else {
                 setCurrentArticle(null);
-                setLocalError("המאמר לא נמצא במערכת.");
+                setLocalError(t('fullArticlePage.errorNotFoundSystem', "המאמר לא נמצא במערכת."));
             }
         } else if (!dataLoading) {
             // Articles loaded from context, but empty or articleId not found
             setCurrentArticle(null);
             if (!dataError) { // Only set local error if no global error explains absence of data
-                 setLocalError("המאמר לא נמצא או שעדיין אין מאמרים טעונים.");
+                 setLocalError(t('fullArticlePage.errorNotFoundOrNotLoaded', "המאמר לא נמצא או שעדיין אין מאמרים טעונים."));
             }
         }
-    }, [articleId, articles, dataLoading, dataError]);
+    }, [articleId, articles, dataLoading, dataError, t]);
 
     // Overall loading state: true if context is loading, or if context is done but we haven't found/not-found the article yet
     const isLoading = dataLoading || currentArticle === undefined;
@@ -53,7 +55,7 @@ const FullArticlePage: React.FC = () => {
     if (isLoading) {
         return (
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-                <p className="text-2xl text-slate-600 dark:text-slate-300">טוען מאמר...</p>
+                <p className="text-2xl text-slate-600 dark:text-slate-300">{t('fullArticlePage.loadingArticle', 'טוען מאמר...')}</p>
             </div>
         );
     }
@@ -64,9 +66,9 @@ const FullArticlePage: React.FC = () => {
          return (
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
                 <SearchX size={72} className="text-primary dark:text-primary-light mx-auto mb-8" strokeWidth={1.5} />
-                <h1 className="text-5xl font-extrabold text-slate-700 dark:text-slate-200 mb-6">שגיאה בטעינת המאמר</h1>
-                <p className="text-xl text-slate-500 dark:text-slate-400 mb-12 leading-relaxed">{displayError}</p>
-                <Button onClick={() => navigate('/articles')} variant="primary" size="xl" icon={<ChevronsLeft size={24} />} iconPosition="leading">חזרה למאמרים</Button>
+                <h1 className="text-5xl font-extrabold text-slate-700 dark:text-slate-200 mb-6">{t('fullArticlePage.errorLoadingTitle', 'שגיאה בטעינת המאמר')}</h1>
+                <p className="text-xl text-slate-500 dark:text-slate-400 mb-12 leading-relaxed">{displayError}</p> {/* displayError can be a translated string or a system error message */}
+                <Button onClick={() => navigate('/articles')} variant="primary" size="xl" icon={<ChevronsLeft size={24} />} iconPosition="leading">{t('fullArticlePage.backToArticlesErrorButton', 'חזרה למאמרים')}</Button>
             </div>
         );
     }
@@ -76,9 +78,9 @@ const FullArticlePage: React.FC = () => {
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
                 <AnimatedDiv animation="fadeInUp">
                     <SearchX size={72} className="text-primary dark:text-primary-light mx-auto mb-8" strokeWidth={1.5} />
-                    <h1 className="text-5xl font-extrabold text-slate-700 dark:text-slate-200 mb-6">מאמר לא נמצא</h1>
+                    <h1 className="text-5xl font-extrabold text-slate-700 dark:text-slate-200 mb-6">{t('fullArticlePage.fallbackNotFoundTitle', 'מאמר לא נמצא')}</h1>
                     <p className="text-xl text-slate-500 dark:text-slate-400 mb-12 leading-relaxed">
-                        מצטערים, לא הצלחנו למצוא את המאמר שחיפשת.
+                        {t('fullArticlePage.fallbackNotFoundMessage', 'מצטערים, לא הצלחנו למצוא את המאמר שחיפשת.')}
                     </p>
                     <Button
                         onClick={() => navigate('/articles')}
@@ -88,7 +90,7 @@ const FullArticlePage: React.FC = () => {
                         iconPosition="leading"
                         className="shadow-lg hover:shadow-primary/30 transform hover:scale-105 transition-transform duration-300"
                     >
-                        חזרה לרשימת המאמרים
+                        {t('fullArticlePage.fallbackBackToArticlesButton', 'חזרה לרשימת המאמרים')}
                     </Button>
                 </AnimatedDiv>
             </div>
@@ -106,8 +108,8 @@ const FullArticlePage: React.FC = () => {
         } else {
             // Fallback for browsers that do not support navigator.share
             navigator.clipboard.writeText(window.location.href)
-                .then(() => alert('הקישור למאמר הועתק! שתפו אותו.'))
-                .catch(() => alert('שיתוף אינו נתמך בדפדפן זה. ניתן להעתיק את הקישור משורת הכתובת.'));
+                .then(() => alert(t('fullArticlePage.shareCopiedAlert', 'הקישור למאמר הועתק! שתפו אותו.')))
+                .catch(() => alert(t('fullArticlePage.shareNotSupportedAlert', 'שיתוף אינו נתמך בדפדפן זה. ניתן להעתיק את הקישור משורת הכתובת.')));
         }
     };
 
@@ -127,7 +129,7 @@ const FullArticlePage: React.FC = () => {
                         icon={<ChevronsLeft size={22} className="opacity-80 group-hover:opacity-100 transition-opacity" />}
                         iconPosition="leading"
                     >
-                        כל המאמרים
+                        {t('fullArticlePage.allArticlesLink', 'כל המאמרים')}
                     </Button>
                 </div>
 
@@ -149,14 +151,14 @@ const FullArticlePage: React.FC = () => {
                         </div>
                         {currentArticle.author && (
                             <div className="flex items-center font-medium text-slate-700 dark:text-slate-200">
-                                <UserCircle size={22} className="me-2.5 text-primary/80 dark:text-primary-light/80" strokeWidth={2.5} /> מאת: {currentArticle.author}
+                                <UserCircle size={22} className="me-2.5 text-primary/80 dark:text-primary-light/80" strokeWidth={2.5} /> {t('fullArticlePage.authorPrefix', 'מאת:')} {currentArticle.author}
                             </div>
                         )}
                         <div className="flex items-center font-medium text-slate-700 dark:text-slate-200">
-                            <Edit3 size={22} className="me-2.5 text-primary/80 dark:text-primary-light/80" strokeWidth={2.5} /> מקור: {APP_NAME}
+                            <Edit3 size={22} className="me-2.5 text-primary/80 dark:text-primary-light/80" strokeWidth={2.5} /> {t('fullArticlePage.sourcePrefix', 'מקור:')} {t('appName', APP_NAME)}
                         </div>
                         <div className="flex items-center font-medium text-primary dark:text-primary-light cursor-pointer hover:underline" onClick={handleShare}>
-                            <Share2 size={22} className="me-2.5 text-primary/80 dark:text-primary-light/80" strokeWidth={2.5} /> שתף
+                            <Share2 size={22} className="me-2.5 text-primary/80 dark:text-primary-light/80" strokeWidth={2.5} /> {t('fullArticlePage.shareLink', 'שתף')}
                         </div>
                     </AnimatedDiv>
                 </header>
@@ -177,7 +179,7 @@ const FullArticlePage: React.FC = () => {
                     delay={0.75}
                     className="mt-16 sm:mt-20 pt-12 sm:pt-16 border-t-2 border-solid border-slate-200 dark:border-slate-700 flex flex-col md:flex-row justify-between items-center gap-6 bg-slate-50 dark:bg-slate-800/50 p-8 sm:p-10 rounded-2xl shadow-inner"
                 >
-                    <p className="text-xl font-bold text-slate-700 dark:text-slate-100 text-center md:text-right leading-tight">אהבתם את המאמר? נשמח אם תשתפו!</p>
+                    <p className="text-xl font-bold text-slate-700 dark:text-slate-100 text-center md:text-right leading-tight">{t('fullArticlePage.lovedTheArticleTitle', 'אהבתם את המאמר? נשמח אם תשתפו!')}</p>
                     <Button
                         onClick={handleShare}
                         variant="primary"
@@ -186,7 +188,7 @@ const FullArticlePage: React.FC = () => {
                         iconPosition="trailing"
                         className="w-full md:w-auto shadow-xl hover:shadow-primary/40 dark:hover:shadow-primary-light/30 transform hover:scale-105 transition-all duration-300 px-8 py-3.5"
                     >
-                        שיתוף המאמר
+                        {t('fullArticlePage.shareArticleButton', 'שיתוף המאמר')}
                     </Button>
                 </AnimatedDiv>
 
@@ -195,17 +197,17 @@ const FullArticlePage: React.FC = () => {
                     delay={0.85}
                     className="mt-16 sm:mt-20 flex flex-col items-center justify-center text-center"
                 >
-                    <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-200 mb-8">למה לקרוא מאמרים במכון אביב?</h2>
+                    <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-200 mb-8">{t('fullArticlePage.whyReadTitle', 'למה לקרוא מאמרים במכון אביב?')}</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-12 sm:gap-y-16 md:gap-y-20">
                         <div className="flex flex-col items-center text-center p-8 bg-slate-50 dark:bg-slate-900 rounded-xl shadow-inner border border-slate-200 dark:border-slate-700/60">
                             <Award size={48} className="text-primary dark:text-primary-light mb-4" strokeWidth={1.5} />
-                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">איכותי ומקצועי</h3>
-                            <p className="text-slate-600 dark:text-slate-400">המאמרים שלנו נכתבים על ידי מומחים בתחום, ומספקים מידע מדויק ואיכותי.</p>
+                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">{t('fullArticlePage.benefit1Title', 'איכותי ומקצועי')}</h3>
+                            <p className="text-slate-600 dark:text-slate-400">{t('fullArticlePage.benefit1Description', 'המאמרים שלנו נכתבים על ידי מומחים בתחום, ומספקים מידע מדויק ואיכותי.')}</p>
                         </div>
                         <div className="flex flex-col items-center text-center p-8 bg-slate-50 dark:bg-slate-900 rounded-xl shadow-inner border border-slate-200 dark:border-slate-700/60">
                             <SearchX size={48} className="text-primary dark:text-primary-light mb-4" strokeWidth={1.5} />
-                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">עדכני ומקיף</h3>
-                            <p className="text-slate-600 dark:text-slate-400">אנו דואגים לעדכן את התכנים באופן שוטף, ולהרחיב אותם כך שיכללו את כל המידע הרלוונטי.</p>
+                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">{t('fullArticlePage.benefit2Title', 'עדכני ומקיף')}</h3>
+                            <p className="text-slate-600 dark:text-slate-400">{t('fullArticlePage.benefit2Description', 'אנו דואגים לעדכן את התכנים באופן שוטף, ולהרחיב אותם כך שיכללו את כל המידע הרלוונטי.')}</p>
                         </div>
                     </div>
                 </AnimatedDiv>

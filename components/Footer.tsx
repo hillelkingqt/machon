@@ -1,10 +1,14 @@
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { APP_NAME, SOCIAL_LINKS, CONTACT_DETAILS, NAVIGATION_ITEMS } from '../constants'; // Corrected path
 import { ExternalLink as ExternalLinkIcon, MapPin, Phone, Mail, BookOpenCheck } from 'lucide-react';
 
 const Footer: React.FC = () => {
+    const { t } = useTranslation();
+    const currentYear = new Date().getFullYear();
+
     return (
         <footer className="bg-secondary-dark text-gray-300 pt-12 sm:pt-16 pb-8 border-t-4 border-primary-dark">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -17,20 +21,19 @@ const Footer: React.FC = () => {
                                 className="text-primary-light transition-all duration-300 group-hover:text-primary group-hover:scale-105"
                                 strokeWidth={2}
                             />
-                            <span className="text-lg sm:text-xl font-semibold text-white ms-2 group-hover:text-primary-light transition-colors duration-300">{APP_NAME}</span>
+                            <span className="text-lg sm:text-xl font-semibold text-white ms-2 group-hover:text-primary-light transition-colors duration-300">{t('appName', APP_NAME)}</span>
                         </Link>
                         <p className="text-sm leading-relaxed text-gray-400">
-                            {APP_NAME} - הכנה מקצועית למבחני מחוננים ותוכניות מצוינות.
-                            אנו מחויבים להצלחת ילדיכם ומספקים את הכלים הטובים ביותר.
+                            {t('footer.description', `${APP_NAME} - הכנה מקצועית למבחני מחוננים ותוכניות מצוינות. אנו מחויבים להצלחת ילדיכם ומספקים את הכלים הטובים ביותר.`, { appName: t('appName', APP_NAME) })}
                         </p>
                     </div>
 
                     {/* Quick Links */}
                     <div>
-                        <h5 className="text-base sm:text-lg font-semibold text-white mb-4">ניווט מהיר</h5>
+                        <h5 className="text-base sm:text-lg font-semibold text-white mb-4">{t('footer.quickLinksTitle', 'ניווט מהיר')}</h5>
                         <ul className="space-y-2 sm:space-y-2.5">
                             {NAVIGATION_ITEMS.filter(item => !item.isButton).map(item => (
-                                <li key={item.label}>
+                                <li key={item.labelKey}> {/* Changed key to item.labelKey */}
                                     {item.external || item.href.startsWith('http') ? (
                                         <a
                                             href={item.href}
@@ -39,7 +42,7 @@ const Footer: React.FC = () => {
                                             className="text-sm hover:text-primary-light transition-colors duration-200 flex items-center group"
                                         >
                                             {item.icon && <item.icon size={16} className="me-2 opacity-70 group-hover:opacity-100" />}
-                                            {item.label}
+                                            {t(item.labelKey, item.defaultLabel)} {/* Use labelKey and defaultLabel */}
                                             {item.external && <ExternalLinkIcon size={14} className="ms-1.5 opacity-70 transition-opacity group-hover:opacity-100" />}
                                         </a>
                                     ) : (
@@ -48,7 +51,7 @@ const Footer: React.FC = () => {
                                             className="text-sm hover:text-primary-light transition-colors duration-200 flex items-center group"
                                         >
                                             {item.icon && <item.icon size={16} className="me-2 opacity-70 group-hover:opacity-100" />}
-                                            {item.label}
+                                            {t(item.labelKey, item.defaultLabel)} {/* Use labelKey and defaultLabel */}
                                         </Link>
                                     )}
                                 </li>
@@ -58,33 +61,33 @@ const Footer: React.FC = () => {
 
                     {/* Contact Info */}
                     <div>
-                        <h5 className="text-base sm:text-lg font-semibold text-white mb-4">יצירת קשר</h5>
+                        <h5 className="text-base sm:text-lg font-semibold text-white mb-4">{t('footer.contactTitle', 'יצירת קשר')}</h5>
                         <ul className="space-y-2.5 sm:space-y-3 text-sm">
                             <li className="flex items-start group">
                                 <MapPin size={16} className="me-2.5 mt-1 text-primary-light flex-shrink-0 transition-transform group-hover:scale-105" />
                                 <a href={CONTACT_DETAILS.mapLink} target="_blank" rel="noopener noreferrer" className="hover:text-primary-light transition-colors duration-200">
-                                    {CONTACT_DETAILS.address}
+                                    {t('footer.address', CONTACT_DETAILS.address)}
                                 </a>
                             </li>
                             <li className="flex items-center group">
                                 <Phone size={16} className="me-2.5 text-primary-light flex-shrink-0 transition-transform group-hover:scale-105" />
-                                <a href={CONTACT_DETAILS.phoneLink} className="hover:text-primary-light transition-colors duration-200">{CONTACT_DETAILS.phone}</a>
+                                <a href={CONTACT_DETAILS.phoneLink} className="hover:text-primary-light transition-colors duration-200">{t('footer.phone', CONTACT_DETAILS.phone)}</a>
                             </li>
                             <li className="flex items-center group">
                                 <Mail size={16} className="me-2.5 text-primary-light flex-shrink-0 transition-transform group-hover:scale-105" />
-                                <a href={`mailto:${CONTACT_DETAILS.email}`} className="hover:text-primary-light transition-colors duration-200">{CONTACT_DETAILS.email}</a>
+                                <a href={`mailto:${CONTACT_DETAILS.email}`} className="hover:text-primary-light transition-colors duration-200">{t('footer.email', CONTACT_DETAILS.email)}</a>
                             </li>
                         </ul>
                     </div>
 
                     {/* Social Media */}
                     <div>
-                        <h5 className="text-base sm:text-lg font-semibold text-white mb-4">עקבו אחרינו</h5>
+                        <h5 className="text-base sm:text-lg font-semibold text-white mb-4">{t('footer.followUsTitle', 'עקבו אחרינו')}</h5>
                         <div className="flex space-s-4 rtl:space-s-reverse">
                             {SOCIAL_LINKS.map(social => (
                                 <a key={social.name} href={social.href} target="_blank" rel="noopener noreferrer"
                                     className="text-gray-400 hover:text-primary-light transition-all duration-300 transform hover:scale-110"
-                                    aria-label={social.name}>
+                                    aria-label={t(`footer.socialAriaLabel.${social.name.toLowerCase()}`, social.name)}>
                                     <social.Icon className="w-5 h-5 sm:w-6 sm:h-6" />
                                 </a>
                             ))}
@@ -93,7 +96,7 @@ const Footer: React.FC = () => {
                 </div>
 
                 <div className="border-t border-gray-700 pt-6 sm:pt-8 mt-8 sm:mt-10 text-center text-xs sm:text-sm text-gray-400">
-                    <p>&copy; {new Date().getFullYear()} {APP_NAME}. כל הזכויות שמורות למכון אביב.</p>
+                    <p>{t('footer.copyright', `© ${currentYear} ${APP_NAME}. כל הזכויות שמורות למכון אביב.`, { year: currentYear, appName: t('appName', APP_NAME) })}</p>
                 </div>
             </div>
         </footer>

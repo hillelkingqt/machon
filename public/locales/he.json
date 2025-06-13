@@ -1,0 +1,464 @@
+{
+  "appName": "מכון אביב",
+  "header": {
+    "loading": "טוען...",
+    "greeting": "שלום, {{name}}",
+    "profile": "פרופיל",
+    "login": "התחברות",
+    "logout": "התנתק",
+    "loginSignup": "התחברות / הרשמה",
+    "openMenu": "פתח תפריט",
+    "closeMenu": "סגור תפריט"
+  },
+  "footer": {
+    "description": "{{appName}} - הכנה מקצועית למבחני מחוננים ותוכניות מצוינות. אנו מחויבים להצלחת ילדיכם ומספקים את הכלים הטובים ביותר.",
+    "quickLinksTitle": "ניווט מהיר",
+    "contactTitle": "יצירת קשר",
+    "address": "רחוב המדע 14, רחובות (פארק המדע)",
+    "phone": "055-9851905",
+    "email": "office@machon-aviv.co.il",
+    "followUsTitle": "עקבו אחרינו",
+    "socialAriaLabel": {
+      "facebook": "פייסבוק",
+      "instagram": "אינסטגרם",
+      "whatsapp": "ווטסאפ"
+    },
+    "copyright": "© {{year}} {{appName}}. כל הזכויות שמורות למכון אביב."
+  },
+  "nav": {
+    "aboutUs": "אודותינו",
+    "courses": "הקורסים שלנו",
+    "articles": "מאמרים",
+    "shop": "חנות",
+    "faq": "שאלות",
+    "contact": "צור קשר"
+  },
+  "auth": {
+    "closeModalAriaLabel": "סגור מודל",
+    "login": {
+      "title": "התחברות",
+      "emailLabel": "כתובת אימייל",
+      "emailPlaceholder": "you@example.com",
+      "passwordLabel": "סיסמה",
+      "passwordPlaceholder": "••••••••",
+      "errorIncorrectCredentials": "אימייל או סיסמה שגויים. נסה שנית.",
+      "successLogin": "התחברת בהצלחה!",
+      "errorUnexpected": "אירעה שגיאה לא צפויה. נסה שנית.",
+      "errorGoogleSignIn": "שגיאה בהתחברות עם גוגל: {{error}}",
+      "submitButton": "התחבר",
+      "loadingButton": "מתחבר...",
+      "forgotPasswordLink": "שכחת סיסמה?",
+      "signupPrompt": "אין לך חשבון?",
+      "signupLink": "צור חשבון",
+      "googleLoginButton": "התחבר עם גוגל",
+      "googleLoadingButton": "מתחבר עם גוגל...",
+      "separatorOrContinueWith": "או המשך עם"
+    },
+    "signup": {
+      "title": "יצירת חשבון",
+      "firstNameLabel": "שם פרטי",
+      "firstNamePlaceholder": "לדוגמה: משה",
+      "lastNameLabel": "שם משפחה",
+      "lastNamePlaceholder": "לדוגמה: כהן",
+      "emailLabel": "כתובת אימייל",
+      "emailPlaceholder": "you@example.com",
+      "passwordLabel": "סיסמה",
+      "passwordPlaceholder": "לפחות 8 תווים",
+      "errorCreatingAccount": "שגיאה ביצירת החשבון: {{error}}",
+      "successAccountCreatedConfirmationNeeded": "חשבון נוצר בהצלחה! נשלח אליך מייל לאימות החשבון.",
+      "successAccountCreatedAndLoggedIn": "חשבון נוצר והתחברת בהצלחה!",
+      "errorUnexpected": "אירעה שגיאה לא צפויה. נסה שנית.",
+      "submitButton": "צור חשבון",
+      "loadingButton": "יוצר חשבון...",
+      "loginPrompt": "כבר יש לך חשבון?",
+      "loginLink": "התחבר"
+    },
+    "forgotPassword": {
+      "title": "איפוס סיסמה",
+      "instructions": "הזן את כתובת האימייל שלך ונשלח לך קישור לאיפוס הסיסמה.",
+      "emailLabel": "כתובת אימייל",
+      "emailPlaceholder": "you@example.com",
+      "errorSendingLink": "שגיאה בשליחת קישור לאיפוס סיסמה: {{error}}",
+      "successLinkSent": "אם קיים חשבון עם אימייל זה, נשלח אליך קישור לאיפוס סיסמה.",
+      "submitButton": "שלח קישור איפוס",
+      "loadingButton": "שולח קישור...",
+      "promptTryLoginAgain": "רוצה לנסות להתחבר שוב?",
+      "promptRememberedPassword": "נזכרת בסיסמה?",
+      "backToLoginLink": "חזור להתחברות"
+    }
+  },
+  "heroSection": {
+    "titlePart1": "הכנה מושלמת",
+    "titlePart2": "למבחני קבלה ומחוננים",
+    "subtitle": "מקצועיות, חוויה והצלחה מובטחת!",
+    "description": "קורסי הכנה אונליין למבחני מחוננים, תוכנית האצה של בר אילן ותוכנית אודיסאה. עם תרגול מותאם אישית, הסברים ברורים וליווי מקצועי להצלחה. יש לנו את כל מה שהילד שלכם צריך בשביל להצליח!",
+    "discoverCoursesButton": "גלו את הקורסים שלנו",
+    "playVideoButtonAriaLabel": "נגן סרטון הסבר",
+    "videoThumbnailAlt": "תלמידים לומדים במכון אביב",
+    "watchExplanationVideoText": "צפו בסרטון ההסבר",
+    "closeVideoModalAriaLabel": "סגור וידאו",
+    "videoIframeTitle": "סרטון הסבר - מכון אביב"
+  },
+  "aboutSection": {
+    "whoWeAre": "מי אנחנו",
+    "mainTitle": "{{appName}}: מכינים את ילדיכם למצוינות והצלחה",
+    "leadingSiteTitle": "האתר המוביל בישראל להכנה למבחני מחוננים ותוכניות ייחודיות",
+    "description1": "אנו ב{{appName}} מתמחים בפיתוח קורסים דיגיטליים חדשניים, המותאמים במיוחד לילדים בכיתות א’ עד ו’. מטרתנו היא להעניק לכל ילד את הכלים הטובים ביותר להתמודדות עם מבחני המחוננים, מבחני קבלה לבתי ספר יוקרתיים, תוכניות העשרה וכיתות מצוינות.",
+    "description2": "הקורסים שלנו משלבים סרטונים אינטראקטיביים, תרגולים מותאמים אישית, פתרונות מוסברים, וטיפים חיוניים להתמודדות עם לחץ, אסטרטגיות פתרון וחשיבה יצירתית. אנו שואפים לא רק להכין למבחן, אלא גם לפתח ביטחון עצמי, יכולת חשיבה עצמאית ואהבה ללמידה.",
+    "feature1": {
+      "title": "מומחיות פדגוגית",
+      "description": "צוות המורכב ממורים מנוסים, מומחים למחוננים ופסיכולוגים חינוכיים."
+    },
+    "feature2": {
+      "title": "תוכן מותאם ועדכני",
+      "description": "קורסים דיגיטליים חדשניים עם תרגולים אינטראקטיביים ופתרונות מוסברים."
+    },
+    "feature3": {
+      "title": "ליווי אישי להצלחה",
+      "description": "מעקב התקדמות, מבחני דמה, וליווי להורים לאורך כל הדרך."
+    },
+    "stats": {
+      "תלמידיםמרוצים": "תלמידים מרוצים",
+      "שביעותרצוןלקוחות": "שביעות רצון לקוחות",
+      "שנותניסיון": "שנות ניסיון",
+      "קורסיםוסדנאות": "קורסים וסדנאות"
+    },
+    "ourExpertsTitle": "צוות המומחים שלנו",
+    "testimonialsTitle": "מה לקוחותינו מספרים",
+    "testimonial1": {
+      "text": "הקורס היה מעולה! הבן שלנו הגיע מוכן למבחן והצליח מאוד. התרגול האינטראקטיבי וההסברים היו ברורים מאוד. ממליצים בחום!",
+      "author": "- משפחת כהן (שם בדוי)"
+    },
+    "testimonial2": {
+      "text": "הקורס היה מעולה! הבן שלנו הגיע מוכן למבחן והצליח מאוד. התרגול האינטראקטיבי וההסברים היו ברורים מאוד. ממליצים בחום!",
+      "author": "- משפחת לוי (שם בדוי)"
+    },
+    "joinSuccessButton": "הצטרפו להצלחה - גלו את הקורסים שלנו"
+  },
+  "teamRoles": {
+    "מייסד": "מייסד",
+    "ומנהלפדגוגי": "ומנהל פדגוגי",
+    "מומחית": "מומחית",
+    "למחונניםופיתוחחשיבה": "למחוננים ופיתוח חשיבה",
+    "מרכזת": "מרכזת",
+    "תוכניותופיתוחתוכן": "תוכניות ופיתוח תוכן",
+    "צוות": "צוות",
+    "מוריםמנוסה": "מורים מנוסה"
+  },
+  "articlesSection": {
+    "card": {
+      "dateUnavailable": "תאריך לא זמין",
+      "readMore": "קראו עוד"
+    },
+    "loadingArticles": "טוען מאמרים...",
+    "titlePart1": "מאמרים וכתבות",
+    "titlePart2": "תובנות ומידע חשוב מהמומחים שלנו",
+    "noArticlesFound": "לא נמצאו מאמרים כרגע.",
+    "allArticlesButton": "לכל המאמרים"
+  },
+  "contactSection": {
+    "titlePart1": "צור קשר",
+    "titlePart2": "אנחנו כאן לשירותכם",
+    "description": "יש לכם שאלות? רוצים להתייעץ? אל תהססו לפנות אלינו. נשמח לעמוד לרשותכם בכל עניין.",
+    "detailsBox": {
+      "title": "פרטי התקשרות",
+      "whatsappButton": "שליחת הודעה בוואטסאפ",
+      "whatsappMessage": "שלום, הגעתי מאתר מכון אביב ואשמח לקבל פרטים נוספים."
+    },
+    "formBox": {
+      "title": "שלחו לנו הודעה",
+      "nameLabel": "שם מלא",
+      "namePlaceholder": "לדוגמה: ישראל ישראלי",
+      "emailLabel": "אימייל",
+      "emailPlaceholder": "your@email.com",
+      "messageLabel": "הודעה",
+      "messagePlaceholder": "כתבו את פנייתכם כאן...",
+      "submitButton": "שליחה",
+      "loadingButton": "שולח...",
+      "feedbackSuccess": "ההודעה נשלחה בהצלחה! ניצור איתך קשר בהקדם.",
+      "feedbackErrorDefault": "שליחת ההודעה נכשלה. אנא נסו שוב מאוחר יותר.",
+      "feedbackErrorUnexpected": "אירעה שגיאה בלתי צפויה. אנא נסו שוב מאוחר יותר."
+    }
+  },
+  "coursesSection": {
+    "titlePart1": "התוכניות שלנו",
+    "titlePart2": "השקעה בעתיד ילדיכם",
+    "description": "לחצו על כרטיס הקורס לקבלת מידע מפורט ולרכישה."
+  },
+  "shopSection": {
+    "card": {
+      "purchaseButton": "רכישה",
+      "detailsButton": "פרטים נוספים"
+    },
+    "titlePart1": "החנות שלנו",
+    "titlePart2": "רכשו קורס והתחילו ללמוד"
+  },
+  "homePage": {
+    "preview": {
+      "coursespreview": {
+        "subtitle": "הקורסים המובילים שלנו",
+        "description": "גלו את קורסי ההכנה המקיפים שלנו",
+        "linkLabel": "לכל הקורסים"
+      },
+      "articlespreview": {
+        "subtitle": "מאמרים וכתבות אחרונים",
+        "description": "קראו תובנות ומידע מקצועי",
+        "linkLabel": "לכל המאמרים"
+      },
+      "aboutpreview": {
+        "subtitle": "קצת עלינו",
+        "description": "מכון אביב הוא בית להכנה למצוינות",
+        "linkLabel": "קראו עוד עלינו"
+      }
+    }
+  },
+  "adminPage": {
+    "loading": "טוען...",
+    "accessDenied": {
+      "title": "גישה נדחתה",
+      "messageNotLoggedIn": "אין לך הרשאה לגשת לדף זה. אנא התחבר כמנהל דרך חלונית הצ'אט.",
+      "messageNotAuthorized": "משתמש אינו מורשה לגשת לדף זה.",
+      "backToHomeButton": "חזור לדף הבית"
+    },
+    "supabaseError": {
+      "title": "שגיאת הגדרת Supabase",
+      "message": "פרטי ההתחברות ל-Supabase חסרים. לא ניתן לטעון את לוח הניהול."
+    },
+    "header": {
+      "title": "לוח ניהול - {{appName}}",
+      "logoutButton": "התנתק"
+    },
+    "welcomeMessage": "ברוך הבא ללוח הניהול. כאן תוכל לנהל את התכנים באתר.",
+    "articles": {
+      "title": "ניהול מאמרים",
+      "addButton": "הוסף מאמר",
+      "loading": "טוען מאמרים...",
+      "errorLoading": "שגיאה בטעינת המאמרים: {{message}}",
+      "noArticles": "לא נמצאו מאמרים.",
+      "editButton": "ערוך",
+      "deleteButton": "מחק",
+      "deleteConfirmation": "האם אתה בטוח שברצונך למחוק מאמר זה? פעולה זו אינה ניתנת לשחזור.",
+      "deleteSuccess": "המאמר נמחק בהצלחה!",
+      "deleteError": "שגיאה במחיקת המאמר: {{message}}"
+    },
+    "articleModal": {
+      "titleEdit": "עריכת מאמר",
+      "titleAdd": "הוספת מאמר חדש",
+      "labelTitle": "כותרת",
+      "buttonGenerateAI": "הפק מאמר בעזרת AI (כותרת ותוכן)",
+      "buttonImproveAI": "שפר מאמר עם AI",
+      "labelBody": "תוכן מלא",
+      "labelCategory": "קטגוריה",
+      "labelImageUrl": "קישור לתמונה",
+      "labelExcerpt": "טקסט מקדים (לתצוגה מקדימה)",
+      "labelArtag": "תג מאמר (באנגלית לקישור)",
+      "buttonCancel": "ביטול",
+      "buttonSaveChanges": "שמור שינויים",
+      "buttonCreateArticle": "צור מאמר",
+      "loadingUpdate": "מעדכן...",
+      "loadingCreate": "שומר...",
+      "successMessage": "מאמר {{status}} בהצלחה!",
+      "statusUpdated": "עודכן",
+      "statusCreated": "נוצר",
+      "errorSave": "שגיאה בשמירת המאמר: {{message}}",
+      "alertEmptyBodyImprove": "המאמר ריק. אנא כתוב תוכן לפני שתנסה לשפר אותו.",
+      "errorAIGeneration": "שגיאה ביצירת מאמר AI: {{message}}",
+      "errorAIImprovement": "שגיאה בשיפור מאמר AI: {{message}}"
+    },
+    "aiPromptModal": {
+      "titleGenerate": "הפק מאמר בעזרת AI",
+      "instructionsGenerate": "הסבר בקצרה על מה תרצה שהמאמר יהיה (לדוגמה, נושא מרכזי, נקודות עיקריות, קהל יעד). ה-AI ינסח טיוטה ראשונית עבור הכותרת ותוכן המאמר. תוכל לערוך את התוצאה לאחר מכן.",
+      "placeholderGenerate": "לדוגמה: 'היתרונות של למידה מרחוק לתלמידי תיכון', 'כיצד להתכונן למבחן מחוננים שלב א', 'סקירה על תוכנית אודיסאה והשפעתה על בני נוער'",
+      "loadingMessageGenerate": "מייצר מאמר, נא להמתין... זה עשוי לקחת עד דקה.",
+      "buttonGenerate": "הפק מאמר",
+      "buttonGenerating": "מייצר..."
+    },
+    "aiImproveModal": {
+      "titleImprove": "שפר מאמר עם AI",
+      "instructionsImprove": "הסבר ל-AI כיצד תרצה לשפר את המאמר הקיים. לדוגמה: 'הפוך את הטקסט ליותר רשמי', 'הוסף דוגמאות לכל נקודה', 'קצר את המאמר בחצי', 'שנה את קהל היעד לילדים'.",
+      "placeholderImprove": "לדוגמה: 'הפוך את המאמר ליותר ידידותי למתחילים', 'הוסף סיכום קצר', 'פרט יותר על היתרונות של X'",
+      "loadingMessageImprove": "משפר מאמר, נא להמתין... זה עשוי לקחת עד דקה.",
+      "buttonImprove": "שפר מאמר",
+      "buttonImproving": "משפר..."
+    },
+    "faq": {
+      "title": "ניהול שאלות (FAQ)",
+      "addButton": "הוסף שאלה",
+      "loading": "טוען שאלות ותשובות...",
+      "errorLoading": "שגיאה בטעינת שאלות ותשובות: {{message}}",
+      "noFaq": "לא נמצאו שאלות ותשובות.",
+      "noAnswerYet": "אין תשובה עדיין",
+      "deleteConfirmation": "האם אתה בטוח שברצונך למחוק שאלה ותשובה זו? פעולה זו אינה ניתנת לשחזור.",
+      "deleteSuccess": "השאלה והתשובה נמחקו בהצלחה!",
+      "deleteError": "שגיאה במחיקת השאלה והתשובה: {{message}}"
+    },
+    "faqModal": {
+      "titleEdit": "עריכת שאלה ותשובה",
+      "titleAdd": "הוספת שאלה חדשה",
+      "labelQuestion": "שאלה",
+      "labelAnswer": "תשובה",
+      "buttonCreateQA": "צור שאלה",
+      "successMessage": "שאלה ותשובה {{status}} בהצלחה!",
+      "errorSave": "שגיאה בשמירת השאלה והתשובה: {{message}}"
+    },
+    "admins": {
+      "title": "ניהול מנהלים",
+      "addButton": "הוסף מנהל",
+      "loading": "טוען רשימת מנהלים...",
+      "errorLoading": "שגיאה בטעינת רשימת המנהלים: {{message}}",
+      "noAdmins": "לא נמצאו מנהלים.",
+      "labelExpiresAt": "תוקף:",
+      "removeAdminButton": "הסר מנהל",
+      "alertSelfRemoval": "אינך יכול להסיר את עצמך.",
+      "deleteConfirmation": "האם אתה בטוח שברצונך להסיר את המנהל עם האימייל {{email}}? פעולה זו אינה ניתנת לשחזור.",
+      "deleteSuccess": "מנהל הוסר בהצלחה!",
+      "deleteError": "שגיאה בהסרת מנהל: {{message}}"
+    },
+    "addAdminModal": {
+      "title": "הוספת מנהל חדש",
+      "labelEmail": "כתובת אימייל",
+      "labelExpiresAt": "תאריך תפוגה (אופציונלי)",
+      "placeholderExpiresAt": "YYYY-MM-DD HH:MM:SS (לדוגמה: 2024-12-31 23:59:59)",
+      "helpTextExpiresAt": "השאר ריק למנהל קבוע. אם תזין תאריך, המנהל יפוג בתאריך זה.",
+      "errorInvalidEmail": "כתובת אימייל לא תקינה.",
+      "errorInvalidDate": "תאריך תפוגה אינו תקין. אנא השתמש בפורמט YYYY-MM-DD HH:MM:SS או השאר ריק.",
+      "errorAdminExists": "מנהל עם כתובת אימייל זו כבר קיים.",
+      "addSuccess": "מנהל נוסף בהצלחה!",
+      "addError": "שגיאה בהוספת מנהל: {{message}}",
+      "buttonAdding": "מוסיף..."
+    },
+    "footer": {
+      "copyright": "© {{year}} {{appName}} Admin Panel"
+    }
+  },
+  "faqPage": {
+    "loadingFaqs": "טוען שאלות ותשובות...",
+    "title": "יש לכם שאלות?",
+    "description": "אנחנו כאן כדי לעזור. ריכזנו עבורכם את השאלות הנפוצות ביותר במקום אחד, ברור ונוח.",
+    "noFaqsFound": "לא נמצאו שאלות ותשובות כרגע.",
+    "imageAlt": "צוות מכון אביב",
+    "imageCaption": "צוות מכון אביב, תמיד לשירותכם."
+  },
+  "fullArticlePage": {
+    "errorMissingId": "מזהה המאמר חסר.",
+    "errorNotFoundSystem": "המאמר לא נמצא במערכת.",
+    "errorNotFoundOrNotLoaded": "המאמר לא נמצא או שעדיין אין מאמרים טעונים.",
+    "loadingArticle": "טוען מאמר...",
+    "errorLoadingTitle": "שגיאה בטעינת המאמר",
+    "backToArticlesErrorButton": "חזרה למאמרים",
+    "fallbackNotFoundTitle": "מאמר לא נמצא",
+    "fallbackNotFoundMessage": "מצטערים, לא הצלחנו למצוא את המאמר שחיפשת.",
+    "fallbackBackToArticlesButton": "חזרה לרשימת המאמרים",
+    "shareCopiedAlert": "הקישור למאמר הועתק! שתפו אותו.",
+    "shareNotSupportedAlert": "שיתוף אינו נתמך בדפדפן זה. ניתן להעתיק את הקישור משורת הכתובת.",
+    "allArticlesLink": "כל המאמרים",
+    "authorPrefix": "מאת:",
+    "sourcePrefix": "מקור:",
+    "shareLink": "שתף",
+    "lovedTheArticleTitle": "אהבתם את המאמר? נשמח אם תשתפו!",
+    "shareArticleButton": "שיתוף המאמר",
+    "whyReadTitle": "למה לקרוא מאמרים במכון אביב?",
+    "benefit1Title": "איכותי ומקצועי",
+    "benefit1Description": "המאמרים שלנו נכתבים על ידי מומחים בתחום, ומספקים מידע מדויק ואיכותי.",
+    "benefit2Title": "עדכני ומקיף",
+    "benefit2Description": "אנו דואגים לעדכן את התכנים באופן שוטף, ולהרחיב אותם כך שיכללו את כל המידע הרלוונטי."
+  },
+  "courseCard": {
+    "viewDetailsFallback": "לפרטים נוספים"
+  },
+  "courseDetailModal": {
+    "closeButtonAriaLabel": "סגור חלון",
+    "securePurchaseButton": "לרכישה מאובטחת"
+  },
+  "chatWidget": {
+    "initialAiMessage": "שלום לך! \n במה אנו יכולים לעזור לך היום?",
+    "errorUserInfoMissing": "שגיאה: פרטי המשתמש שלך (שם ואימייל) חסרים. לא ניתן לשלוח הודעה כעת.",
+    "statusSendingToOwner": "שולח הודעה לבעלי האתר...",
+    "telegramSuccess": "ההודעה שלך נשלחה בהצלחה לבעלי האתר.",
+    "telegramErrorResult": "אירעה שגיאה בשליחת ההודעה: {{error}} נסה שנית מאוחר יותר.",
+    "tryAgainLater": "נסה שנית מאוחר יותר.",
+    "telegramErrorCritical": "אירעה שגיאה קריטית בשליחת ההודעה. אנא בדוק את חיבור האינטרנט שלך ונסה שוב.",
+    "systemPrompt": {
+      "roleDescription": "אתה נציג שירות לקוחות באתר של '{{appName}}'. שמך הוא 'נציג מכון אביב'.",
+      "goal": "המטרה שלך היא לסייע למשתמשים עם שאלותיהם לגבי המכון, הקורסים שלנו, המאמרים, ותכנים נוספים באתר.",
+      "behavior": "עליך להתנהג בצורה מקצועית, ידידותית ועוזרת.",
+      "identityConstraint": "**שים לב היטב להקשר מהדף הנוכחי בו המשתמש נמצא (יינתן לך בהמשך) ולהיסטוריית השיחה המלאה כדי לספק תשובות מדויקות ורלוונטיות.**\nבשום פנים ואופן אל תזכיר שאתה מודל שפה, בינה מלאכותית, או שנוצרת על ידי גוגל. אתה אך ורק נציג שירות של '{{appName}}'.",
+      "siteOfferings": "האתר מציע קורסי הכנה למבחני מחוננים ותוכניות הצטיינות, מאמרים מקצועיים בתחום, וחנות מוצרים.",
+      "markdownUsage": "אנא השתמש ב-Markdown לעיצוב התשובות שלך כאשר זה רלוונטי ומוסיף ערך. לדוגמה, השתמש ב-**כדי להדגיש טקסט**, ב-*טקסט נטוי* לטקסט נטוי, וברשימות (באמצעות כוכביות * או מקפים -) כאשר אתה מציג מספר פריטים. היוזמה לשימוש ב-Markdown היא שלך כאשר אתה חושב שזה ישפר את קריאות התשובה.\nWhen creating bulleted lists, ensure you use an asterisk (*) or a hyphen (-) followed by a space, then the list item text. For example: `* First item` or `- Second item`.\n\nCorrect Bullet List Formatting:\n* Item 1\n* Item 2\n  - Nested Item A (use two spaces for indentation then asterisk/hyphen)\n- Another Item\n\nExtended Markdown Formatting Guide:\nIn addition to bold, italics, and basic lists, you can use the following Markdown features to enhance your responses:\n\n1.  **Headings:**\n    # H1 Heading\n    ## H2 Heading\n    ### H3 Heading\n    #### H4 Heading\n    ##### H5 Heading\n    ###### H6 Heading\n\n2.  **Numbered Lists:**\n    1. First item\n    2. Second item\n    3. Third item\n       1. Nested item (indent with 3 spaces)\n\n3.  **Tables (GFM):**\n    | Header 1 | Header 2 | Header 3 |\n    | :------- | :------: | -------: |\n    | Align-L  | Center   | Align-R  |\n    | Cell 2   | Cell 3   | Cell 4   |\n\n4.  **Blockquotes:**\n    > This is a blockquote.\n    > It can span multiple lines.\n\n5.  **Inline Code:**\n    Use backticks for inline code, like `const example = \"hello\";`.\n\n6.  **Horizontal Rules:**\n    Use three or more hyphens, asterisks, or underscores:\n    ---\n    ***\n    ___\n\n7.  **Strikethrough:**\n    Use two tildes for ~~strikethrough text~~.\n\n8.  **Task Lists (GFM):**\n    * [x] Completed task\n    * [ ] Incomplete task\n    * [ ] Another task\n      * [x] Nested completed task\nUse these features judiciously to improve the clarity and presentation of your answers.\n\nCreating Navigation Buttons:\nYou can create special links that will be rendered as clickable buttons for navigating within the site. This is useful for guiding users to relevant pages.\nTo create a navigation button, use the following Markdown syntax:\n`[Button Text](URL \"nav-button\")`\n\n-   `Button Text`: The text that will appear on the button.\n-   `URL`: The relative path for navigation (e.g., `/courses`, `/about`, `/article/some-id`). **Must be a relative path.**\n-   `\"nav-button\"`: The title attribute must be exactly \"nav-button\" (including the quotes in the Markdown link definition).\n\nExamples:\n-   To direct a user to the main courses page: `[לרשימת הקורסים המלאה](/courses \"nav-button\")`\n-   To link to a specific article: `[קרא עוד על המאמר בנושא X](/article/article-x-id \"nav-button\")`\n-   To suggest navigating to the \"About Us\" page: `[עבור לדף אודותינו](/about \"nav-button\")`\n\nOffer these navigation buttons when it's helpful for the user, such as after providing information that has a corresponding page on the site, or when the user asks for directions to a specific section. Only use relative paths for these buttons. For external links, use standard Markdown links which will open in a new tab.\n",
+      "navButtonExampleCourses": "לרשימת הקורסים המלאה",
+      "navButtonExampleArticle": "קרא עוד על המאמר בנושא X",
+      "navButtonExampleAbout": "עבור לדף אודותינו"
+    },
+    "pageContext": {
+      "home": "המשתמש נמצא כעת בדף הבית. דף הבית מציג מידע כללי על המכון, תצוגה מקדימה של קורסים ומאמרים. עודד אותו לשאול על הקורסים או על נושאים ספציפיים שמעניינים אותו.",
+      "about": "המשתמש נמצא כעת בדף 'אודותינו'. דף זה מתאר את '{{appName}}': {{description}}. ניתן גם למצוא בו מידע על צוות המכון והניסיון שלנו.",
+      "courses": "המשתמש נמצא כעת בדף 'הקורסים שלנו'. רשימת הקורסים שאנו מציעים:\n- {{courseTitlesList}}\nניתן לשאול על כל קורס באופן ספציפי, למשל מה הוא כולל, למי הוא מיועד, מה המחיר וכו'.",
+      "articles": "המשתמש נמצא כעת בדף המאמרים הראשי. רשימת המאמרים הזמינים באתר:\n- {{articleTitles}}\nניתן לשאול על כל אחד מהמאמרים הללו.",
+      "articleDetail": "המשתמש נמצא כעת בדף המאמר '{{title}}'. תקציר המאמר: {{excerpt}}. ניתן לשאול על פרטים נוספים מהמאמר.",
+      "articleNotFound": "המשתמש נמצא כעת בדף מאמר, אך המאמר הספציפי לא זוהה.",
+      "faq": "המשתמש נמצא כעת בדף 'שאלות נפוצות'. רשימת השאלות הנפוצות באתר:\n- {{allFaqQuestions}}\nניתן לשאול על כל אחת מהשאלות הללו.",
+      "contact": "המשתמש נמצא כעת בדף 'צור קשר'. בדף זה ניתן למצוא את פרטי ההתקשרות שלנו ולשלוח פנייה.",
+      "shop": "המשתמש נמצא כעת בדף החנות. בדף זה ניתן לרכוש את קורסי ההכנה שלנו ומוצרים נוספים."
+    },
+    "initialModelResponse": "הבנתי את ההקשר. כיצד אוכל לסייע לך?",
+    "errorAiCommunication": "❌ אירעה שגיאה בתקשורת עם ה-AI.",
+    "headerAdminLogin": "Admin Login",
+    "headerDefault": "נציג מכון אביב",
+    "closeButtonAriaLabel": "סגור",
+    "adminLogin": {
+      "title": "התחברות למערכת ניהול",
+      "passwordPlaceholder": "הכנס סיסמה",
+      "loginButton": "התחבר",
+      "errorWrongPassword": "סיסמה שגויה. נסה שוב."
+    },
+    "inputPlaceholder": "כתבו הודעה...",
+    "sendButton": "שלח",
+    "loadingMessage": "מטעין...",
+    "toggleButton": "צ'אט"
+  },
+  "profileModal": {
+    "title": "פרופיל משתמש",
+    "fallbackCloseAriaLabel": "סגור חלון",
+    "loadingName": "טוען שם...",
+    "loadingEmail": "טוען אימייל...",
+    "firstNameLabel": "שם פרטי",
+    "firstNamePlaceholder": "הקלד שם פרטי",
+    "lastNameLabel": "שם משפחה",
+    "lastNamePlaceholder": "הקלד שם משפחה",
+    "saveChangesButton": "שמור שינויים",
+    "savingButton": "שומר...",
+    "logoutButton": "התנתקות",
+    "errorLogoutFailed": "התנתקות נכשלה. נסה שנית.",
+    "errorNotAuthenticated": "משתמש לא מאומת. לא ניתן לשמור שינויים.",
+    "errorNameRequired": "שם פרטי ושם משפחה נדרשים.",
+    "errorUpdateFailed": "שגיאה בעדכון פרופיל: {{message}}",
+    "successProfileUpdated": "פרופיל עודכן בהצלחה!",
+    "switchToEnglish": "מעבר לאנגלית",
+    "switchToHebrew": "מעבר לעברית"
+  },
+  "app": {
+    "loadingAdminPage": "טוען..."
+  },
+  "editorToolbar": {
+    "bold": "מודגש",
+    "italic": "נטוי",
+    "strikethrough": "קו חוצה",
+    "h1": "כותרת 1",
+    "h2": "כותרת 2",
+    "h3": "כותרת 3",
+    "bulletList": "רשימת תבליטים",
+    "orderedList": "רשימה ממוספרת",
+    "blockquote": "בלוק ציטוט",
+    "codeBlock": "בלוק קוד",
+    "undo": "בטל",
+    "redo": "בצע שוב",
+    "insertAlertBlock": "הוסף בלוק התראה",
+    "alertsDropdownButton": "התראות",
+    "alertTypes": {
+      "info": "בלוק מידע",
+      "tip": "בלוק טיפ",
+      "note": "בלוק הערה",
+      "warning": "בלוק אזהרה"
+    }
+  }
+}

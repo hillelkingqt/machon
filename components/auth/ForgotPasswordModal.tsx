@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import AuthModalWrapper from './AuthModalWrapper';
 import Button from '../ui/Button';
@@ -14,6 +15,7 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
   isOpen,
   onClose
 }) => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; content: string } | null>(null);
@@ -31,12 +33,12 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
 
     if (error) {
       // This might catch issues like network errors, or specific Supabase errors if they decide to return one for certain cases.
-      setMessage({ type: 'error', content: `שגיאה בשליחת קישור לאיפוס סיסמה: ${error.message}` });
+      setMessage({ type: 'error', content: t('auth.forgotPassword.errorSendingLink', `שגיאה בשליחת קישור לאיפוס סיסמה: ${error.message}`, { error: error.message }) });
     } else {
       // Generic success message to prevent account enumeration
       setMessage({
         type: 'success',
-        content: "אם קיים חשבון עם אימייל זה, נשלח אליך קישור לאיפוס סיסמה."
+        content: t('auth.forgotPassword.successLinkSent', "אם קיים חשבון עם אימייל זה, נשלח אליך קישור לאיפוס סיסמה.")
       });
       setEmail(''); // Clear the email field
     }
@@ -47,7 +49,7 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
   }
 
   return (
-    <AuthModalWrapper isOpen={isOpen} onClose={onClose} title="איפוס סיסמה">
+    <AuthModalWrapper isOpen={isOpen} onClose={onClose} title={t('auth.forgotPassword.title', "איפוס סיסמה")}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -67,12 +69,12 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
           {!message || message.type === 'error' ? ( // Only show form if no success message or if there's an error
             <>
               <p className="text-sm text-center text-gray-600 dark:text-gray-400">
-                הזן את כתובת האימייל שלך ונשלח לך קישור לאיפוס הסיסמה.
+                {t('auth.forgotPassword.instructions', "הזן את כתובת האימייל שלך ונשלח לך קישור לאיפוס הסיסמה.")}
               </p>
 
               <div>
                 <label htmlFor="reset-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  כתובת אימייל
+                  {t('auth.forgotPassword.emailLabel', 'כתובת אימייל')}
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -84,7 +86,7 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light sm:text-sm bg-gray-50 dark:bg-secondary-dark text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                    placeholder="you@example.com"
+                    placeholder={t('auth.forgotPassword.emailPlaceholder', "you@example.com")}
                     required
                     disabled={loading}
                   />
@@ -100,13 +102,13 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                 iconPosition="leading"
                 disabled={loading}
               >
-                {loading ? 'שולח קישור...' : 'שלח קישור איפוס'}
+                {loading ? t('auth.forgotPassword.loadingButton', 'שולח קישור...') : t('auth.forgotPassword.submitButton', 'שלח קישור איפוס')}
               </Button>
             </>
           ) : null}
 
           <p className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
-            {message && message.type === 'success' ? 'רוצה לנסות להתחבר שוב?' : 'נזכרת בסיסמה?'}
+            {message && message.type === 'success' ? t('auth.forgotPassword.promptTryLoginAgain', 'רוצה לנסות להתחבר שוב?') : t('auth.forgotPassword.promptRememberedPassword', 'נזכרת בסיסמה?')}
             {' '}
             <Button
               as="button"
@@ -119,7 +121,7 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
               iconPosition="leading"
               disabled={loading && message?.type !== 'success'} // Allow closing after success
             >
-              חזור להתחברות
+              {t('auth.forgotPassword.backToLoginLink', "חזור להתחברות")}
             </Button>
           </p>
         </form>

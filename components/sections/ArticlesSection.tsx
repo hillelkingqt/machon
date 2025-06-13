@@ -1,4 +1,5 @@
 import React from 'react'; // Removed useEffect, useState
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 // ARTICLES_DATA might still be used by DataContext as a fallback, so keep if no error, otherwise remove.
 // For now, assume DataContext handles the fallback logic entirely.
@@ -16,6 +17,7 @@ interface ArticleCardProps {
 }
 
 const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
+    const { t } = useTranslation(); // Added t function
     const articleLink = `/article/${article.artag || article.id}`;
 
     return (
@@ -54,7 +56,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
                     <div className="flex items-center">
                         <CalendarDays size={14} className="me-1.5" /> <span className="font-medium">
                             {article.date === null || article.date === undefined || article.date === "" || article.date === "Invalid Date"
-                                ? "תאריך לא זמין"
+                                ? t('articlesSection.card.dateUnavailable', "תאריך לא זמין")
                                 : article.date}
                         </span>
                     </div>
@@ -73,7 +75,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
                         icon={<ChevronLeft size={18} />}
                         iconPosition="trailing"
                     >
-                        קראו עוד
+                        {t('articlesSection.card.readMore', 'קראו עוד')}
                     </Button>
                 </div>
             </div>
@@ -87,6 +89,7 @@ interface ArticlesSectionProps {
 }
 
 const ArticlesSection: React.FC<ArticlesSectionProps> = ({ maxItems, showTitle = true }) => {
+    const { t } = useTranslation(); // Added t function
     const { articles: allArticles, loading, error } = useData(); // Use DataContext
 
     // The useEffect for fetching articles is removed.
@@ -98,7 +101,7 @@ const ArticlesSection: React.FC<ArticlesSectionProps> = ({ maxItems, showTitle =
         return (
             <section className="py-16 sm:py-20 md:py-24 bg-slate-100 dark:bg-slate-900">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <p className="text-xl text-slate-600 dark:text-slate-300">טוען מאמרים...</p>
+                    <p className="text-xl text-slate-600 dark:text-slate-300">{t('articlesSection.loadingArticles', 'טוען מאמרים...')}</p>
                 </div>
             </section>
         );
@@ -113,22 +116,22 @@ const ArticlesSection: React.FC<ArticlesSectionProps> = ({ maxItems, showTitle =
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 {showTitle && (
                     <AnimatedDiv animation="fadeInUp" className="text-center mb-12 sm:mb-16">
-                        <h2 className="font-semibold text-primary dark:text-primary-light tracking-widest uppercase">מאמרים וכתבות</h2>
+                        <h2 className="font-semibold text-primary dark:text-primary-light tracking-widest uppercase">{t('articlesSection.titlePart1', 'מאמרים וכתבות')}</h2>
                         <p className="mt-2 text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-800 dark:text-slate-100 leading-tight">
-                            תובנות ומידע חשוב מהמומחים שלנו
+                            {t('articlesSection.titlePart2', 'תובנות ומידע חשוב מהמומחים שלנו')}
                         </p>
                     </AnimatedDiv>
                 )}
 
                 {error && (
                     <AnimatedDiv animation="fadeInUp" className="text-center mb-8">
-                        <p className="text-red-500 dark:text-red-400 bg-red-100 dark:bg-red-900/30 p-4 rounded-md">{error}</p>
+                        <p className="text-red-500 dark:text-red-400 bg-red-100 dark:bg-red-900/30 p-4 rounded-md">{error}</p> {/* Error message from context, might need specific translation if it's a string key */}
                     </AnimatedDiv>
                 )}
 
                 {articlesToDisplay.length === 0 && !error && !loading && ( // Added !loading condition
                      <AnimatedDiv animation="fadeInUp" className="text-center mb-8">
-                        <p className="text-slate-600 dark:text-slate-400">לא נמצאו מאמרים כרגע.</p>
+                        <p className="text-slate-600 dark:text-slate-400">{t('articlesSection.noArticlesFound', 'לא נמצאו מאמרים כרגע.')}</p>
                     </AnimatedDiv>
                 )}
 
@@ -141,7 +144,7 @@ const ArticlesSection: React.FC<ArticlesSectionProps> = ({ maxItems, showTitle =
                 {maxItems && allArticles.length > maxItems && (
                     <AnimatedDiv animation="fadeInUp" delay={0.5} className="text-center mt-12 sm:mt-16">
                         <Button href="/articles" variant="primary" size="lg">
-                            לכל המאמרים
+                            {t('articlesSection.allArticlesButton', 'לכל המאמרים')}
                         </Button>
                     </AnimatedDiv>
                 )}

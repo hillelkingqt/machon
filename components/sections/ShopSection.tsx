@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { COURSES_DATA } from '../../constants';
 import { Course } from '../../types';
 import AnimatedDiv from '../ui/AnimatedDiv';
@@ -11,6 +12,7 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ course }) => {
+    const { t } = useTranslation();
     const IconComponent = course.icon;
 
     return (
@@ -50,7 +52,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ course }) => {
                         className="w-full"
                         icon={<ShoppingCart size={18} />}
                     >
-                        רכישה
+                        {t('shopSection.card.purchaseButton', 'רכישה')}
                     </Button>
                     <Button
                         variant="outline"
@@ -60,7 +62,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ course }) => {
                         className="w-full"
                         icon={<Info size={18} />}
                     >
-                        פרטים נוספים
+                        {t('shopSection.card.detailsButton', 'פרטים נוספים')}
                     </Button>
                 </div>
             </div>
@@ -69,13 +71,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ course }) => {
 };
 
 const ShopSection: React.FC = () => {
+    const { t } = useTranslation();
     return (
         <section className="py-16 sm:py-20 md:py-24 bg-gradient-to-br from-gray-100 via-slate-100 to-sky-50 dark:from-secondary-dark dark:via-gray-800 dark:to-secondary">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <AnimatedDiv animation="fadeInUp" className="text-center mb-12 sm:mb-16">
-                    <h2 className="text-lg font-semibold text-primary tracking-wider uppercase">החנות שלנו</h2>
+                    <h2 className="text-lg font-semibold text-primary tracking-wider uppercase">{t('shopSection.titlePart1', 'החנות שלנו')}</h2>
                     <p className="mt-2 text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 dark:text-white leading-tight">
-                        רכשו קורס והתחילו ללמוד
+                        {t('shopSection.titlePart2', 'רכשו קורס והתחילו ללמוד')}
                     </p>
                 </AnimatedDiv>
 

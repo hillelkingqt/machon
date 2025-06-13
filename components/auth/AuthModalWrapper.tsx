@@ -1,4 +1,5 @@
 import React, { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react'; // Using lucide-react for the close icon
 
@@ -34,6 +35,7 @@ const backdropTransition = {
 };
 
 const AuthModalWrapper: React.FC<AuthModalWrapperProps> = ({ isOpen, onClose, children, title }) => {
+  const { t } = useTranslation();
   return (
     <AnimatePresence>
       {isOpen && (
@@ -63,7 +65,7 @@ const AuthModalWrapper: React.FC<AuthModalWrapperProps> = ({ isOpen, onClose, ch
                 <button
                   onClick={onClose}
                   className="p-1 rounded-full text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                  aria-label="Close modal"
+                  aria-label={t('auth.closeModalAriaLabel', 'Close modal')}
                 >
                   <X size={24} />
                 </button>

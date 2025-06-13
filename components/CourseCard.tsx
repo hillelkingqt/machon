@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Course } from '../types';
 import { Info } from 'lucide-react'; // Using the Info icon to indicate more details
 import { motion } from 'framer-motion';
@@ -11,6 +12,7 @@ interface CourseCardProps {
 }
 
 const CourseCard: React.FC<CourseCardProps> = ({ course, onOpenModal }) => {
+    const { t } = useTranslation();
     const IconComponent = course.icon;
 
     const handleCardClick = () => {
@@ -52,7 +54,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, onOpenModal }) => {
                         icon={<Info size={20} className="me-2 rtl:ms-2" />}
                         iconPosition="leading"
                     >
-                        {course.links && course.links.length > 0 ? course.links[0].label : "לפרטים נוספים"}
+                        {course.links && course.links.length > 0 ? course.links[0].label : t('courseCard.viewDetailsFallback', "לפרטים נוספים")}
                     </Button>
                 </div>
             </div>

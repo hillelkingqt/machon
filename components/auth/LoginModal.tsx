@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import AuthModalWrapper from './AuthModalWrapper';
 import Button from '../ui/Button';
@@ -32,6 +33,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
   prefillEmail,
   prefillPassword
 }) => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loadingEmailPass, setLoadingEmailPass] = useState(false);
@@ -60,16 +62,16 @@ const LoginModal: React.FC<LoginModalProps> = ({
     setLoadingEmailPass(false);
 
     if (error) {
-      setMessage({ type: 'error', content: "אימייל או סיסמה שגויים. נסה שנית." });
+      setMessage({ type: 'error', content: t('auth.login.errorIncorrectCredentials', "אימייל או סיסמה שגויים. נסה שנית.") });
     } else if (data.user) {
-      setMessage({ type: 'success', content: "התחברת בהצלחה!" });
+      setMessage({ type: 'success', content: t('auth.login.successLogin', "התחברת בהצלחה!") });
       setEmail('');
       setPassword('');
       setTimeout(() => {
         onClose();
       }, 1500);
     } else {
-      setMessage({ type: 'error', content: "אירעה שגיאה לא צפויה. נסה שנית." });
+      setMessage({ type: 'error', content: t('auth.login.errorUnexpected', "אירעה שגיאה לא צפויה. נסה שנית.") });
     }
   };
 
@@ -84,7 +86,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
     });
 
     if (error) {
-      setMessage({ type: 'error', content: `שגיאה בהתחברות עם גוגל: ${error.message}` });
+      setMessage({ type: 'error', content: t('auth.login.errorGoogleSignIn', `שגיאה בהתחברות עם גוגל: ${error.message}`, { error: error.message }) });
       setLoadingGoogle(false);
     }
   };
@@ -94,7 +96,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
   }
 
   return (
-    <AuthModalWrapper isOpen={isOpen} onClose={onClose} title="התחברות">
+    <AuthModalWrapper isOpen={isOpen} onClose={onClose} title={t('auth.login.title', "התחברות")}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -112,7 +114,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
 
           <div>
             <label htmlFor="login-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              כתובת אימייל
+              {t('auth.login.emailLabel', 'כתובת אימייל')}
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -124,7 +126,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light sm:text-sm bg-gray-50 dark:bg-secondary-dark text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                placeholder="you@example.com"
+                placeholder={t('auth.login.emailPlaceholder', "you@example.com")}
                 required
                 disabled={anyLoading}
               />
@@ -133,7 +135,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
 
           <div>
             <label htmlFor="login-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              סיסמה
+              {t('auth.login.passwordLabel', 'סיסמה')}
             </label>
             <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -145,7 +147,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light sm:text-sm bg-gray-50 dark:bg-secondary-dark text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                    placeholder="••••••••"
+                    placeholder={t('auth.login.passwordPlaceholder', "••••••••")}
                     required
                     disabled={anyLoading}
                 />
@@ -162,7 +164,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
               className="font-medium !p-0 !shadow-none !text-primary dark:!text-primary-light hover:!underline"
               disabled={anyLoading}
             >
-              ?שכחת סיסמה
+              {t('auth.login.forgotPasswordLink', "שכחת סיסמה?")}
             </Button>
           </div>
 
@@ -175,12 +177,12 @@ const LoginModal: React.FC<LoginModalProps> = ({
             iconPosition="leading"
             disabled={anyLoading}
           >
-            {loadingEmailPass ? 'מתחבר...' : 'התחבר'}
+            {loadingEmailPass ? t('auth.login.loadingButton', 'מתחבר...') : t('auth.login.submitButton', 'התחבר')}
           </Button>
 
           <div className="relative flex py-3 items-center">
             <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
-            <span className="flex-shrink mx-4 text-gray-400 dark:text-gray-500 text-sm">או המשך עם</span>
+            <span className="flex-shrink mx-4 text-gray-400 dark:text-gray-500 text-sm">{t('auth.login.separatorOrContinueWith', "או המשך עם")}</span>
             <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
           </div>
 
@@ -194,11 +196,11 @@ const LoginModal: React.FC<LoginModalProps> = ({
             iconPosition="leading"
             disabled={anyLoading}
           >
-            {loadingGoogle ? 'מתחבר עם גוגל...' : 'התחבר עם גוגל'}
+            {loadingGoogle ? t('auth.login.googleLoadingButton', 'מתחבר עם גוגל...') : t('auth.login.googleLoginButton', 'התחבר עם גוגל')}
           </Button>
 
           <p className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
-            אין לך חשבון?{' '}
+            {t('auth.login.signupPrompt', "אין לך חשבון?")}{' '}
             <Button
               as="button"
               type="button"
@@ -208,7 +210,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
               className="font-medium !p-0 !shadow-none !text-primary dark:!text-primary-light hover:!underline"
               disabled={anyLoading}
             >
-              צור חשבון
+              {t('auth.login.signupLink', "צור חשבון")}
             </Button>
           </p>
         </form>

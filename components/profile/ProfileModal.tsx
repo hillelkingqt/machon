@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../utils/supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
@@ -16,6 +17,7 @@ interface ProfileModalProps {
 }
 
 const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
+  const { t, i18n } = useTranslation(); // Added i18n instance
   const { user, profile, logout: authLogout, session } = useAuth(); // Renamed logout to authLogout
 
   const [firstName, setFirstName] = useState('');
@@ -49,7 +51,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
       await authLogout();
       handleClose(); // Close modal on successful logout
     } catch (error: any) {
-      setMessage({ type: 'error', content: error.message || 'התנתקות נכשלה. נסה שנית.' });
+      setMessage({ type: 'error', content: error.message || t('profileModal.errorLogoutFailed', 'התנתקות נכשלה. נסה שנית.') });
     } finally {
       setIsLoading(false);
     }
@@ -57,11 +59,11 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
 
   const handleSaveChanges = async () => {
     if (!user) {
-      setMessage({ type: 'error', content: 'משתמש לא מאומת. לא ניתן לשמור שינויים.' });
+      setMessage({ type: 'error', content: t('profileModal.errorNotAuthenticated', 'משתמש לא מאומת. לא ניתן לשמור שינויים.') });
       return;
     }
     if (!firstName.trim() || !lastName.trim()) {
-      setMessage({ type: 'error', content: 'שם פרטי ושם משפחה נדרשים.' });
+      setMessage({ type: 'error', content: t('profileModal.errorNameRequired', 'שם פרטי ושם משפחה נדרשים.') });
       return;
     }
 
@@ -82,9 +84,9 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
 
     if (error) {
       console.error('Error updating profile:', error);
-      setMessage({ type: 'error', content: `שגיאה בעדכון פרופיל: ${error.message}` });
+      setMessage({ type: 'error', content: t('profileModal.errorUpdateFailed', `שגיאה בעדכון פרופיל: ${error.message}`, { message: error.message }) });
     } else {
-      setMessage({ type: 'success', content: 'פרופיל עודכן בהצלחה!' });
+      setMessage({ type: 'success', content: t('profileModal.successProfileUpdated', 'פרופיל עודכן בהצלחה!') });
       // AuthContext should pick up onUserChanged event and update profile.
       // Optionally, close after a delay:
       // setTimeout(() => handleClose(), 2000);
@@ -121,7 +123,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
               <button
                 onClick={onCloseProp}
                 className="text-slate-400 hover:text-slate-600 dark:text-slate-300 dark:hover:text-slate-100 transition-colors p-1 rounded-full"
-                aria-label="Close modal"
+                aria-label={t('profileModal.fallbackCloseAriaLabel', "Close modal")}
               >
                 <X size={24} />
               </button>
@@ -139,7 +141,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
 
 
   return (
-    <EffectiveModalWrapper title="פרופיל משתמש" isOpen={isOpen} onClose={handleClose}>
+    <EffectiveModalWrapper title={t('profileModal.title', "פרופיל משתמש")} isOpen={isOpen} onClose={handleClose}>
       <div className="space-y-6 text-slate-700 dark:text-slate-300">
         {/* Display Message */}
         {message && (
@@ -161,11 +163,11 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
         <div className="space-y-3 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-200 dark:border-slate-600">
           <div className="flex items-center gap-3">
             <UserCircle size={22} className="text-primary dark:text-sky-400" />
-            <span className="font-medium">{profile?.fullName || 'טוען שם...'}</span>
+            <span className="font-medium">{profile?.fullName || t('profileModal.loadingName', 'טוען שם...')}</span>
           </div>
           <div className="flex items-center gap-3">
             <Mail size={20} className="text-slate-500 dark:text-slate-400" />
-            <span className="text-sm text-slate-600 dark:text-slate-300">{user?.email || 'טוען אימייל...'}</span>
+            <span className="text-sm text-slate-600 dark:text-slate-300">{user?.email || t('profileModal.loadingEmail', 'טוען אימייל...')}</span>
           </div>
         </div>
 
@@ -173,7 +175,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
         <div className="space-y-4">
           <div>
             <label htmlFor="firstName" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-              שם פרטי
+              {t('profileModal.firstNameLabel', 'שם פרטי')}
             </label>
             <input
               type="text"
@@ -181,13 +183,13 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary dark:focus:ring-sky-500 dark:bg-slate-700 dark:text-white shadow-sm text-sm sm:text-base transition-colors"
-              placeholder="הקלד שם פרטי"
+              placeholder={t('profileModal.firstNamePlaceholder', 'הקלד שם פרטי')}
               disabled={isLoading}
             />
           </div>
           <div>
             <label htmlFor="lastName" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-              שם משפחה
+              {t('profileModal.lastNameLabel', 'שם משפחה')}
             </label>
             <input
               type="text"
@@ -195,32 +197,44 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
               className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary dark:focus:ring-sky-500 dark:bg-slate-700 dark:text-white shadow-sm text-sm sm:text-base transition-colors"
-              placeholder="הקלד שם משפחה"
+              placeholder={t('profileModal.lastNamePlaceholder', 'הקלד שם משפחה')}
               disabled={isLoading}
             />
           </div>
         </div>
 
         {/* Action Buttons Section */}
-        <div className="pt-6 border-t border-slate-200 dark:border-slate-700 space-y-3 sm:space-y-0 sm:flex sm:flex-row-reverse sm:justify-between sm:items-center">
-          <Button
-            onClick={handleSaveChanges}
-            disabled={isLoading || !firstName.trim() || !lastName.trim()}
-            className="w-full sm:w-auto !bg-primary hover:!bg-primary-dark dark:!bg-sky-500 dark:hover:!bg-sky-600 text-white"
-          >
-            {isLoading && <Loader2 size={18} className="animate-spin ml-2" />}
-            {isLoading ? 'שומר...' : 'שמור שינויים'}
-            {!isLoading && <Save size={18} className="ml-2" />}
-          </Button>
-          <Button
-            onClick={handleLogout}
-            variant="outline"
-            disabled={isLoading}
-            className="w-full sm:w-auto !border-red-500 !text-red-500 hover:!bg-red-50 dark:hover:!bg-red-900/30 dark:!border-red-600 dark:!text-red-400"
-          >
-            {isLoading && session ? <Loader2 size={18} className="animate-spin ml-2" /> : <LogOut size={18} className="ml-2" /> }
-            התנתקות
-          </Button>
+        <div className="pt-6 border-t border-slate-200 dark:border-slate-700 space-y-3">
+          <div className="sm:flex sm:flex-row-reverse sm:justify-between sm:items-center">
+            <Button
+              onClick={handleSaveChanges}
+              disabled={isLoading || !firstName.trim() || !lastName.trim()}
+              className="w-full sm:w-auto !bg-primary hover:!bg-primary-dark dark:!bg-sky-500 dark:hover:!bg-sky-600 text-white mb-3 sm:mb-0"
+            >
+              {isLoading && <Loader2 size={18} className="animate-spin ml-2" />}
+              {isLoading ? t('profileModal.savingButton', 'שומר...') : t('profileModal.saveChangesButton', 'שמור שינויים')}
+              {!isLoading && <Save size={18} className="ml-2" />}
+            </Button>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                onClick={() => { /* Language switch functionality to be added */ }}
+                variant="outline"
+                disabled={isLoading}
+                className="w-full sm:w-auto"
+              >
+                {t(i18n.language === 'en' ? 'profileModal.switchToHebrew' : 'profileModal.switchToEnglish')}
+              </Button>
+              <Button
+                onClick={handleLogout}
+                variant="outline"
+                disabled={isLoading}
+                className="w-full sm:w-auto !border-red-500 !text-red-500 hover:!bg-red-50 dark:hover:!bg-red-900/30 dark:!border-red-600 dark:!text-red-400"
+              >
+                {isLoading && session ? <Loader2 size={18} className="animate-spin ml-2" /> : <LogOut size={18} className="ml-2" /> }
+                {t('profileModal.logoutButton', 'התנתקות')}
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </EffectiveModalWrapper>

@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom'; // Changed useHistory to useNavigate
 import { PlayCircle, X } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -10,6 +11,7 @@ const VIDEO_THUMBNAIL_URL = 'https://www.machon-aviv.co.il/wp-content/uploads/20
 const VIDEO_URL = 'https://www.youtube.com/embed/fY85ck-pI5c'; // Use embed URL for iframe
 
 const HeroSection: React.FC = () => {
+    const { t } = useTranslation();
     const [showVideoModal, setShowVideoModal] = useState(false);
     const navigate = useNavigate(); // Changed history to navigate
 
@@ -23,27 +25,25 @@ const HeroSection: React.FC = () => {
             <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 z-10">
                 <AnimatedDiv animation="fadeInDown" className="mb-6 sm:mb-8">
                     <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-3 sm:mb-4">
-                        <span className="block text-gray-800 dark:text-white">הכנה מושלמת</span>
+                        <span className="block text-gray-800 dark:text-white">{t('heroSection.titlePart1', 'הכנה מושלמת')}</span>
                         <span className="block text-primary gradient-text bg-gradient-to-r from-primary via-teal-500 to-cyan-500 dark:from-primary-light dark:via-teal-400 dark:to-cyan-400">
-                            למבחני קבלה ומחוננים
+                            {t('heroSection.titlePart2', 'למבחני קבלה ומחוננים')}
                         </span>
                     </h1>
                     <p className="text-lg sm:text-xl md:text-2xl text-gray-600 dark:text-gray-300 font-semibold">
-                        מקצועיות, חוויה והצלחה מובטחת!
+                        {t('heroSection.subtitle', 'מקצועיות, חוויה והצלחה מובטחת!')}
                     </p>
                 </AnimatedDiv>
 
                 <AnimatedDiv animation="fadeInUp" delay={0.2} className="max-w-3xl mx-auto text-base sm:text-lg md:text-xl text-gray-700 dark:text-gray-300 mb-8 sm:mb-10 leading-relaxed">
                     <p>
-                        קורסי הכנה אונליין למבחני מחוננים, תוכנית האצה של בר אילן ותוכנית אודיסאה.
-                        עם תרגול מותאם אישית, הסברים ברורים וליווי מקצועי להצלחה.
-                        יש לנו את כל מה שהילד שלכם צריך בשביל להצליח!
+                        {t('heroSection.description', 'קורסי הכנה אונליין למבחני מחוננים, תוכנית האצה של בר אילן ותוכנית אודיסאה. עם תרגול מותאם אישית, הסברים ברורים וליווי מקצועי להצלחה. יש לנו את כל מה שהילד שלכם צריך בשביל להצליח!')}
                     </p>
                 </AnimatedDiv>
 
                 <AnimatedDiv animation="fadeInUp" delay={0.3} className="mb-10 sm:mb-12">
                     <Button onClick={handleDiscoverCoursesClick} size="lg" variant="primary" className="text-lg sm:text-xl px-8 py-3.5 shadow-xl hover:shadow-2xl">
-                        גלו את הקורסים שלנו
+                        {t('heroSection.discoverCoursesButton', 'גלו את הקורסים שלנו')}
                     </Button>
                 </AnimatedDiv>
 
@@ -54,18 +54,18 @@ const HeroSection: React.FC = () => {
                         role="button"
                         tabIndex={0}
                         onKeyDown={(e) => e.key === 'Enter' && setShowVideoModal(true)}
-                        aria-label="נגן סרטון הסבר"
+                        aria-label={t('heroSection.playVideoButtonAriaLabel', 'נגן סרטון הסבר')}
                     >
                         <img
                             src={VIDEO_THUMBNAIL_URL}
-                            alt="תלמידים לומדים במכון אביב"
+                            alt={t('heroSection.videoThumbnailAlt', 'תלמידים לומדים במכון אביב')}
                             className="w-full h-auto object-cover aspect-video"
                         />
                         <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-20 transition-opacity duration-300 flex items-center justify-center">
                             <PlayCircle size={80} className="text-white opacity-90 group-hover:opacity-100 transform transition-transform duration-300 group-hover:scale-110 animate-pulse-slow group-hover:animate-none" />
                         </div>
                         <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 bg-primary text-white px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-md text-xs sm:text-sm font-semibold shadow-lg">
-                            צפו בסרטון ההסבר
+                            {t('heroSection.watchExplanationVideoText', 'צפו בסרטון ההסבר')}
                         </div>
                     </div>
                 </AnimatedDiv>
@@ -92,14 +92,14 @@ const HeroSection: React.FC = () => {
                         <button
                             onClick={() => setShowVideoModal(false)}
                             className="absolute -top-2.5 -right-2.5 sm:-top-3 sm:-right-3 bg-primary text-white rounded-full p-1.5 sm:p-2 hover:bg-primary-dark transition-colors z-10 shadow-lg focus:outline-none focus:ring-2 focus:ring-primary-light"
-                            aria-label="סגור וידאו"
+                            aria-label={t('heroSection.closeVideoModalAriaLabel', 'סגור וידאו')}
                         >
                             <X size={20} />
                         </button>
                         <div className="aspect-w-16 aspect-h-9 overflow-hidden rounded-md sm:rounded-lg">
                             <iframe
                                 src={`${VIDEO_URL}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&controls=1`}
-                                title="סרטון הסבר - מכון אביב"
+                                title={t('heroSection.videoIframeTitle', 'סרטון הסבר - מכון אביב')}
                                 frameBorder="0"
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                 allowFullScreen

@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom'; // Import Link for direct navigation
 import HeroSection from '../components/sections/HeroSection';
 import AnimatedDiv from '../components/ui/AnimatedDiv';
@@ -42,32 +43,35 @@ const PreviewArticleCard: React.FC<{ article: Article }> = ({ article }) => (
 
 
 const HomePage: React.FC = () => {
+  const { t } = useTranslation();
   return (
     <>
       <HeroSection />
 
       {/* Preview Sections */}
-      {PREVIEW_SECTIONS.map((section, index) => (
-        <section 
-          key={section.id} 
-          className={`py-12 sm:py-16 ${index % 2 === 0 ? 'bg-white dark:bg-secondary' : 'bg-gray-50 dark:bg-secondary-light'}`}
-        >
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <AnimatedDiv animation="fadeInUp" className="text-center mb-10 sm:mb-12">
-              {section.icon && <section.icon className="h-12 w-12 text-primary dark:text-primary-light mx-auto mb-3" strokeWidth={1.5}/>}
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">{section.subtitle}</h2>
-              <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-xl mx-auto mb-6">{section.description}</p>
-              <Button 
-                href={section.link} 
-                variant="primary" 
-                size="md"
-                className="font-medium"
-                icon={<ChevronRight size={20}/>} 
-                iconPosition="trailing"
-              >
-                {section.linkLabel}
-              </Button>
-            </AnimatedDiv>
+      {PREVIEW_SECTIONS.map((section, index) => {
+        const sectionIdKey = section.id.replace(/-/g, ''); // e.g., coursespreview, articlespreview, aboutpreview
+        return (
+          <section
+            key={section.id}
+            className={`py-12 sm:py-16 ${index % 2 === 0 ? 'bg-white dark:bg-secondary' : 'bg-gray-50 dark:bg-secondary-light'}`}
+          >
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+              <AnimatedDiv animation="fadeInUp" className="text-center mb-10 sm:mb-12">
+                {section.icon && <section.icon className="h-12 w-12 text-primary dark:text-primary-light mx-auto mb-3" strokeWidth={1.5}/>}
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">{t(`homePage.preview.${sectionIdKey}.subtitle`, section.subtitle)}</h2>
+                <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-xl mx-auto mb-6">{t(`homePage.preview.${sectionIdKey}.description`, section.description)}</p>
+                <Button
+                  href={section.link}
+                  variant="primary"
+                  size="md"
+                  className="font-medium"
+                  icon={<ChevronRight size={20}/>}
+                  iconPosition="trailing"
+                >
+                  {t(`homePage.preview.${sectionIdKey}.linkLabel`, section.linkLabel)}
+                </Button>
+              </AnimatedDiv>
 
             {/* Specific content for articles preview */}
             {section.id === 'articles-preview' && (

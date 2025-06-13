@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import AuthModalWrapper from './AuthModalWrapper';
 import Button from '../ui/Button';
@@ -16,6 +17,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
   onClose,
   onSwitchToLogin
 }) => {
+  const { t } = useTranslation();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -43,14 +45,14 @@ const SignupModal: React.FC<SignupModalProps> = ({
     setLoading(false);
 
     if (error) {
-      setMessage({ type: 'error', content: `שגיאה ביצירת החשבון: ${error.message}` });
+      setMessage({ type: 'error', content: t('auth.signup.errorCreatingAccount', `שגיאה ביצירת החשבון: ${error.message}`, { error: error.message }) });
     } else if (data.user) {
       const prevEmail = email;
       const prevPassword = password;
       if (data.user.identities?.length === 0 || !data.session) {
-         setMessage({ type: 'success', content: "חשבון נוצר בהצלחה! נשלח אליך מייל לאימות החשבון." });
+         setMessage({ type: 'success', content: t('auth.signup.successAccountCreatedConfirmationNeeded', "חשבון נוצר בהצלחה! נשלח אליך מייל לאימות החשבון.") });
       } else {
-        setMessage({ type: 'success', content: "חשבון נוצר והתחברת בהצלחה!" });
+        setMessage({ type: 'success', content: t('auth.signup.successAccountCreatedAndLoggedIn', "חשבון נוצר והתחברת בהצלחה!") });
       }
       setFirstName('');
       setLastName('');
@@ -60,7 +62,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
         onSwitchToLogin(prevEmail, prevPassword);
       }, 3000);
     } else {
-      setMessage({ type: 'error', content: "אירעה שגיאה לא צפויה. נסה שנית." });
+      setMessage({ type: 'error', content: t('auth.signup.errorUnexpected', "אירעה שגיאה לא צפויה. נסה שנית.") });
     }
   };
 
@@ -69,7 +71,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
   }
 
   return (
-    <AuthModalWrapper isOpen={isOpen} onClose={onClose} title="יצירת חשבון">
+    <AuthModalWrapper isOpen={isOpen} onClose={onClose} title={t('auth.signup.title', "יצירת חשבון")}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -87,7 +89,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
 
           <div>
             <label htmlFor="signup-firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              שם פרטי
+              {t('auth.signup.firstNameLabel', 'שם פרטי')}
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -99,7 +101,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light sm:text-sm bg-gray-50 dark:bg-secondary-dark text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                placeholder="לדוגמה: משה"
+                placeholder={t('auth.signup.firstNamePlaceholder', "לדוגמה: משה")}
                 required
                 disabled={loading}
               />
@@ -108,7 +110,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
 
           <div>
             <label htmlFor="signup-lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              שם משפחה
+              {t('auth.signup.lastNameLabel', 'שם משפחה')}
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -120,7 +122,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light sm:text-sm bg-gray-50 dark:bg-secondary-dark text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                placeholder="לדוגמה: כהן"
+                placeholder={t('auth.signup.lastNamePlaceholder', "לדוגמה: כהן")}
                 required
                 disabled={loading}
               />
@@ -129,7 +131,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
 
           <div>
             <label htmlFor="signup-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              כתובת אימייל
+              {t('auth.signup.emailLabel', 'כתובת אימייל')}
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -141,7 +143,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light sm:text-sm bg-gray-50 dark:bg-secondary-dark text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                placeholder="you@example.com"
+                placeholder={t('auth.signup.emailPlaceholder', "you@example.com")}
                 required
                 disabled={loading}
               />
@@ -150,7 +152,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
 
           <div>
             <label htmlFor="signup-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              סיסמה
+              {t('auth.signup.passwordLabel', 'סיסמה')}
             </label>
             <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -162,7 +164,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light sm:text-sm bg-gray-50 dark:bg-secondary-dark text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                    placeholder="לפחות 8 תווים"
+                    placeholder={t('auth.signup.passwordPlaceholder', "לפחות 8 תווים")}
                     required
                     minLength={8}
                     disabled={loading}
@@ -179,11 +181,11 @@ const SignupModal: React.FC<SignupModalProps> = ({
             iconPosition="leading"
             disabled={loading}
           >
-            {loading ? 'יוצר חשבון...' : 'צור חשבון'}
+            {loading ? t('auth.signup.loadingButton', 'יוצר חשבון...') : t('auth.signup.submitButton', 'צור חשבון')}
           </Button>
 
           <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-            כבר יש לך חשבון?{' '}
+            {t('auth.signup.loginPrompt', "כבר יש לך חשבון?")}{' '}
             <Button
               as="button"
               type="button"
@@ -195,7 +197,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
               iconPosition="leading"
               disabled={loading}
             >
-              התחבר
+              {t('auth.signup.loginLink', "התחבר")}
             </Button>
           </p>
         </form>

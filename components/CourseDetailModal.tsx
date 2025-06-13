@@ -1,5 +1,6 @@
 
 import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShoppingCart, Info } from 'lucide-react';
 import { Course } from '../types';
@@ -13,6 +14,7 @@ interface CourseDetailModalProps {
 }
 
 const CourseDetailModal: React.FC<CourseDetailModalProps> = ({ course, onClose }) => {
+  const { t } = useTranslation();
   useEffect(() => {
     // Prevent background scroll when modal is open
     document.body.style.overflow = 'hidden';
@@ -60,7 +62,7 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({ course, onClose }
               variant="ghost"
               size="sm"
               className="p-2 rounded-full text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 !shadow-none"
-              aria-label="סגור חלון"
+              aria-label={t('courseDetailModal.closeButtonAriaLabel', "סגור חלון")}
             >
               <X size={24} />
             </Button>
@@ -84,7 +86,7 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({ course, onClose }
               className="w-full text-lg font-semibold shadow-lg hover:shadow-xl"
               icon={<ShoppingCart size={22} className="me-2.5"/>}
             >
-              לרכישה מאובטחת
+              {t('courseDetailModal.securePurchaseButton', 'לרכישה מאובטחת')}
             </Button>
           </footer>
         </motion.div>

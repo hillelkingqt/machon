@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -28,6 +29,7 @@ const ScrollToTop: React.FC = () => {
 };
 
 const App: React.FC = () => {
+    const { t } = useTranslation();
     const [darkMode, setDarkMode] = useState<DarkMode>(() => {
         if (typeof window !== 'undefined') {
             const savedMode = localStorage.getItem('darkMode');
@@ -75,7 +77,7 @@ const App: React.FC = () => {
                                     <Route
                                         path="/admin"
                                         element={
-                                            <Suspense fallback={<div>Loading...</div>}>
+                                            <Suspense fallback={<div>{t('app.loadingAdminPage', 'Loading...')}</div>}>
                                                 <AdminPage />
                                             </Suspense>
                                         }

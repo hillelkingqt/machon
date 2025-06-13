@@ -3,7 +3,8 @@ import { LucideIcon } from 'lucide-react';
 import React from 'react'; // Added for React.ElementType
 
 export interface NavItem {
-    label: string;
+    labelKey: string; // Changed from label to labelKey
+    defaultLabel?: string; // Optional: for fallback if key not found
     href: string;
     external?: boolean;
     isButton?: boolean;

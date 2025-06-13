@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { MessageSquare, Send } from 'lucide-react';
@@ -29,6 +30,7 @@ interface Message {
 }
 
 const ChatWidget: React.FC = () => {
+  const { t } = useTranslation();
   const { session, user, profile } = useAuth();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -50,7 +52,7 @@ const ChatWidget: React.FC = () => {
   // const [submissionStatus, setSubmissionStatus] = useState(''); // Removed
   // const [isSubmitting, setIsSubmitting] = useState(false); // Removed, or rename if login needs specific loading
 
-  const initialAiMessage = "שלום לך! \n במה אנו יכולים לעזור לך היום?";
+  const initialAiMessage = t('chatWidget.initialAiMessage', "שלום לך! \n במה אנו יכולים לעזור לך היום?");
 
   useEffect(() => {
     const container = messagesRef.current;
@@ -67,11 +69,11 @@ const ChatWidget: React.FC = () => {
   const sendTelegramMessageToOwner = async (messageContent: string) => {
     if (!user?.email || !profile?.fullName) {
       console.error('User email or profile name is missing. Cannot send Telegram message.');
-      setMessages(prev => [...prev, { role: 'ai', text: 'שגיאה: פרטי המשתמש שלך (שם ואימייל) חסרים. לא ניתן לשלוח הודעה כעת.' }]);
+      setMessages(prev => [...prev, { role: 'ai', text: t('chatWidget.errorUserInfoMissing', 'שגיאה: פרטי המשתמש שלך (שם ואימייל) חסרים. לא ניתן לשלוח הודעה כעת.') }]);
       return;
     }
 
-    setMessages(prev => [...prev, { role: 'ai', text: 'שולח הודעה לבעלי האתר...' }]);
+    setMessages(prev => [...prev, { role: 'ai', text: t('chatWidget.statusSendingToOwner', 'שולח הודעה לבעלי האתר...') }]);
 
     const TELEGRAM_WORKER_URL = 'https://machon.hillelben14.workers.dev/send-telegram'; // Conceptual endpoint
 
@@ -92,14 +94,14 @@ const ChatWidget: React.FC = () => {
       const result = await response.json();
 
       if (response.ok && result.success) {
-        setMessages(prev => [...prev, { role: 'ai', text: 'ההודעה שלך נשלחה בהצלחה לבעלי האתר.' }]);
+        setMessages(prev => [...prev, { role: 'ai', text: t('chatWidget.telegramSuccess', 'ההודעה שלך נשלחה בהצלחה לבעלי האתר.') }]);
       } else {
         console.error('Failed to send Telegram message:', result);
-        setMessages(prev => [...prev, { role: 'ai', text: `אירעה שגיאה בשליחת ההודעה: ${result.error || 'נסה שנית מאוחר יותר.'}` }]);
+        setMessages(prev => [...prev, { role: 'ai', text: t('chatWidget.telegramErrorResult', `אירעה שגיאה בשליחת ההודעה: ${result.error || 'נסה שנית מאוחר יותר.'}`, { error: result.error || t('chatWidget.tryAgainLater', 'נסה שנית מאוחר יותר.')}) }]);
       }
     } catch (error) {
       console.error('Error sending Telegram message:', error);
-      setMessages(prev => [...prev, { role: 'ai', text: 'אירעה שגיאה קריטית בשליחת ההודעה. אנא בדוק את חיבור האינטרנט שלך ונסה שוב.' }]);
+      setMessages(prev => [...prev, { role: 'ai', text: t('chatWidget.telegramErrorCritical', 'אירעה שגיאה קריטית בשליחת ההודעה. אנא בדוק את חיבור האינטרנט שלך ונסה שוב.') }]);
     }
   };
 
@@ -121,87 +123,20 @@ const ChatWidget: React.FC = () => {
     setInput('');
     setLoading(true);
 
-    const baseSystemPrompt = `אתה נציג שירות לקוחות באתר של '${APP_NAME}'. שמך הוא 'נציג מכון אביב'.
-    המטרה שלך היא לסייע למשתמשים עם שאלותיהם לגבי המכון, הקורסים שלנו, המאמרים, ותכנים נוספים באתר.
-    עליך להתנהג בצורה מקצועית, ידידותית ועוזרת.
-    **שים לב היטב להקשר מהדף הנוכחי בו המשתמש נמצא (יינתן לך בהמשך) ולהיסטוריית השיחה המלאה כדי לספק תשובות מדויקות ורלוונטיות.**
-    בשום פנים ואופן אל תזכיר שאתה מודל שפה, בינה מלאכותית, או שנוצרת על ידי גוגל. אתה אך ורק נציג שירות של '${APP_NAME}'.
-    האתר מציע קורסי הכנה למבחני מחוננים ותוכניות הצטיינות, מאמרים מקצועיים בתחום, וחנות מוצרים.
-    אנא השתמש ב-Markdown לעיצוב התשובות שלך כאשר זה רלוונטי ומוסיף ערך. לדוגמה, השתמש ב-**כדי להדגיש טקסט**, ב-*טקסט נטוי* לטקסט נטוי, וברשימות (באמצעות כוכביות * או מקפים -) כאשר אתה מציג מספר פריטים. היוזמה לשימוש ב-Markdown היא שלך כאשר אתה חושב שזה ישפר את קריאות התשובה.
-    When creating bulleted lists, ensure you use an asterisk (*) or a hyphen (-) followed by a space, then the list item text. For example: \`* First item\` or \`- Second item\`.
-
-    Correct Bullet List Formatting:
-    * Item 1
-    * Item 2
-      - Nested Item A (use two spaces for indentation then asterisk/hyphen)
-    - Another Item
-
-    Extended Markdown Formatting Guide:
-    In addition to bold, italics, and basic lists, you can use the following Markdown features to enhance your responses:
-
-    1.  **Headings:**
-        # H1 Heading
-        ## H2 Heading
-        ### H3 Heading
-        #### H4 Heading
-        ##### H5 Heading
-        ###### H6 Heading
-
-    2.  **Numbered Lists:**
-        1. First item
-        2. Second item
-        3. Third item
-           1. Nested item (indent with 3 spaces)
-
-    3.  **Tables (GFM):**
-        | Header 1 | Header 2 | Header 3 |
-        | :------- | :------: | -------: |
-        | Align-L  | Center   | Align-R  |
-        | Cell 2   | Cell 3   | Cell 4   |
-
-    4.  **Blockquotes:**
-        > This is a blockquote.
-        > It can span multiple lines.
-
-    5.  **Inline Code:**
-        Use backticks for inline code, like \`const example = "hello";\`.
-
-    6.  **Horizontal Rules:**
-        Use three or more hyphens, asterisks, or underscores:
-        ---
-        ***
-        ___
-
-    7.  **Strikethrough:**
-        Use two tildes for ~~strikethrough text~~.
-
-    8.  **Task Lists (GFM):**
-        * [x] Completed task
-        * [ ] Incomplete task
-        * [ ] Another task
-          * [x] Nested completed task
-    Use these features judiciously to improve the clarity and presentation of your answers.
-
-    Creating Navigation Buttons:
-    You can create special links that will be rendered as clickable buttons for navigating within the site. This is useful for guiding users to relevant pages.
-    To create a navigation button, use the following Markdown syntax:
-    \`[Button Text](URL "nav-button")\`
-
-    -   \`Button Text\`: The text that will appear on the button.
-    -   \`URL\`: The relative path for navigation (e.g., \`/courses\`, \`/about\`, \`/article/some-id\`). **Must be a relative path.**
-    -   \`"nav-button"\`: The title attribute must be exactly "nav-button" (including the quotes in the Markdown link definition).
-
-    Examples:
-    -   To direct a user to the main courses page: \`[לרשימת הקורסים המלאה](/courses "nav-button")\`
-    -   To link to a specific article: \`[קרא עוד על המאמר בנושא X](/article/article-x-id "nav-button")\`
-    -   To suggest navigating to the "About Us" page: \`[עבור לדף אודותינו](/about "nav-button")\`
-
-    Offer these navigation buttons when it's helpful for the user, such as after providing information that has a corresponding page on the site, or when the user asks for directions to a specific section. Only use relative paths for these buttons. For external links, use standard Markdown links which will open in a new tab.
-    `;
+    const appNameTranslated = t('appName', APP_NAME);
+    const baseSystemPrompt = t('chatWidget.systemPrompt.roleDescription', `אתה נציג שירות לקוחות באתר של '${appNameTranslated}'. שמך הוא 'נציג מכון אביב'.`, { appName: appNameTranslated }) + "\n" +
+      t('chatWidget.systemPrompt.goal', 'המטרה שלך היא לסייע למשתמשים עם שאלותיהם לגבי המכון, הקורסים שלנו, המאמרים, ותכנים נוספים באתר.') + "\n" +
+      t('chatWidget.systemPrompt.behavior', 'עליך להתנהג בצורה מקצועית, ידידותית ועוזרת.') + "\n" +
+      t('chatWidget.systemPrompt.identityConstraint', `**שים לב היטב להקשר מהדף הנוכחי בו המשתמש נמצא (יינתן לך בהמשך) ולהיסטוריית השיחה המלאה כדי לספק תשובות מדויקות ורלוונטיות.**\nבשום פנים ואופן אל תזכיר שאתה מודל שפה, בינה מלאכותית, או שנוצרת על ידי גוגל. אתה אך ורק נציג שירות של '${appNameTranslated}'.`, { appName: appNameTranslated }) + "\n" +
+      t('chatWidget.systemPrompt.siteOfferings', 'האתר מציע קורסי הכנה למבחני מחוננים ותוכניות הצטיינות, מאמרים מקצועיים בתחום, וחנות מוצרים.') + "\n" +
+      t('chatWidget.systemPrompt.markdownUsage', 'אנא השתמש ב-Markdown לעיצוב התשובות שלך כאשר זה רלוונטי ומוסיף ערך. לדוגמה, השתמש ב-**כדי להדגיש טקסט**, ב-*טקסט נטוי* לטקסט נטוי, וברשימות (באמצעות כוכביות * או מקפים -) כאשר אתה מציג מספר פריטים. היוזמה לשימוש ב-Markdown היא שלך כאשר אתה חושב שזה ישפר את קריאות התשובה.\nWhen creating bulleted lists, ensure you use an asterisk (*) or a hyphen (-) followed by a space, then the list item text. For example: `* First item` or `- Second item`.\n\nCorrect Bullet List Formatting:\n* Item 1\n* Item 2\n  - Nested Item A (use two spaces for indentation then asterisk/hyphen)\n- Another Item\n\nExtended Markdown Formatting Guide:\nIn addition to bold, italics, and basic lists, you can use the following Markdown features to enhance your responses:\n\n1.  **Headings:**\n    # H1 Heading\n    ## H2 Heading\n    ### H3 Heading\n    #### H4 Heading\n    ##### H5 Heading\n    ###### H6 Heading\n\n2.  **Numbered Lists:**\n    1. First item\n    2. Second item\n    3. Third item\n       1. Nested item (indent with 3 spaces)\n\n3.  **Tables (GFM):**\n    | Header 1 | Header 2 | Header 3 |\n    | :------- | :------: | -------: |\n    | Align-L  | Center   | Align-R  |\n    | Cell 2   | Cell 3   | Cell 4   |\n\n4.  **Blockquotes:**\n    > This is a blockquote.\n    > It can span multiple lines.\n\n5.  **Inline Code:**\n    Use backticks for inline code, like `const example = "hello";`.\n\n6.  **Horizontal Rules:**\n    Use three or more hyphens, asterisks, or underscores:\n    ---\n    ***\n    ___\n\n7.  **Strikethrough:**\n    Use two tildes for ~~strikethrough text~~.\n\n8.  **Task Lists (GFM):**\n    * [x] Completed task\n    * [ ] Incomplete task\n    * [ ] Another task\n      * [x] Nested completed task\nUse these features judiciously to improve the clarity and presentation of your answers.\n\nCreating Navigation Buttons:\nYou can create special links that will be rendered as clickable buttons for navigating within the site. This is useful for guiding users to relevant pages.\nTo create a navigation button, use the following Markdown syntax:\n`[Button Text](URL "nav-button")`\n\n-   `Button Text`: The text that will appear on the button.\n-   `URL`: The relative path for navigation (e.g., `/courses`, `/about`, `/article/some-id`). **Must be a relative path.**\n-   `"nav-button"`: The title attribute must be exactly "nav-button" (including the quotes in the Markdown link definition).\n\nExamples:\n-   To direct a user to the main courses page: `[${t('chatWidget.systemPrompt.navButtonExampleCourses', 'לרשימת הקורסים המלאה')}](/courses "nav-button")`\n-   To link to a specific article: `[${t('chatWidget.systemPrompt.navButtonExampleArticle', 'קרא עוד על המאמר בנושא X')}](/article/article-x-id "nav-button")`\n-   To suggest navigating to the "About Us" page: `[${t('chatWidget.systemPrompt.navButtonExampleAbout', 'עבור לדף אודותינו')}](/about "nav-button")`\n\nOffer these navigation buttons when it's helpful for the user, such as after providing information that has a corresponding page on the site, or when the user asks for directions to a specific section. Only use relative paths for these buttons. For external links, use standard Markdown links which will open in a new tab.\n');
 
     let currentSystemPrompt = baseSystemPrompt;
 
     if (session && user && profile?.fullName && user?.email) {
+      // The content of loggedInInstructions is highly technical and might not need direct translation,
+      // but if parts of it are user-facing or need to be understood by a non-English speaking developer,
+      // then those specific parts would need translation. For now, keeping as is for system functionality.
       const loggedInInstructions = `\n\n**Special Capability: Sending Messages to Site Owner**
 You have a special ability: if the user asks you to send a message to the website owner or administrator, you can do this. The message will be sent via Telegram.
 When you use this ability, their name ('${profile.fullName}') and email ('${user.email}') will be automatically included with their message.
@@ -224,37 +159,31 @@ Only use this command when the user explicitly wants to send a message to the ow
     const getArticleById = (id: string): Article | undefined => ARTICLES_DATA.find(article => article.id === id);
 
     if (currentPath === "/") {
-        pageContext = `המשתמש נמצא כעת בדף הבית. דף הבית מציג מידע כללי על המכון, תצוגה מקדימה של קורסים ומאמרים. עודד אותו לשאול על הקורסים או על נושאים ספציפיים שמעניינים אותו.`;
+        pageContext = t('chatWidget.pageContext.home', `המשתמש נמצא כעת בדף הבית. דף הבית מציג מידע כללי על המכון, תצוגה מקדימה של קורסים ומאמרים. עודד אותו לשאול על הקורסים או על נושאים ספציפיים שמעניינים אותו.`);
     } else if (currentPath === "/about") {
         const aboutSection = PREVIEW_SECTIONS.find(s => s.id === 'about-preview');
-        pageContext = `המשתמש נמצא כעת בדף 'אודותינו'. דף זה מתאר את '${APP_NAME}': ${aboutSection?.description}. ניתן גם למצוא בו מידע על צוות המכון והניסיון שלנו.`;
+        pageContext = t('chatWidget.pageContext.about', `המשתמש נמצא כעת בדף 'אודותינו'. דף זה מתאר את '${appNameTranslated}': ${aboutSection?.description}. ניתן גם למצוא בו מידע על צוות המכון והניסיון שלנו.`, { appName: appNameTranslated, description: aboutSection?.description });
     } else if (currentPath === "/courses") {
         const courseTitlesList = COURSES_DATA.map(c => c.title).join('\n- ');
-        pageContext = `המשתמש נמצא כעת בדף 'הקורסים שלנו'. רשימת הקורסים שאנו מציעים:
-- ${courseTitlesList}
-ניתן לשאול על כל קורס באופן ספציפי, למשל מה הוא כולל, למי הוא מיועד, מה המחיר וכו'.`;
+        pageContext = t('chatWidget.pageContext.courses', `המשתמש נמצא כעת בדף 'הקורסים שלנו'. רשימת הקורסים שאנו מציעים:\n- ${courseTitlesList}\nניתן לשאול על כל קורס באופן ספציפי, למשל מה הוא כולל, למי הוא מיועד, מה המחיר וכו'.`, { courseTitlesList });
     } else if (currentPath === "/articles") {
         const articleTitles = ARTICLES_DATA.map(article => article.title).join('\n- ');
-        pageContext = `המשתמש נמצא כעת בדף המאמרים הראשי. רשימת המאמרים הזמינים באתר:
-- ${articleTitles}
-ניתן לשאול על כל אחד מהמאמרים הללו.`;
+        pageContext = t('chatWidget.pageContext.articles', `המשתמש נמצא כעת בדף המאמרים הראשי. רשימת המאמרים הזמינים באתר:\n- ${articleTitles}\nניתן לשאול על כל אחד מהמאמרים הללו.`, { articleTitles });
     } else if (currentPath.startsWith("/article/")) {
         const articleId = currentPath.split("/article/")[1];
         const article = getArticleById(articleId);
         if (article) {
-            pageContext = `המשתמש נמצא כעת בדף המאמר '${article.title}'. תקציר המאמר: ${article.excerpt}. ניתן לשאול על פרטים נוספים מהמאמר.`;
+            pageContext = t('chatWidget.pageContext.articleDetail', `המשתמש נמצא כעת בדף המאמר '${article.title}'. תקציר המאמר: ${article.excerpt}. ניתן לשאול על פרטים נוספים מהמאמר.`, { title: article.title, excerpt: article.excerpt });
         } else {
-            pageContext = `המשתמש נמצא כעת בדף מאמר, אך המאמר הספציפי לא זוהה.`;
+            pageContext = t('chatWidget.pageContext.articleNotFound', `המשתמש נמצא כעת בדף מאמר, אך המאמר הספציפי לא זוהה.`);
         }
     } else if (currentPath === "/faq") {
         const allFaqQuestions = FAQ_DATA.flatMap(category => category.questions.map(q => q.question)).join('\n- ');
-        pageContext = `המשתמש נמצא כעת בדף 'שאלות נפוצות'. רשימת השאלות הנפוצות באתר:
-- ${allFaqQuestions}
-ניתן לשאול על כל אחת מהשאלות הללו.`;
+        pageContext = t('chatWidget.pageContext.faq', `המשתמש נמצא כעת בדף 'שאלות נפוצות'. רשימת השאלות הנפוצות באתר:\n- ${allFaqQuestions}\nניתן לשאול על כל אחת מהשאלות הללו.`, { allFaqQuestions });
     } else if (currentPath === "/contact") {
-        pageContext = `המשתמש נמצא כעת בדף 'צור קשר'. בדף זה ניתן למצוא את פרטי ההתקשרות שלנו ולשלוח פנייה.`;
+        pageContext = t('chatWidget.pageContext.contact', `המשתמש נמצא כעת בדף 'צור קשר'. בדף זה ניתן למצוא את פרטי ההתקשרות שלנו ולשלוח פנייה.`);
     } else if (currentPath === "/shop") {
-        pageContext = `המשתמש נמצא כעת בדף החנות. בדף זה ניתן לרכוש את קורסי ההכנה שלנו ומוצרים נוספים.`;
+        pageContext = t('chatWidget.pageContext.shop', `המשתמש נמצא כעת בדף החנות. בדף זה ניתן לרכוש את קורסי ההכנה שלנו ומוצרים נוספים.`);
     }
 
     const apiPayloadContents = [
@@ -264,7 +193,7 @@ Only use this command when the user explicitly wants to send a message to the ow
         },
         {
             role: 'model' as const,
-            parts: [{ text: 'הבנתי את ההקשר. כיצד אוכל לסייע לך?' }],
+            parts: [{ text: t('chatWidget.initialModelResponse', 'הבנתי את ההקשר. כיצד אוכל לסייע לך?') }],
         },
         ...updatedMessages.map(msg => ({
             role: msg.role === 'ai' ? 'model' : 'user',
@@ -304,7 +233,7 @@ Only use this command when the user explicitly wants to send a message to the ow
     } else if (responseText) { // Ensure responseText is not null before adding
         setMessages(prev => [...prev, { role: 'ai', text: responseText }]);
     } else { // Handle case where responseText is null (error from Gemini)
-        setMessages(prev => [...prev, { role: 'ai', text: '❌ אירעה שגיאה בתקשורת עם ה-AI.' }]);
+        setMessages(prev => [...prev, { role: 'ai', text: t('chatWidget.errorAiCommunication', '❌ אירעה שגיאה בתקשורת עם ה-AI.') }]);
     }
   };
 
@@ -317,7 +246,7 @@ Only use this command when the user explicitly wants to send a message to the ow
       setOpen(false); // Close chat widget
       navigate('/admin'); // Navigate to admin page
     } else {
-      setAdminError('סיסמה שגויה. נסה שוב.');
+      setAdminError(t('chatWidget.adminLogin.errorWrongPassword', 'סיסמה שגויה. נסה שוב.'));
     }
   };
 
@@ -351,7 +280,7 @@ Only use this command when the user explicitly wants to send a message to the ow
           >
             <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-primary dark:text-sky-400 font-semibold text-lg">
-                {showAdminLogin ? 'Admin Login' : 'נציג מכון אביב'}
+                {showAdminLogin ? t('chatWidget.headerAdminLogin', 'Admin Login') : t('chatWidget.headerDefault', 'נציג מכון אביב')}
               </h3>
               <button
                 onClick={() => {
@@ -359,7 +288,7 @@ Only use this command when the user explicitly wants to send a message to the ow
                   if (showAdminLogin) resetAdminLoginStates();
                   // if (showAdminPanel) resetAdminPanelStates(); // Removed
                 }}
-                aria-label="סגור"
+                aria-label={t('chatWidget.closeButtonAriaLabel', "סגור")}
                 className="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
               >
                 ✕
@@ -368,17 +297,17 @@ Only use this command when the user explicitly wants to send a message to the ow
 
             {showAdminLogin ? (
               <div className="p-6 flex flex-col gap-y-5 items-center justify-center h-full">
-                <h4 className="text-2xl font-semibold text-gray-800 dark:text-white mb-2">התחברות למערכת ניהול</h4>
+                <h4 className="text-2xl font-semibold text-gray-800 dark:text-white mb-2">{t('chatWidget.adminLogin.title', 'התחברות למערכת ניהול')}</h4>
                 <input
                   type="password"
                   value={adminPasswordInput}
                   onChange={(e) => setAdminPasswordInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleAdminLoginSubmit()}
-                  placeholder="הכנס סיסמה"
+                  placeholder={t('chatWidget.adminLogin.passwordPlaceholder', "הכנס סיסמה")}
                   className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white text-right"
                 />
                 <Button onClick={handleAdminLoginSubmit} className="w-full bg-primary hover:bg-primary-dark text-white py-2.5">
-                  התחבר
+                  {t('chatWidget.adminLogin.loginButton', 'התחבר')}
                 </Button>
                 {adminError && <p className="text-red-500 text-sm mt-1 text-center">{adminError}</p>}
               </div>
@@ -433,7 +362,7 @@ Only use this command when the user explicitly wants to send a message to the ow
                       )}
                     </motion.div>
                   ))}
-                  {loading && <div className="p-3 text-center text-xs text-gray-400 dark:text-gray-500">מטעין...</div>}
+                  {loading && <div className="p-3 text-center text-xs text-gray-400 dark:text-gray-500">{t('chatWidget.loadingMessage', 'מטעין...')}</div>}
                 </div>
                 <div className="p-3 border-t border-gray-200 dark:border-gray-700 flex items-center gap-2">
                   <input
@@ -441,7 +370,7 @@ Only use this command when the user explicitly wants to send a message to the ow
                     value={input}
                     onChange={e => setInput(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && sendMessage()}
-                    placeholder="כתבו הודעה..."
+                    placeholder={t('chatWidget.inputPlaceholder', "כתבו הודעה...")}
                   />
                   <motion.button
                     whileHover={{ scale: 1.05 }}
@@ -450,7 +379,7 @@ Only use this command when the user explicitly wants to send a message to the ow
                     disabled={loading}
                     className="bg-sky-500 hover:bg-sky-600 text-white font-medium rounded-md px-4 py-2 text-sm disabled:opacity-60 transition-colors duration-150 flex items-center justify-center"
                   >
-                    <span className="mr-2">שלח</span>
+                    <span className="mr-2">{t('chatWidget.sendButton', 'שלח')}</span>
                     <Send size={18} />
                   </motion.button>
                 </div>
@@ -465,7 +394,7 @@ Only use this command when the user explicitly wants to send a message to the ow
         onClick={() => setOpen(o => !o)}
         className="bg-gradient-to-br from-primary to-primary-dark text-white rounded-full p-3 shadow-xl focus:outline-none flex items-center"
       >
-        <span className="ml-2">צ'אט</span>
+        <span className="ml-2">{t('chatWidget.toggleButton', 'צ\'אט')}</span>
         <MessageSquare size={24} />
       </motion.button>
     </div>
