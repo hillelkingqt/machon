@@ -1097,7 +1097,7 @@ ${currentBody}
               {adminsList.map(admin => (
                 <div key={admin.id} className="p-3.5 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm bg-slate-50 dark:bg-slate-700/40 flex justify-between items-center">
                   <div>
-                    <p className="text-md font-semibold text-slate-800 dark:text-slate-100">{admin.email}</p>
+                    <p className="text-md font-semibold text-slate-800 dark:text-slate-100">{admin.gmail}</p>
                     {admin.expires_at && (
                       <p className="text-xs text-slate-500 dark:text-slate-400">
                         תוקף: {new Date(admin.expires_at).toLocaleDateString('he-IL')} {new Date(admin.expires_at).toLocaleTimeString('he-IL')}
@@ -1106,9 +1106,9 @@ ${currentBody}
                   </div>
                   {user?.email && authorizedEmails.includes(user.email) && (
                     <button
-                      onClick={() => handleRemoveAdmin(admin.id, admin.email)}
+                      onClick={() => handleRemoveAdmin(admin.id, admin.gmail)}
                       className="px-3 py-1.5 text-xs font-medium rounded-md flex items-center transition-colors bg-red-500 hover:bg-red-600 text-white"
-                      disabled={isSubmittingAdmin || isLoadingAdmins || (user?.email === admin.email)} // Prevent self-removal and disable during other operations
+                      disabled={isSubmittingAdmin || isLoadingAdmins || (user?.email === admin.gmail)} // Prevent self-removal and disable during other operations
                     >
                       <Trash2 size={14} className="ml-1.5" />
                       הסר מנהל
