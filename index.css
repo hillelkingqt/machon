@@ -1,3 +1,469 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+            font-family: 'Rubik', 'Assistant', sans-serif;
+            scroll-behavior: smooth;
+            overscroll-behavior-y: contain;
+        }
+        /* Custom scrollbar for webkit browsers */
+        ::-webkit-scrollbar {
+            width: 12px;
+            height: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9; /* Tailwind slate-100 */
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: #94a3b8; /* Tailwind slate-400 */
+            border-radius: 10px;
+            border: 3px solid #f1f5f9; /* Tailwind slate-100 */
+        }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background-color: #64748b; /* Tailwind slate-500 */
+            }
+
+        html.dark ::-webkit-scrollbar-track {
+            background: #0f172a; /* Tailwind slate-900 */
+        }
+
+        html.dark ::-webkit-scrollbar-thumb {
+            background-color: #475569; /* Tailwind slate-600 */
+            border-color: #0f172a; /* Tailwind slate-900 */
+        }
+html.dark ::-webkit-scrollbar-corner {
+    background: #0f172a;   /* צבע כהה תואם track */
+}
+            html.dark ::-webkit-scrollbar-thumb:hover {
+                background-color: #334155; /* Tailwind slate-700 */
+            }
+
+        .gradient-text {
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            background-size: 250% auto;
+            animation: shimmer-animation 5s ease-in-out infinite alternate;
+        }
+
+        @keyframes shimmer-animation {
+            0% {
+                background-position: 0% center;
+            }
+
+            100% {
+                background-position: 100% center;
+            }
+        }
+
+        /* --- "BILLION TIMES BETTER" ARTICLE STYLES --- */
+
+        .prose {
+            font-family: 'Assistant', sans-serif;
+            font-size: 1.18rem; /* Slightly increased from 1.15rem */
+            line-height: 1.9; /* Increased from 1.85 */
+            color: #334155; /* Tailwind slate-700 */
+        }
+
+        html.dark .prose {
+            color: #cbd5e1; /* Tailwind slate-300 */
+        }
+
+        .prose .h1-article-style {
+            font-family: 'Rubik', sans-serif;
+            @apply text-4xl font-black tracking-tight mt-2 mb-6 text-slate-900;
+            @apply sm:text-5xl;
+            @apply md:text-6xl;
+            @apply dark:text-white;
+            letter-spacing: -0.025em; /* Tighter for impact */
+            line-height: 1.1;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.03);
+        }
+
+        html.dark .prose .h1-article-style {
+            text-shadow: 0px 1px 3px rgba(0,0,0,0.2), 0 0 15px rgba(2, 207, 201, 0.1);
+        }
+
+        .prose .h2-article-style {
+            font-family: 'Rubik', sans-serif;
+            @apply text-3xl sm:text-4xl font-extrabold mt-20 mb-10 pt-5 pb-6 relative text-slate-800 dark:text-slate-100;
+            line-height: 1.2;
+            border-bottom: 4px solid; /* Thicker border */
+            @apply border-primary/50 dark:border-primary-light/40;
+        }
+
+            .prose .h2-article-style::before {
+                content: '';
+                @apply absolute bottom-[-4px] right-0 h-[4px] w-1/3 bg-gradient-to-r from-primary to-teal-500 dark:from-primary-light dark:to-teal-400;
+                transition: width 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+            }
+
+            .prose .h2-article-style:hover::before {
+                width: 70%;
+            }
+
+
+        .prose .h3-article-style {
+            font-family: 'Rubik', sans-serif;
+            @apply text-2xl sm:text-3xl font-bold mt-16 mb-8 text-primary dark:text-primary-light;
+            line-height: 1.25;
+        }
+
+            .prose .h3-article-style::before {
+                content: "❖"; /* More decorative prefix */
+                @apply text-primary/60 dark:text-primary-light/60 me-2.5 font-normal text-2xl opacity-80;
+            }
+
+        .prose .h4-article-style {
+            font-family: 'Rubik', sans-serif;
+            @apply text-xl sm:text-2xl font-semibold mt-12 mb-6 text-slate-700 dark:text-slate-200;
+            line-height: 1.3;
+            border-inline-start: 5px solid; /* Thicker, using inline-start for RTL/LTR */
+            @apply border-primary/40 dark:border-primary-light/40 ps-4;
+            background: linear-gradient(to left, transparent, rgba(2, 179, 174, 0.05));
+        }
+
+        html.dark .prose .h4-article-style {
+            background: linear-gradient(to left, transparent, rgba(2, 207, 201, 0.05));
+        }
+
+        html[dir="rtl"] .prose .h4-article-style {
+            @apply ps-0 pe-4;
+            background: linear-gradient(to right, transparent, rgba(2, 179, 174, 0.05));
+        }
+
+        html[dir="rtl"].dark .prose .h4-article-style {
+            background: linear-gradient(to right, transparent, rgba(2, 207, 201, 0.05));
+        }
+
+
+        html[dir="rtl"] .prose > p:first-of-type::first-letter {
+            font-family: 'Rubik', serif;
+            @apply float-right text-[7em] leading-[0.65em] font-black text-primary dark:text-primary-light me-3.5 mt-1.5;
+            text-shadow: 1px 1px 0px #ffffff, 3px 3px 0px rgba(2, 179, 174, 0.15), 0 0 10px rgba(2, 179, 174, 0.1);
+        }
+
+        html.dark html[dir="rtl"] .prose > p:first-of-type::first-letter {
+            text-shadow: 1px 1px 0px #1e293b, 3px 3px 0px rgba(2, 207, 201, 0.15), 0 0 10px rgba(2, 207, 201, 0.15);
+        }
+
+
+        .prose p {
+            @apply mb-8 sm:mb-9 text-slate-700 dark:text-slate-300;
+            font-size: 1.15rem;
+            line-height: 2;
+        }
+
+        /* --- Blockquote "Billion Times Better" Redesign --- */
+        .prose blockquote {
+            @apply my-14 sm:my-16 ps-10 pe-8 py-10 relative overflow-hidden;
+            background: linear-gradient(135deg, #e0f2fe 0%, #ecfeff 100%); /* Softer gradient */
+            border-inline-end: 8px solid;
+            @apply border-primary dark:border-primary-light;
+            border-radius: 1rem; /* rounded-2xl */
+            box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.06), 0 25px 40px -15px rgba(0, 0, 0, 0.08), inset 0 -5px 15px rgba(0,0,0,0.02);
+            direction: rtl;
+        }
+
+        html[dir="ltr"] .prose blockquote {
+            @apply border-inline-end-0 border-inline-start-8;
+        }
+
+        html.dark .prose blockquote {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            @apply border-primary-light;
+            box-shadow: 0 15px 35px -10px rgba(0,0,0,0.15), 0 25px 40px -15px rgba(0,0,0,0.2), inset 0 -5px 15px rgba(0,0,0,0.1);
+        }
+
+        .prose blockquote p {
+            @apply text-lg sm:text-xl text-slate-700 dark:text-slate-100 italic relative font-medium;
+            font-family: 'Assistant', serif;
+            line-height: 1.85;
+            z-index: 1;
+        }
+
+            .prose blockquote p:first-of-type::before {
+                content: "“";
+                font-family: 'Rubik', serif;
+                @apply text-[10rem] sm:text-[11rem] absolute -top-10 opacity-[0.06] dark:opacity-[0.04]; /* Even larger, more subtle */
+                color: var(--tw-prose-quote-borders);
+                inset-inline-end: 0.05em;
+                line-height: 1;
+                z-index: 0;
+                transform: scaleX(-1); /* Flip for RTL */
+            }
+
+        html[dir="ltr"] .prose blockquote p:first-of-type::before {
+            transform: none;
+        }
+
+        .prose blockquote p:last-of-type {
+            @apply mb-0;
+        }
+
+        .prose blockquote cite {
+            @apply block text-sm text-slate-500 dark:text-slate-400 mt-5 text-left font-semibold;
+            font-style: normal;
+        }
+
+        html[dir="rtl"] .prose blockquote cite {
+            @apply text-right;
+        }
+
+
+        /* --- Alert Box "Billion Times Better" Overhaul (No Text Titles) --- */
+        .alert-box {
+            @apply my-12 rounded-xl shadow-xl flex items-start p-6 sm:p-8 transition-all duration-300 hover:shadow-2xl;
+            border-width: 0;
+            border-inline-start-width: 8px; /* Thicker border */
+            /* Removed title text, rely on icon and styling */
+        }
+
+        html[dir="rtl"] .alert-box {
+            border-inline-start-width: 0;
+            border-inline-end-width: 8px;
+        }
+
+        .alert-icon-container {
+            @apply flex-shrink-0 me-5 rtl:ms-5 rtl:me-0 mt-0.5 bg-white/30 dark:bg-black/20 p-2.5 rounded-lg shadow-sm;
+        }
+
+        .alert-icon {
+            width: 2.25rem; /* w-9, slightly larger */
+            height: 2.25rem; /* h-9 */
+        }
+
+        .alert-content-container {
+            @apply flex-1;
+        }
+        /* .alert-box-title styling removed as title is removed from HTML */
+        .alert-box p {
+            @apply text-base sm:text-lg mb-0 leading-relaxed font-medium;
+        }
+
+        .alert-box-info {
+            @apply bg-gradient-to-br from-sky-100 to-blue-50 dark:from-sky-700/40 dark:to-blue-900/30 border-sky-500 dark:border-sky-400;
+        }
+
+            .alert-box-info .alert-icon {
+                @apply text-sky-600 dark:text-sky-300;
+            }
+            /* .alert-box-info .alert-box-title removed */
+            .alert-box-info p {
+                @apply text-sky-800 dark:text-sky-100;
+            }
+
+        .alert-box-tip {
+            @apply bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-800/40 dark:to-green-900/30 border-emerald-500 dark:border-emerald-400;
+        }
+
+            .alert-box-tip .alert-icon {
+                @apply text-emerald-600 dark:text-emerald-300;
+            }
+
+            .alert-box-tip p {
+                @apply text-emerald-800 dark:text-emerald-100;
+            }
+
+        .alert-box-note {
+            @apply bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-800/40 dark:to-purple-900/30 border-violet-500 dark:border-violet-400;
+        }
+
+            .alert-box-note .alert-icon {
+                @apply text-violet-600 dark:text-violet-300;
+            }
+
+            .alert-box-note p {
+                @apply text-violet-800 dark:text-violet-100;
+            }
+
+        .alert-box-warning {
+            @apply bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-800/40 dark:to-orange-900/30 border-amber-500 dark:border-amber-400;
+        }
+
+            .alert-box-warning .alert-icon {
+                @apply text-amber-600 dark:text-amber-300;
+            }
+
+            .alert-box-warning p {
+                @apply text-amber-800 dark:text-amber-100;
+            }
+
+
+        /* --- List Styling "Billion Times Better" Overhaul --- */
+        /* Standard list styling will be handled by Tailwind Prose defaults */
+        .prose ul, .prose ol {
+            @apply mb-10; /* Keep bottom margin for spacing */
+            /* list-style-position: outside; */ /* Let prose default handle this or remove if not needed */
+            /* ps-0 removed to allow default padding for bullets */
+        }
+
+        .prose li {
+            @apply mb-4; /* Keep bottom margin for spacing */
+            /* ps-12 sm:ps-14 relative removed */
+            font-size: 1.1rem; /* This was custom, decide if keep or let prose default */
+            line-height: 1.9; /* This was custom, decide if keep or let prose default */
+        }
+
+        /* html[dir="rtl"] .prose li removed as padding is no longer custom */
+
+        /* .prose ul li::marker { content: ''; } removed to show default markers */
+
+        /* .prose ul li::before rule (custom checkmark) removed */
+
+        /* html[dir="rtl"] .prose ul li::before rule removed */
+
+        /* .prose ol rules for custom counters removed to show default numbering */
+        /* .prose ol { counter-reset: list-counter; } */ /* Removed */
+        /* .prose ol li::marker { content: ''; } */ /* Removed */
+        /* .prose ol li::before rule (custom counter) removed */
+        /* html.dark .prose ol li::before rule removed */
+        /* html[dir="rtl"] .prose ol li::before rule removed */
+
+        .prose strong {
+            @apply font-extrabold text-slate-900 dark:text-slate-50;
+            font-family: 'Rubik', sans-serif;
+        }
+
+        .prose em {
+            @apply text-slate-700 dark:text-slate-200;
+            font-style: italic;
+            font-weight: 500; /* Assistant medium for em */
+        }
+
+        .prose a {
+            @apply text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-primary font-bold break-words transition-all duration-200 relative;
+            text-decoration: none;
+            border-bottom: 3px dotted; /* Changed to dotted for more distinction */
+            @apply border-primary/20 dark:border-primary-light/20 hover:border-primary/50 dark:hover:border-primary-light/50;
+            padding-bottom: 1px;
+        }
+
+            .prose a:hover {
+                background: rgba(2, 179, 174, 0.05);
+            }
+
+            html.dark .prose a:hover {
+                background: rgba(2, 207, 201, 0.05);
+            }
+
+            .prose a::after {
+                content: none;
+            }
+
+        /* --- HR "Billion Times Better" Redesign --- */
+        .prose hr {
+            @apply border-0 text-center my-20 sm:my-24;
+        }
+
+            .prose hr::after {
+                content: "✨ ◈ ✨"; /* More decorative separator */
+                display: block;
+                @apply text-4xl text-primary/40 dark:text-primary-light/40;
+                font-weight: 200; /* Lighter weight for symbols */
+                letter-spacing: 0.2em;
+            }
+
+        .prose code {
+            @apply px-2.5 py-1.5 bg-slate-200/70 dark:bg-slate-700/60 text-sm rounded-lg font-mono text-primary-dark dark:text-primary-light break-words shadow-md;
+            direction: ltr;
+            text-align: left;
+            font-size: 0.98em;
+            border: 1px solid rgba(203, 213, 225, 0.5);
+        }
+        html.dark .prose code {
+            border-color: rgba(71, 85, 105, 0.5);
+        }
+
+        .prose pre {
+            @apply my-10 p-6 sm:p-7 bg-slate-800 dark:bg-black/80 text-slate-100 dark:text-slate-200 rounded-2xl shadow-2xl overflow-x-auto text-base;
+            direction: ltr;
+            text-align: left;
+            border: 1px solid #334155;
+            line-height: 1.6;
+        }
+
+        html.dark .prose pre {
+            border-color: #475569;
+        }
+
+        .prose pre code {
+            @apply bg-transparent p-0 text-inherit rounded-none font-normal shadow-none border-0;
+            direction: ltr;
+            text-align: left;
+            font-size: 1em;
+        }
+
+        .prose img {
+            @apply rounded-2xl shadow-[0_15px_40px_-10px_rgba(0,0,0,0.15)] dark:shadow-[0_15px_40px_-10px_rgba(0,0,0,0.3)] my-12 mx-auto border-6 border-white dark:border-slate-700/70;
+            transition: transform 0.4s ease-out, box-shadow 0.4s ease-out;
+        }
+
+            .prose img:hover {
+                transform: scale(1.02);
+                box-shadow: 0 25px 50px -12px rgba(0,0,0,0.2);
+            }
+
+            html.dark .prose img:hover {
+                box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4);
+            }
+
+        .prose figure {
+            @apply my-12;
+        }
+
+        .prose figcaption {
+            @apply text-base text-center text-gray-500 dark:text-gray-400 mt-5 italic font-medium;
+        }
+
+        :root {
+            --tw-prose-body: #334155;
+            --tw-prose-headings: #0f172a;
+            --tw-prose-lead: #475569;
+            --tw-prose-links: #02b3ae;
+            --tw-prose-bold: #0f172a;
+            --tw-prose-counters: #02b3ae;
+            --tw-prose-bullets: #02b3ae;
+            --tw-prose-hr: #cbd5e1;
+            --tw-prose-quotes: #0f172a;
+            --tw-prose-quote-borders: #02b3ae;
+            --tw-prose-captions: #64748b;
+            --tw-prose-code: #019a94;
+            --tw-prose-pre-code: #e2e8f0;
+            --tw-prose-pre-bg: #1e293b;
+            --tw-prose-th-borders: #cbd5e1;
+            --tw-prose-td-borders: #e2e8f0;
+            --tw-prose-invert-body: #cbd5e1;
+            --tw-prose-invert-headings: #ffffff;
+            --tw-prose-invert-lead: #94a3b8;
+            --tw-prose-invert-links: #02cfc9;
+            --tw-prose-invert-bold: #ffffff;
+            --tw-prose-invert-counters: #02cfc9;
+            --tw-prose-invert-bullets: #02cfc9;
+            --tw-prose-invert-hr: #334155;
+            --tw-prose-invert-quotes: #f1f5f9;
+            --tw-prose-invert-quote-borders: #02cfc9;
+            --tw-prose-invert-captions: #94a3b8;
+            --tw-prose-invert-code: #02cfc9;
+            --tw-prose-invert-pre-code: #cbd5e1;
+            --tw-prose-invert-pre-bg: #020617cc; /* This was already a hex/rgba value */
+        --tw-prose-invert-th-borders: #475569;
+        --tw-prose-invert-td-borders: #334155;
+        }
+        .katex {
+            direction: ltr;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        html.dark input:-webkit-autofill,
+        html.dark textarea:-webkit-autofill,
+        html.dark select:-webkit-autofill {
+            box-shadow: 0 0 0px 1000px #0f172a inset !important;
+            -webkit-text-fill-color: #ffffff !important;
+        }
