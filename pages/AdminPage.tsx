@@ -155,27 +155,11 @@ const AdminPage: React.FC = () => {
         toMarkdown: (state, node, parent, index) => {
           if (node.type.name === 'alertBlock') {
             state.write(`>>> ${node.attrs.alertType}: `);
-            // Iterate over content and serialize it.
-            // This needs to handle inline formatting correctly.
-            // `state.renderContent(node)` or similar is needed.
-            // `tiptap-markdown`'s `state` object has methods for this.
-            // The default serializer for node content should be called here.
-
-            // Simplified content serialization:
-            let content = "";
-            node.forEach((child, offset, i) => {
-                // This is very basic, assumes text nodes primarily.
-                // A proper solution uses state.renderInline(child) or similar.
-                // For now, we'll just get textContent, which loses inline markdown.
-                // This needs to be improved to use the `state` object's rendering methods
-                // to preserve inline markdown.
-                if (i > 0) content += "\n"; // Add newlines between child paragraphs if any
-                content += child.textContent;
-            });
-            state.write(content.trim()); // Write content, needs better inline handling
+                // Use renderContent to serialize the content of the alertBlock node
+                // This is expected to handle inline formatting (marks) correctly.
+                state.renderContent(node);
             state.ensureNewLine(); // Ensure a newline after the block
             state.write('\n'); // Add an extra newline to separate from next block
-            // state.closeBlock(node); // Not always needed if ensureNewLine and \n are used
           } else {
             // Fallback for other nodes: this is tricky.
             // Ideally, we call the original/default serializer for other nodes.
@@ -183,6 +167,12 @@ const AdminPage: React.FC = () => {
             // For now, this function will ONLY handle alertBlock.
             // This means other content might not be serialized by this custom toMarkdown.
             // THIS IS A PROBLEM. A proper solution needs to delegate to original serializers.
+                // However, tiptap-markdown should handle other nodes by default if this
+                // custom toMarkdown doesn't interfere by not calling a default.
+                // The typical way to handle this is to have tiptap-markdown pass through
+                // to its default serializers if a custom one doesn't handle the node type.
+                // By only handling 'alertBlock' and doing nothing for 'else', we rely on
+                // the default behavior for other nodes.
           }
         },
       }),
