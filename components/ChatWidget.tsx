@@ -34,13 +34,14 @@ interface Message {
 const typingDotVariants = {
   initial: {
     y: "0%",
-    opacity: 0.5,
+    opacity: 0.4,
     scale: 0.8,
   },
   animate: {
-    y: ["0%", "-50%", "0%"], // Bouncing effect
-    opacity: [0.5, 1, 0.5],
-    scale: [0.8, 1.2, 0.8],
+    y: ["0%", "-60%", "0%"],
+    opacity: [0.4, 1, 0.4],
+    scale: [0.8, 1.3, 0.8],
+    backgroundColor: ["#02b3ae", "#14b8a6", "#02b3ae"],
   },
 };
 
@@ -507,11 +508,26 @@ Only use this command when the user explicitly wants to send a message to the ow
 ניתן לשאול על כל אחד מהמאמרים הללו.`;
     } else if (currentPath.startsWith("/article/")) {
         const articleId = currentPath.split("/article/")[1];
-        const article = (allArticles || []).find(art => art.id === articleId || art.artag === articleId);
+        let article = (allArticles || []).find(art => art.id === articleId || art.artag === articleId);
+
+        if (article && !article.fullContent) {
+            try {
+                const { data } = await supabase
+                    .from('articles')
+                    .select('fullContent, body')
+                    .eq('id', article.id)
+                    .single();
+                if (data?.fullContent || data?.body) {
+                    article = { ...article, fullContent: data.fullContent || data.body };
+                }
+            } catch (err) {
+                console.error('Failed to fetch article content:', err);
+            }
+        }
+
         if (article && article.fullContent) {
             pageContext = `המשתמש קורא כעת מאמר בשם '${article.title}'. להלן תוכן המאמר המלא:\n\n${article.fullContent}`;
         } else if (article) {
-            // Fallback if fullContent is not available, but article exists
             pageContext = `המשתמש נמצא כעת בדף המאמר '${article.title}'. תקציר המאמר: ${article.excerpt}. תוכן מלא אינו זמין כעת. ניתן לשאול על פרטים נוספים מהתקציר.`;
         } else {
             pageContext = `המשתמש נמצא כעת בדף מאמר, אך המאמר הספציפי לא זוהה או שתוכנו המלא אינו זמין.`;
@@ -559,6 +575,10 @@ Only use this command when the user explicitly wants to send a message to the ow
         if (res.ok) {
           const data = await res.json();
           responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+          if (responseText) {
+            // Normalize common bullet characters so markdown lists render properly
+            responseText = responseText.replace(/^[\u2022\u2023\u25E6\u2043\u2219]+\s+/gm, '* ');
+          }
           console.log("Raw AI Response:", responseText);
         }
       } catch {
@@ -679,12 +699,13 @@ Only use this command when the user explicitly wants to send a message to the ow
           >
             {isDesktop && open && (
               <motion.div
-                className="absolute top-0 left-0 w-6 h-6 z-20 group cursor-nwse-resize flex items-center justify-center" // Larger clickable area
+                className="absolute top-0 left-0 w-6 h-6 z-20 group cursor-nwse-resize flex items-center justify-center"
                 onMouseDown={handleMouseDown}
                 title="גרור לשינוי גודל"
               >
-                <div className="w-3 h-3 rounded-full bg-gray-400 dark:bg-gray-500 opacity-30 group-hover:opacity-60 transition-opacity flex items-center justify-center">
-                  {/* Optional: <div className="w-1 h-1 rounded-full bg-gray-600 dark:bg-gray-300"></div> */}
+                <div className="w-full h-full relative">
+                  <span className="absolute left-1 top-1 w-3 h-px bg-gray-400 dark:bg-gray-500 rotate-45" />
+                  <span className="absolute left-1 top-3 w-4 h-px bg-gray-400 dark:bg-gray-500 rotate-45" />
                 </div>
               </motion.div>
             )}
