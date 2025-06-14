@@ -13,6 +13,7 @@ import rehypeKatex from 'rehype-katex';
 import { APP_NAME, ARTICLES_DATA, COURSES_DATA, FAQ_DATA, PREVIEW_SECTIONS } from '../constants.tsx';
 import { supabase } from '../utils/supabaseClient';
 import { Article, Course, FAQCategory } from '../types.ts';
+import { useData } from '../contexts/DataContext';
 
 // Supabase client is imported
 
@@ -31,6 +32,7 @@ interface Message {
 
 const ChatWidget: React.FC = () => {
   const { session, user, profile } = useAuth();
+  const { articles } = useData();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -51,6 +53,54 @@ const ChatWidget: React.FC = () => {
   const [adminError, setAdminError] = useState('');
   // const [submissionStatus, setSubmissionStatus] = useState(''); // Removed
   // const [isSubmitting, setIsSubmitting] = useState(false); // Removed, or rename if login needs specific loading
+
+  const [chatWidth, setChatWidth] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('chatWidth');
+      return stored ? parseInt(stored, 10) : 384; // default 24rem (w-96)
+    }
+    return 384;
+  });
+
+  const [chatHeight, setChatHeight] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('chatHeight');
+      return stored ? parseInt(stored, 10) : 550;
+    }
+    return 550;
+  });
+
+  const resizingRef = useRef(false);
+  const startPos = useRef<{x:number,y:number,width:number,height:number}>();
+
+  const handleResizeStart = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (window.innerWidth < 640) return; // disable on mobile
+    resizingRef.current = true;
+    startPos.current = { x: e.clientX, y: e.clientY, width: chatWidth, height: chatHeight };
+    window.addEventListener('mousemove', handleResizing);
+    window.addEventListener('mouseup', handleResizeEnd);
+  };
+
+  const handleResizing = (e: MouseEvent) => {
+    if (!resizingRef.current || !startPos.current) return;
+    const deltaX = startPos.current.x - e.clientX;
+    const deltaY = startPos.current.y - e.clientY;
+    setChatWidth(Math.max(320, startPos.current.width + deltaX));
+    setChatHeight(Math.max(400, startPos.current.height + deltaY));
+  };
+
+  const handleResizeEnd = () => {
+    resizingRef.current = false;
+    window.removeEventListener('mousemove', handleResizing);
+    window.removeEventListener('mouseup', handleResizeEnd);
+  };
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('chatWidth', String(chatWidth));
+      localStorage.setItem('chatHeight', String(chatHeight));
+    }
+  }, [chatWidth, chatHeight]);
 
   const initialAiMessage = "שלום לך! \n במה אנו יכולים לעזור לך היום?";
 
@@ -393,7 +443,8 @@ Only use this command when the user explicitly wants to send a message to the ow
     let pageContext = "";
     const currentPath = location.pathname;
 
-    const getArticleById = (id: string): Article | undefined => ARTICLES_DATA.find(article => article.id === id);
+    const getArticleById = (id: string): Article | undefined =>
+      articles.find(a => a.id === id || a.artag === id);
 
     if (currentPath === "/") {
         pageContext = `המשתמש נמצא כעת בדף הבית. דף הבית מציג מידע כללי על המכון, תצוגה מקדימה של קורסים ומאמרים. עודד אותו לשאול על הקורסים או על נושאים ספציפיים שמעניינים אותו.`;
@@ -413,11 +464,13 @@ Only use this command when the user explicitly wants to send a message to the ow
     } else if (currentPath.startsWith("/article/")) {
         const articleId = currentPath.split("/article/")[1];
         const article = getArticleById(articleId);
-        if (article && article.fullContent) {
-            pageContext = `המשתמש קורא כעת מאמר בשם '${article.title}'. להלן תוכן המאמר המלא:\n\n${article.fullContent}`;
-        } else if (article) {
-            // Fallback if fullContent is not available, but article exists
-            pageContext = `המשתמש נמצא כעת בדף המאמר '${article.title}'. תקציר המאמר: ${article.excerpt}. תוכן מלא אינו זמין כעת. ניתן לשאול על פרטים נוספים מהתקציר.`;
+        const isLocal = ARTICLES_DATA.find(a => a.id === articleId || a.artag === articleId);
+        if (article) {
+            if (isLocal && article.fullContent) {
+                pageContext = `המשתמש קורא כעת מאמר בשם '${article.title}'. להלן תוכן המאמר המלא:\n\n${article.fullContent}`;
+            } else {
+                pageContext = `המשתמש נמצא כעת בדף המאמר '${article.title}'. תוכן המאמר אינו זמין עבורך.`;
+            }
         } else {
             pageContext = `המשתמש נמצא כעת בדף מאמר, אך המאמר הספציפי לא זוהה או שתוכנו המלא אינו זמין.`;
         }
@@ -569,11 +622,10 @@ Only use this command when the user explicitly wants to send a message to the ow
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            // -- 🎨 MODIFIED LINE --
-            // Width is now `w-full` on mobile to fill the parent, with a robust `max-h` calculation.
-            // On desktop (`sm:`), it uses a fixed width. `sm:right-0` ensures it's aligned correctly on desktop.
-            className="w-full sm:w-96 h-[70vh] sm:h-[550px] max-h-[calc(100vh-120px)] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col absolute bottom-full sm:right-0 mb-2"
+            className="w-full max-h-[calc(100vh-120px)] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col absolute bottom-full sm:right-0 mb-2"
+            style={{ width: typeof window !== 'undefined' && window.innerWidth >= 640 ? chatWidth : undefined, height: typeof window !== 'undefined' && window.innerWidth >= 640 ? chatHeight : undefined, transition: 'width 0.2s, height 0.2s' }}
           >
+            <div onMouseDown={handleResizeStart} className="hidden sm:block absolute -top-1 -left-1 w-4 h-4 cursor-nwse-resize" />
             <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-primary dark:text-sky-400 font-semibold text-lg">
                 {showAdminLogin ? 'Admin Login' : 'נציג מכון אביב'}
@@ -651,6 +703,13 @@ Only use this command when the user explicitly wants to send a message to the ow
                                 </a>
                               );
                             }
+                            },
+                            ul: ({node, ...props}) => (
+                              <ul className="list-disc pl-5 space-y-1" {...props} />
+                            ),
+                            ol: ({node, ...props}) => (
+                              <ol className="list-decimal pl-5 space-y-1" {...props} />
+                            )
                           }}
                         >
                           {m.text}
@@ -665,11 +724,15 @@ Only use this command when the user explicitly wants to send a message to the ow
                       className="p-3 rounded-xl max-w-[85%] text-sm leading-relaxed bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-gray-400 mr-auto text-right flex items-center"
                     >
                       <span className="mr-2">נציג מכון אביב מקליד/ה...</span>
-                      {/* Simple dots animation */}
-                      <div className="flex space-x-1">
-                        <motion.div animate={{ opacity: [0.5, 1, 0.5], y: [0, -2, 0] }} transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }} className="w-1.5 h-1.5 bg-gray-500 dark:bg-gray-400 rounded-full" />
-                        <motion.div animate={{ opacity: [0.5, 1, 0.5], y: [0, -2, 0] }} transition={{ duration: 1, delay: 0.2, repeat: Infinity, ease: "easeInOut" }} className="w-1.5 h-1.5 bg-gray-500 dark:bg-gray-400 rounded-full" />
-                        <motion.div animate={{ opacity: [0.5, 1, 0.5], y: [0, -2, 0] }} transition={{ duration: 1, delay: 0.4, repeat: Infinity, ease: "easeInOut" }} className="w-1.5 h-1.5 bg-gray-500 dark:bg-gray-400 rounded-full" />
+                      <div className="flex space-x-0.5 items-end">
+                        {[0,1,2,3].map(i => (
+                          <motion.div
+                            key={i}
+                            animate={{ scaleY: [0.4, 1, 0.4] }}
+                            transition={{ duration: 1.2, delay: i * 0.15, repeat: Infinity, ease: 'easeInOut' }}
+                            className="w-1.5 h-3 bg-gray-500 dark:bg-gray-400 rounded-sm origin-bottom"
+                          />
+                        ))}
                       </div>
                     </motion.div>
                   )}
