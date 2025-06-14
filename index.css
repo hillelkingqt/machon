@@ -317,9 +317,10 @@ html[dir="rtl"] .alert-box {
 
 /* --- List Styling "Billion Times Better" Overhaul --- */
 /* Standard list styling will be handled by Tailwind Prose defaults */
-
 .prose ul, .prose ol {
-    @apply list-disc list-inside ps-5 mb-10; /* Ensure bullets appear correctly */
+    @apply mb-10; /* Keep bottom margin for spacing */
+    /* list-style-position: outside; */ /* Let prose default handle this or remove if not needed */
+    /* ps-0 removed to allow default padding for bullets */
 }
 
 .prose li {
