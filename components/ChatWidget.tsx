@@ -10,7 +10,6 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 
-import { useData } from '../contexts/DataContext';
 import { APP_NAME, ARTICLES_DATA, COURSES_DATA, FAQ_DATA, PREVIEW_SECTIONS } from '../constants.tsx';
 import { supabase } from '../utils/supabaseClient';
 import { Article, Course, FAQCategory } from '../types.ts';
@@ -30,22 +29,7 @@ interface Message {
   text: string;
 }
 
-// Define variants for the typing animation
-const typingDotVariants = {
-  initial: {
-    y: "0%",
-    opacity: 0.5,
-    scale: 0.8,
-  },
-  animate: {
-    y: ["0%", "-50%", "0%"], // Bouncing effect
-    opacity: [0.5, 1, 0.5],
-    scale: [0.8, 1.2, 0.8],
-  },
-};
-
 const ChatWidget: React.FC = () => {
-  const { articles: allArticles } = useData();
   const { session, user, profile } = useAuth();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -56,24 +40,17 @@ const ChatWidget: React.FC = () => {
   const navigate = useNavigate();
   const { toggleDarkMode, darkMode } = useDarkMode();
 
-  // Chat Resizing State & Refs
-  const [chatDimensions, setChatDimensions] = useState({ width: 384, height: 550 }); // Default sm width: w-96 (384px), sm height: 550px
-  const [isResizing, setIsResizing] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(true); // Assume desktop, will be updated
-
-  const chatWindowRef = useRef<HTMLDivElement>(null);
-  const initialDragState = useRef({ mouseX: 0, mouseY: 0, width: 0, height: 0 });
-
-  const isResizingRef = useRef(isResizing);
-  useEffect(() => { isResizingRef.current = isResizing; }, [isResizing]);
-
-  const isDesktopRef = useRef(isDesktop);
-  useEffect(() => { isDesktopRef.current = isDesktop; }, [isDesktop]);
-
   // New state variables
   const [showAdminLogin, setShowAdminLogin] = useState(false);
+  // const [showAdminPanel, setShowAdminPanel] = useState(false); // Removed
   const [adminPasswordInput, setAdminPasswordInput] = useState('');
+  // const [articleTitle, setArticleTitle] = useState(''); // Removed
+  // const [articleBody, setArticleBody] = useState(''); // Removed
+  // const [questionText, setQuestionText] = useState(''); // Removed
+  // const [answerText, setAnswerText] = useState(''); // Removed
   const [adminError, setAdminError] = useState('');
+  // const [submissionStatus, setSubmissionStatus] = useState(''); // Removed
+  // const [isSubmitting, setIsSubmitting] = useState(false); // Removed, or rename if login needs specific loading
 
   const initialAiMessage = "שלום לך! \n במה אנו יכולים לעזור לך היום?";
 
@@ -142,78 +119,6 @@ const ChatWidget: React.FC = () => {
       setMessages([{ role: 'ai', text: initialAiMessage }]);
     }
   }, [messages, open]);
-
-  // Desktop Check & localStorage Logic for Resizing
-  useEffect(() => {
-    const checkDesktop = () => setIsDesktop(window.innerWidth >= 640); // Tailwind's 'sm' breakpoint
-    window.addEventListener('resize', checkDesktop);
-    checkDesktop(); // Initial check
-
-    if (window.innerWidth >= 640) { // sm breakpoint
-      const storedWidth = localStorage.getItem('chatWidgetWidth');
-      const storedHeight = localStorage.getItem('chatWidgetHeight');
-      if (storedWidth && storedHeight) {
-        setChatDimensions({ width: parseInt(storedWidth, 10), height: parseInt(storedHeight, 10) });
-      }
-    }
-    return () => window.removeEventListener('resize', checkDesktop);
-  }, []);
-
-  useEffect(() => {
-    // Save dimensions to localStorage only on desktop and if they are not the default
-    if (isDesktop && (chatDimensions.width !== 384 || chatDimensions.height !== 550)) {
-      localStorage.setItem('chatWidgetWidth', String(chatDimensions.width));
-      localStorage.setItem('chatWidgetHeight', String(chatDimensions.height));
-    }
-  }, [chatDimensions, isDesktop]);
-
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!isDesktopRef.current || !chatWindowRef.current) return;
-    e.preventDefault();
-    setIsResizing(true);
-    document.body.style.userSelect = 'none'; // Prevent text selection during drag
-    document.body.style.cursor = 'nwse-resize'; // Diagonal resize cursor
-
-    initialDragState.current = {
-      mouseX: e.clientX,
-      mouseY: e.clientY,
-      width: chatWindowRef.current.offsetWidth,
-      height: chatWindowRef.current.offsetHeight,
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-  };
-
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!isResizingRef.current || !isDesktopRef.current) return;
-
-    const deltaX = e.clientX - initialDragState.current.mouseX;
-    const deltaY = e.clientY - initialDragState.current.mouseY;
-
-    // Calculate new dimensions (inverted delta for top-left handle)
-    let newWidth = initialDragState.current.width - deltaX;
-    let newHeight = initialDragState.current.height - deltaY;
-
-    // Apply constraints: min 280x350, max viewport - padding
-    newWidth = Math.max(280, Math.min(newWidth, window.innerWidth - 32)); // 32px for some screen padding
-    newHeight = Math.max(350, Math.min(newHeight, window.innerHeight - 100)); // 100px for some screen padding (bottom button etc)
-
-    setChatDimensions({
-      width: Math.round(newWidth),
-      height: Math.round(newHeight),
-    });
-  };
-
-  const handleMouseUp = () => {
-    if (!isResizingRef.current) return;
-    setIsResizing(false);
-    document.body.style.userSelect = ''; // Re-enable text selection
-    document.body.style.cursor = ''; // Reset cursor
-    window.removeEventListener('mousemove', handleMouseMove);
-    window.removeEventListener('mouseup', handleMouseUp);
-  };
 
   const sendTelegramMessageToOwner = async (messageContent: string) => {
     if (!user?.email || !profile?.fullName) {
@@ -488,7 +393,7 @@ Only use this command when the user explicitly wants to send a message to the ow
     let pageContext = "";
     const currentPath = location.pathname;
 
-    // const getArticleById = (id: string): Article | undefined => ARTICLES_DATA.find(article => article.id === id);
+    const getArticleById = (id: string): Article | undefined => ARTICLES_DATA.find(article => article.id === id);
 
     if (currentPath === "/") {
         pageContext = `המשתמש נמצא כעת בדף הבית. דף הבית מציג מידע כללי על המכון, תצוגה מקדימה של קורסים ומאמרים. עודד אותו לשאול על הקורסים או על נושאים ספציפיים שמעניינים אותו.`;
@@ -507,7 +412,7 @@ Only use this command when the user explicitly wants to send a message to the ow
 ניתן לשאול על כל אחד מהמאמרים הללו.`;
     } else if (currentPath.startsWith("/article/")) {
         const articleId = currentPath.split("/article/")[1];
-        const article = (allArticles || []).find(art => art.id === articleId || art.artag === articleId);
+        const article = getArticleById(articleId);
         if (article && article.fullContent) {
             pageContext = `המשתמש קורא כעת מאמר בשם '${article.title}'. להלן תוכן המאמר המלא:\n\n${article.fullContent}`;
         } else if (article) {
@@ -559,7 +464,6 @@ Only use this command when the user explicitly wants to send a message to the ow
         if (res.ok) {
           const data = await res.json();
           responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || null;
-          console.log("Raw AI Response:", responseText);
         }
       } catch {
         // ignore and try next key
@@ -661,42 +565,16 @@ Only use this command when the user explicitly wants to send a message to the ow
   <AnimatePresence>
         {open && (
           <motion.div
-            layout // Enable layout animations for smooth resizing
-            ref={chatWindowRef}
-            initial={{
-              opacity: 0, y: 20, scale: 0.95,
-              width: isDesktop ? `${chatDimensions.width}px` : '100%',
-              height: isDesktop ? `${chatDimensions.height}px` : '70vh'
-            }}
-            animate={{
-              opacity: 1, y: 0, scale: 1,
-              width: isDesktop ? `${chatDimensions.width}px` : '100%',
-              height: isDesktop ? `${chatDimensions.height}px` : '70vh'
-            }}
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col absolute bottom-full sm:right-0 mb-2 max-h-[calc(100vh-100px)]" // Use max-h for constraint, specific w/h set by animate
+            // -- 🎨 MODIFIED LINE --
+            // Width is now `w-full` on mobile to fill the parent, with a robust `max-h` calculation.
+            // On desktop (`sm:`), it uses a fixed width. `sm:right-0` ensures it's aligned correctly on desktop.
+            className="w-full sm:w-96 h-[70vh] sm:h-[550px] max-h-[calc(100vh-120px)] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col absolute bottom-full sm:right-0 mb-2"
           >
-            {isDesktop && open && (
-              <motion.div
-                className="absolute top-0 left-0 w-6 h-6 z-20 group cursor-nwse-resize flex items-center justify-center" // Larger clickable area
-                onMouseDown={handleMouseDown}
-                title="גרור לשינוי גודל"
-              >
-                <div className="w-3 h-3 rounded-full bg-gray-400 dark:bg-gray-500 opacity-30 group-hover:opacity-60 transition-opacity flex items-center justify-center">
-                  {/* Optional: <div className="w-1 h-1 rounded-full bg-gray-600 dark:bg-gray-300"></div> */}
-                </div>
-              </motion.div>
-            )}
-            <div className={`flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700 ${isDesktop ? 'cursor-grab' : ''}`}
-                 onMouseDown={isDesktop ? (e) => { /* Allow dragging window from header on desktop */
-                   // This is a placeholder for potential window dragging, not resizing.
-                   // For resizing, the corner handle is primary.
-                   // To implement window dragging from header:
-                   // e.preventDefault(); // if you want to prevent text selection
-                   // similar logic to handleMouseDown but for position, not dimensions.
-                 } : undefined}
-            >
+            <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-primary dark:text-sky-400 font-semibold text-lg">
                 {showAdminLogin ? 'Admin Login' : 'נציג מכון אביב'}
               </h3>
@@ -787,22 +665,11 @@ Only use this command when the user explicitly wants to send a message to the ow
                       className="p-3 rounded-xl max-w-[85%] text-sm leading-relaxed bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-gray-400 mr-auto text-right flex items-center"
                     >
                       <span className="mr-2">נציג מכון אביב מקליד/ה...</span>
-                      <div className="flex space-x-1.5 items-end" style={{ height: '20px' }}> {/* Container to align bouncing dots */}
-                        {[0, 1, 2].map((_, i) => (
-                          <motion.div
-                            key={i}
-                            variants={typingDotVariants}
-                            initial="initial"
-                            animate="animate"
-                            transition={{
-                              duration: 1.2,
-                              repeat: Infinity,
-                              ease: "easeInOut",
-                              delay: i * 0.25, // Stagger the start of each dot's animation cycle
-                            }}
-                            className="w-2 h-2 bg-primary dark:bg-sky-400 rounded-full"
-                          />
-                        ))}
+                      {/* Simple dots animation */}
+                      <div className="flex space-x-1">
+                        <motion.div animate={{ opacity: [0.5, 1, 0.5], y: [0, -2, 0] }} transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }} className="w-1.5 h-1.5 bg-gray-500 dark:bg-gray-400 rounded-full" />
+                        <motion.div animate={{ opacity: [0.5, 1, 0.5], y: [0, -2, 0] }} transition={{ duration: 1, delay: 0.2, repeat: Infinity, ease: "easeInOut" }} className="w-1.5 h-1.5 bg-gray-500 dark:bg-gray-400 rounded-full" />
+                        <motion.div animate={{ opacity: [0.5, 1, 0.5], y: [0, -2, 0] }} transition={{ duration: 1, delay: 0.4, repeat: Infinity, ease: "easeInOut" }} className="w-1.5 h-1.5 bg-gray-500 dark:bg-gray-400 rounded-full" />
                       </div>
                     </motion.div>
                   )}
