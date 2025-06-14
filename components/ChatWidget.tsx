@@ -33,13 +33,14 @@ interface Message {
 // Define variants for the typing animation
 const typingDotVariants = {
   initial: {
-    scale: 0.5,
+    y: "0%",
     opacity: 0.5,
+    scale: 0.8,
   },
   animate: {
-    scale: [0.5, 1, 0.5], // Scale up then back to initial
-    opacity: [0.5, 1, 0.5], // Fade in then back to initial-like opacity
-    // y: 0, // Explicitly keeping y static if it was previously animated
+    y: ["0%", "-50%", "0%"], // Bouncing effect
+    opacity: [0.5, 1, 0.5],
+    scale: [0.8, 1.2, 0.8],
   },
 };
 
@@ -280,80 +281,59 @@ const ChatWidget: React.FC = () => {
 
     בשום פנים ואופן אל תזכיר שאתה מודל שפה, בינה מלאכותית, או שנוצרת על ידי גוגל. אתה אך ורק נציג שירות של '${APP_NAME}'.
     האתר מציע קורסי הכנה למבחני מחוננים ותוכניות הצטיינות, מאמרים מקצועיים בתחום, וחנות מוצרים.
-    אנא השתמש ב-Markdown לעיצוב התשובות שלך כאשר זה רלוונטי ומוסיף ערך. לדוגמה, השתמש ב-**כדי להדגיש טקסט**, ב-*טקסט נטוי* לטקסט נטוי, וברשימות.
-    היוזמה לשימוש ב-Markdown היא שלך כאשר אתה חושב שזה ישפר את קריאות התשובה.
+    אנא השתמש ב-Markdown לעיצוב התשובות שלך כאשר זה רלוונטי ומוסיף ערך. לדוגמה, השתמש ב-**כדי להדגיש טקסט**, ב-*טקסט נטוי* לטקסט נטוי, וברשימות (באמצעות כוכביות * או מקפים -) כאשר אתה מציג מספר פריטים. היוזמה לשימוש ב-Markdown היא שלך כאשר אתה חושב שזה ישפר את קריאות התשובה.
+    When creating bulleted lists, ensure you use an asterisk (*) or a hyphen (-) followed by a space, then the list item text. For example: \`* First item\` or \`- Second item\`.
 
-    **הנחיות חשובות מאוד ליצירת רשימות (Bullet Lists):**
-    *   חובה להשתמש בכוכבית (\`*\`) או מקף (\`-\`).
-    *   **חובה שיהיה רווח אחד בדיוק** אחרי הכוכבית או המקף ולפני תוכן הפריט.
-    *   לרשימות מקוננות, יש להוסיף שני רווחים לפני הכוכבית/מקף של הפריט המקונן.
-
-    דוגמאות לתבנית נכונה של רשימות עם תבליטים:
-    \`\`\`markdown
-    * פריט ראשון
-    * פריט שני
-      - פריט מקונן מסוג מקף (שני רווחים לפני המקף)
-      * פריט מקונן מסוג כוכבית (שני רווחים לפני הכוכבית)
-    * פריט שלישי ברמה הראשית
-
-    - פריט נוסף ברמה ראשית (התחיל במקף)
-    - עוד פריט עם מקף
-      * קינון עם כוכבית תחת מקף
-    \`\`\`
-
-    **הנחיות חשובות מאוד ליצירת רשימות ממוספרות (Numbered Lists):**
-    *   יש להתחיל כל פריט בספרה ואחריה נקודה (למשל, \`1.\`, \`2.\`).
-    *   **חובה שיהיה רווח אחד בדיוק** אחרי הנקודה ולפני תוכן הפריט.
-    *   לרשימות מקוננות, יש להוסיף שלושה רווחים לפני המספר של הפריט המקונן.
-
-    דוגמאות לתבנית נכונה של רשימות ממוספרות:
-    \`\`\`markdown
-    1. פריט ראשון ברשימה ממוספרת
-    2. פריט שני
-       1. פריט מקונן ממוספר (שלושה רווחים לפני '1.')
-       2. עוד פריט מקונן
-    3. פריט שלישי ברמה הראשית
-    \`\`\`
+    Correct Bullet List Formatting:
+    * Item 1
+    * Item 2
+      - Nested Item A (use two spaces for indentation then asterisk/hyphen)
+    - Another Item
 
     Extended Markdown Formatting Guide:
-    In addition to bold, italics, and lists, you can use the following Markdown features to enhance your responses:
+    In addition to bold, italics, and basic lists, you can use the following Markdown features to enhance your responses:
 
     1.  **Headings:**
-        \`# H1 Heading\`
-        \`## H2 Heading\`
-        \`### H3 Heading\` (וכן הלאה עד H6)
+        # H1 Heading
+        ## H2 Heading
+        ### H3 Heading
+        #### H4 Heading
+        ##### H5 Heading
+        ###### H6 Heading
 
-    2.  **Tables (GFM):**
-        \`\`\`markdown
+    2.  **Numbered Lists:**
+        1. First item
+        2. Second item
+        3. Third item
+           1. Nested item (indent with 3 spaces)
+
+    3.  **Tables (GFM):**
         | Header 1 | Header 2 | Header 3 |
         | :------- | :------: | -------: |
         | Align-L  | Center   | Align-R  |
         | Cell 2   | Cell 3   | Cell 4   |
-        \`\`\`
 
     4.  **Blockquotes:**
-        \`> This is a blockquote.\`
-        \`> It can span multiple lines.\`
+        > This is a blockquote.
+        > It can span multiple lines.
 
     5.  **Inline Code:**
         Use backticks for inline code, like \`const example = "hello";\`.
 
     6.  **Horizontal Rules:**
         Use three or more hyphens, asterisks, or underscores:
-        \`---\`
-        \`***\`
-        \`___\`
+        ---
+        ***
+        ___
 
     7.  **Strikethrough:**
-        Use two tildes for \`~~strikethrough text~~\`.
+        Use two tildes for ~~strikethrough text~~.
 
     8.  **Task Lists (GFM):**
-        \`\`\`markdown
         * [x] Completed task
         * [ ] Incomplete task
         * [ ] Another task
           * [x] Nested completed task
-        \`\`\`
     Use these features judiciously to improve the clarity and presentation of your answers.
 
     **יכולת חדשה: סיכום מאמרים**
@@ -694,7 +674,7 @@ Only use this command when the user explicitly wants to send a message to the ow
               height: isDesktop ? `${chatDimensions.height}px` : '70vh'
             }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 25 }} // Softer spring for resize and open/close
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             className="bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col absolute bottom-full sm:right-0 mb-2 max-h-[calc(100vh-100px)]" // Use max-h for constraint, specific w/h set by animate
           >
             {isDesktop && open && (
@@ -815,10 +795,10 @@ Only use this command when the user explicitly wants to send a message to the ow
                             initial="initial"
                             animate="animate"
                             transition={{
-                              duration: 0.9, // Slightly faster cycle for each dot
+                              duration: 1.2,
                               repeat: Infinity,
                               ease: "easeInOut",
-                              delay: i * 0.3, // Stagger: 0s, 0.3s, 0.6s. Each dot starts as the previous finishes its "peak"
+                              delay: i * 0.25, // Stagger the start of each dot's animation cycle
                             }}
                             className="w-2 h-2 bg-primary dark:bg-sky-400 rounded-full"
                           />
