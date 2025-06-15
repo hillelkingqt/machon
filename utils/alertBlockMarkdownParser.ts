@@ -16,7 +16,7 @@ export function preparseAlertBlocks(markdown: string): string {
 
   let result = markdown.replace(alertBlockRegex, (match, precedingNewlineOrStart, type, content) => {
     const alertType = type.toLowerCase();
-    let processedContent = content.trim();
+    let processedContent = (content || '').trim();
     const contentLines = processedContent.split('\n').filter(line => line.trim() !== '');
 
     if (contentLines.length === 0) {
@@ -82,13 +82,13 @@ export function postserializeAlertBlocks(htmlOutput: string): string {
             lineContent = pNode.textContent || '';
         }
         // Add newline if it's not the first line and previous content wasn't empty
-        if (index > 0 && innerMarkdownContent.length > 0 && lineContent.trim().length > 0) {
+        if (index > 0 && innerMarkdownContent.length > 0 && (lineContent || '').trim().length > 0) {
           innerMarkdownContent += '\n';
         }
-        innerMarkdownContent += lineContent.trim();
+        innerMarkdownContent += (lineContent || '').trim();
     });
 
-    const markdownBlock = `>>> ${alertType}: ${innerMarkdownContent.trim()}`;
+    const markdownBlock = `>>> ${alertType}: ${(innerMarkdownContent || '').trim()}`;
 
     // Replace the original div with a text node containing the newlines and markdown block
     // This ensures block separation.
