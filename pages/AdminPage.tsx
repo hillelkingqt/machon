@@ -213,80 +213,12 @@ const AdminPage: React.FC = () => {
     ],
     content: '', // Initial content
     onUpdate: ({ editor: currentEditor }) => {
-      // Use functional update to always work with the latest article state
       setCurrentArticle(prev => {
         if (!prev) return prev;
-        let markdownContent = '';
-        // Attempt to build markdown string by iterating through nodes
-        // This provides more control, especially if global toMarkdown override is problematic.
-        currentEditor.state.doc.content.forEach((node, offset, index) => {
-          if (node.type.name === 'alertBlock') {
-            markdownContent += `>>> ${node.attrs.alertType}: `;
-            let blockContent = "";
-            node.forEach((childNode, childOffset, childIndex) => {
-              // This part needs to correctly serialize the *content* of the alert block,
-              // including any inline markdown. This is a simplified version.
-              // A robust solution would use Tiptap's/tiptap-markdown's internal state
-              // to serialize childNode.textContent or its equivalent with markdown.
-              if (childNode.textContent) {
-                  if (blockContent.length > 0 && childNode.isText && !blockContent.endsWith('\n')) {
-                      // Heuristic: if previous content didn't end with newline and current is text,
-                      // it implies it's part of the same line or needs a space.
-                      // This is very basic. True multi-line and inline markdown preservation is harder.
-                  }
-                  blockContent += childNode.textContent;
-              } else if (childNode.isBlock) { // If alert block can contain other blocks like paragraphs
-                  // This recursive call is conceptual and needs a proper stateful serializer.
-                  // blockContent += serializeNodeToMarkdown(childNode);
-              }
-              if (childIndex < node.childCount -1 && !blockContent.endsWith('\n')) {
-                // blockContent += '\n'; // Add newline between children, if they don't naturally form lines
-              }
-            });
-            markdownContent += blockContent.trim() + '\n\n';
-          } else {
-            // For all other nodes, try to use tiptap-markdown's default serialization for that node.
-            // This is the most complex part: how to get the default serialization for *other* nodes
-            // when we are manually iterating.
-            // The `editor.storage.markdown.getMarkdown()` gets the whole doc, which we are trying to avoid
-            // if the custom `toMarkdown` in `Markdown.configure` is not fully working or too broad.
-            // A truly robust solution might involve forking/extending tiptap-markdown or using
-            // a different markdown library that's more easily extensible for custom node types.
-
-            // Fallback: Get markdown for the whole doc and hope custom toMarkdown worked.
-            // This might be the most practical if node-by-node serialization is too complex here.
-            // For this iteration, I'll rely on the global getMarkdown and the toMarkdown override.
-          }
-        });
-
-        // If manual iteration was used, markdownContent would be built.
-        // If relying on global getMarkdown():
-        markdownContent = currentEditor.storage.markdown.getMarkdown();
-
-        // Option 2: Manual construction if tiptap-markdown is problematic for custom nodes
-        // This is a fallback if the toMarkdown override in Markdown.configure doesn't work as expected
-        // For now, we'll try with Option 1 first.
-        // if (currentEditor.getJSON().content) {
-        //   markdownContent = '';
-        //   currentEditor.getJSON().content.forEach(blockNode => {
-        //     if (blockNode.type === 'alertBlock' && blockNode.attrs && blockNode.content) {
-        //       const alertType = blockNode.attrs.alertType;
-        //       let textContent = '';
-        //       blockNode.content.forEach(textContentNode => {
-        //         if (textContentNode.text) textContent += textContentNode.text;
-        //       });
-        //       markdownContent += `>>> ${alertType}: ${textContent.trim()}\n\n`;
-        //     } else {
-        //       // This part is tricky: need to convert other Tiptap nodes to markdown
-        //       // Relying on editor.storage.markdown.getMarkdown() for these is safer.
-        //       // This manual path should ideally convert *all* nodes.
-        //     }
-        //   });
-        // }
-        // For now, stick to the default getMarkdown and hope the custom node serializes.
-        // If not, the alert blocks will be missing or wrong in the output.
-
-        return { ...prev, fullContent: markdownContent };
+        let markdownOutput = currentEditor.storage.markdown.getMarkdown();
+        // Ensure custom alert blocks are serialized to '>>> TYPE: ...'
+        const correctlySerializedMarkdown = postserializeAlertBlocks(markdownOutput);
+        return { ...prev, fullContent: correctlySerializedMarkdown };
       });
     },
     editorProps: {
