@@ -162,15 +162,6 @@ const App: React.FC = () => {
         });
         return () => subscription.unsubscribe();
     }, [checkBlockStatus]);
-
-    if (isLoadingBlockStatus) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 p-4">
-                <Loader2 size={48} className="text-primary dark:text-sky-400 animate-spin mb-4" />
-            </div>
-        );
-    }
-
     // Render error page if block check failed
     if (blockCheckErrorOccurred) {
         return (
