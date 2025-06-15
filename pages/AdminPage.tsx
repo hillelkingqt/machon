@@ -69,6 +69,7 @@ const AdminPage: React.FC = () => {
   const [errorArticles, setErrorArticles] = useState<string | null>(null);
   const [showArticleModal, setShowArticleModal] = useState(false);
   const [currentArticle, setCurrentArticle] = useState<Article | null>(null);
+  const [hasUnsavedArticleChanges, setHasUnsavedArticleChanges] = useState(false);
   const [isSubmittingArticle, setIsSubmittingArticle] = useState(false);
   const [previewHtml, setPreviewHtml] = useState<string>('');
   const [qaPreviewHtml, setQaPreviewHtml] = useState<string>(''); // Added state for QA preview
@@ -215,19 +216,27 @@ const AdminPage: React.FC = () => {
       }),
     ],
     content: '', // Initial content
-    onUpdate: ({ editor: currentEditor }) => {
-      setCurrentArticle(prev => {
-        if (!prev) return prev;
-        const markdownOutput = currentEditor.storage.markdown.getMarkdown();
-        console.log("Refactored Markdown Output (getMarkdown):", markdownOutput); // For debugging
-        // Removed postserializeAlertBlocks, assuming getMarkdown now produces clean Markdown.
-        return { ...prev, fullContent: markdownOutput };
-      });
-        },
-    editorProps: {
-      // Removed transformPastedText here to rely on PasteRules in AlertBlockNode
-      // and potentially Markdown.configure.transformPastedText or configureMarkdownIt
-    },
+onUpdate: ({ editor: currentEditor }) => {
+  setCurrentArticle(prev => {
+    if (!prev) return prev;
+
+    const markdownOutput = currentEditor.storage.markdown.getMarkdown();
+    console.log("Refactored Markdown Output (getMarkdown):", markdownOutput); // For debugging
+
+    const correctlySerializedMarkdown = postserializeAlertBlocks(markdownOutput);
+    const updated = { ...prev, fullContent: correctlySerializedMarkdown };
+
+    localStorage.setItem('draftArticle', JSON.stringify(updated));
+    return updated;
+  });
+
+  setHasUnsavedArticleChanges(true);
+},
+editorProps: {
+  // Removed transformPastedText here to rely on PasteRules in AlertBlockNode
+  // and potentially Markdown.configure.transformPastedText or configureMarkdownIt
+},
+
   });
 
   const qaEditor = useEditor({
@@ -1172,18 +1181,41 @@ ${currentBody}
     if (article) {
       const normalizedArticle: Article = {
         ...article,
-        // Some rows may come with snake_case field from Supabase
         fullContent: (article as any).full_content ?? article.fullContent ?? '',
       };
       setCurrentArticle(normalizedArticle);
+      setHasUnsavedArticleChanges(false);
     } else {
-      setCurrentArticle({ id: '', title: '', fullContent: '', category: '', artag: '', imageUrl: '', excerpt: '' });
+      const draft = localStorage.getItem('draftArticle');
+      if (draft) {
+        try {
+          const parsed = JSON.parse(draft) as Article;
+          setCurrentArticle(parsed);
+        } catch {
+          setCurrentArticle({ id: '', title: '', fullContent: '', category: '', artag: '', imageUrl: '', excerpt: '' });
+        }
+      } else {
+        setCurrentArticle({ id: '', title: '', fullContent: '', category: '', artag: '', imageUrl: '', excerpt: '' });
+      }
+      setHasUnsavedArticleChanges(!!draft);
     }
     setShowArticleModal(true);
   };
-  const handleCloseArticleModal = () => { setShowArticleModal(false); setCurrentArticle(null); setErrorArticles(null); };
+  const handleCloseArticleModal = () => {
+    if (hasUnsavedArticleChanges && !window.confirm('Discard unsaved changes?')) {
+      return;
+    }
+    setShowArticleModal(false);
+    setCurrentArticle(null);
+    setErrorArticles(null);
+    localStorage.removeItem('draftArticle');
+    setHasUnsavedArticleChanges(false);
+  };
   const handleArticleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    if (currentArticle) setCurrentArticle({ ...currentArticle, [e.target.name]: e.target.value });
+    if (currentArticle) {
+      setCurrentArticle({ ...currentArticle, [e.target.name]: e.target.value });
+      setHasUnsavedArticleChanges(true);
+    }
   };
 
   const handleArticleSubmit = async (e: React.FormEvent) => {
@@ -1203,7 +1235,10 @@ ${currentBody}
       const { error } = currentArticle.id ? await supabase.from('articles').update(articleData).eq('id', currentArticle.id) : await supabase.from('articles').insert([articleData]);
       if (error) throw error;
       alert(`מאמר ${currentArticle.id ? 'עודכן' : 'נוצר'} בהצלחה!`);
-      handleCloseArticleModal(); fetchArticles();
+      localStorage.removeItem('draftArticle');
+      setHasUnsavedArticleChanges(false);
+      handleCloseArticleModal();
+      fetchArticles();
     } catch (err: any) {
       setErrorArticles(`שגיאה בשמירת המאמר: ${err.message}`);
     } finally {

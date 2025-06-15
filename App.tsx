@@ -162,7 +162,6 @@ const App: React.FC = () => {
         });
         return () => subscription.unsubscribe();
     }, [checkBlockStatus]);
-
     // Render error page if block check failed
     if (blockCheckErrorOccurred) {
         return (
