@@ -14,6 +14,10 @@ import { APP_NAME, ARTICLES_DATA, COURSES_DATA, FAQ_DATA, PREVIEW_SECTIONS } fro
 import { supabase } from '../utils/supabaseClient';
 import { Article, Course, FAQCategory } from '../types.ts';
 import { useData } from '../contexts/DataContext';
+import LoginModal from './auth/LoginModal';
+import SignupModal from './auth/SignupModal';
+import ForgotPasswordModal from './auth/ForgotPasswordModal';
+import ProfileModal from '../components/profile/ProfileModal';
 
 // Supabase client is imported
 
@@ -53,6 +57,20 @@ const ChatWidget: React.FC = () => {
   const [adminError, setAdminError] = useState('');
   // const [submissionStatus, setSubmissionStatus] = useState(''); // Removed
   // const [isSubmitting, setIsSubmitting] = useState(false); // Removed, or rename if login needs specific loading
+
+  // Auth modal states
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
+  const [isForgotPasswordModalOpen, setIsForgotPasswordModalOpen] = useState(false);
+
+  // Auth modal prefill states
+  const [prefillEmail, setPrefillEmail] = useState('');
+  const [prefillPassword, setPrefillPassword] = useState('');
+  const [prefillFirstName, setPrefillFirstName] = useState('');
+  const [prefillLastName, setPrefillLastName] = useState('');
+
+  // Profile Modal state
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   const [chatWidth, setChatWidth] = useState<number>(() => {
     if (typeof window !== 'undefined') {
@@ -247,178 +265,94 @@ const ChatWidget: React.FC = () => {
 
     Extended Markdown Formatting Guide:
     In addition to bold, italics, and basic lists, you can use the following Markdown features to enhance your responses:
+    1.  **Headings:** # H1 ... ###### H6
+    2.  **Numbered Lists:** 1. Item 1 2. Item 2
+    3.  **Tables (GFM):** | Header 1 | Header 2 | \n | :------- | :------: | \n | Cell 1   | Cell 2   |
+    4.  **Blockquotes:** > This is a blockquote.
+    5.  **Inline Code:** \`const example = "hello";\`
+    6.  **Horizontal Rules:** ---
+    7.  **Strikethrough:** ~~strikethrough text~~
+    8.  **Task Lists (GFM):** * [x] Completed task \n * [ ] Incomplete task
+    Use these features judiciously.
 
-    1.  **Headings:**
-        # H1 Heading
-        ## H2 Heading
-        ### H3 Heading
-        #### H4 Heading
-        ##### H5 Heading
-        ###### H6 Heading
+    ---
+    **General Capabilities**
+    You have several capabilities to assist users, many of which involve specific ACTION commands. When an ACTION command is used, it should typically be your *entire response* to the system, on a new line, without any extra text before or after it, unless specified otherwise.
 
-    2.  **Numbered Lists:**
-        1. First item
-        2. Second item
-        3. Third item
-           1. Nested item (indent with 3 spaces)
+    *   **Summarize Articles:** If the user is on an article page and asks for a summary (e.g., "summarize this article"), provide a 3-5 sentence summary based *only* on the article content provided in the context.
+    *   **Toggle Dark/Light Mode:** If the user asks to change the theme (e.g., "turn on dark mode", "switch to light mode"), respond with: \`ACTION_TOGGLE_DARK_MODE\`
+    *   **Create Navigation Buttons:** To help users navigate, you can create buttons using Markdown: \`[Button Text](URL "nav-button")\`. Ensure URL is a relative path (e.g., \`/courses\`).
+    *   **Site Search:** If the user asks to search the site (e.g., "search for 'gifted tests'"), extract the query and respond with: \`ACTION_PERFORM_SITE_SEARCH: search_query_here\`
+    *   **Personalized Recommendations:** Based on the current page or conversation, you can recommend 1-2 relevant articles or courses using navigation buttons.
+    *   **Advanced Site Navigation Aid:** Help users find information by providing direct navigation buttons or explaining the path through menus.
+    *   **Compare Courses:** If asked to compare courses (e.g., "difference between Course A and Course B"), use the \`COURSES_DATA\` provided to list titles, descriptions, key topics, and prices, then highlight main differences.
+    *   **Assist with Contact Form (Public/Anonymous Users):** If an unauthenticated user wants to send a message, ask for their name, email, and message content one by one. Confirm these details with them. If they confirm, respond with: \`ACTION_SEND_PUBLIC_CONTACT_MESSAGE: {"name": "user_name", "email": "user_email", "message": "user_message"}\` (Ensure valid JSON).
+    *   **Check Course Availability (Indirectly):** You cannot check course availability in real-time. If asked, explain this and offer to help send a message to the site owners to inquire. Then, initiate the contact form process (public or logged-in version).
 
-    3.  **Tables (GFM):**
-        | Header 1 | Header 2 | Header 3 |
-        | :------- | :------: | -------: |
-        | Align-L  | Center   | Align-R  |
-        | Cell 2   | Cell 3   | Cell 4   |
+    ---
+    **User Account Management Capabilities**
 
-    4.  **Blockquotes:**
-        > This is a blockquote.
-        > It can span multiple lines.
+    These capabilities allow you to help users manage their accounts. Pay close attention to the required interaction flow and whether the user needs to be logged in.
 
-    5.  **Inline Code:**
-        Use backticks for inline code, like \`const example = "hello";\`.
+    *   **User Logout (User must be logged in):**
+        *   User phrases: "log me out", "disconnect", "sign out".
+        *   Command: \`ACTION_USER_LOGOUT\`
+    *   **User Login (Email/Password - User must be logged out):**
+        *   Interaction: Ask for their email, then separately ask for their password.
+        *   Command: \`ACTION_USER_LOGIN_EMAIL:{"email": "user_email", "password": "user_password"}\`
+    *   **User Signup (Email/Password - User must be logged out):**
+        *   Interaction: Ask for their first name, then last name, then email, then separately ask for their password.
+        *   Command: \`ACTION_USER_SIGNUP:{"firstName": "user_first", "lastName": "user_last", "email": "user_email", "password": "user_password"}\`
+    *   **User Login with Google (User must be logged out):**
+        *   User phrases: "login with Google", "sign in with Google".
+        *   Command: \`ACTION_USER_LOGIN_GOOGLE\`
+    *   **Change Password (User must be logged in):**
+        *   Interaction: Ask for their desired new password.
+        *   Command: \`ACTION_USER_CHANGE_PASSWORD:{"newPassword": "new_user_password"}\`
+    *   **Update Profile (Open Modal - User must be logged in):**
+        *   User phrases: "update my profile", "change my name", "view my profile settings".
+        *   Interaction: Inform the user you are opening their profile settings for them to manage.
+        *   Command: \`ACTION_OPEN_PROFILE_MODAL\`
+    *   **Delete User Account (User must be logged in):**
+        *   Interaction: **CRITICAL!** First, confirm with the user using a strong warning, e.g., "Are you absolutely sure you want to delete your account? This action is permanent and cannot be undone. All your data will be lost." Only if they confirm with a clear "yes" or similar affirmative, then use the command. If they are hesitant or say no, do not proceed.
+        *   Command: \`ACTION_USER_DELETE_ACCOUNT_CONFIRMED\`
+    *   **Display User Order History (User must be logged in - Placeholder Feature):**
+        *   User phrases: "show my orders", "where is my order history?".
+        *   Interaction: Inform the user you will attempt to fetch their order history. The system will provide a placeholder message if the feature is not fully implemented.
+        *   Command: \`ACTION_USER_VIEW_ORDERS\`
+    *   **Reset User Password (Forgot Password Flow - User must be logged out):**
+        *   User phrases: "forgot my password", "reset password".
+        *   Interaction: Ask for their email address associated with their account.
+        *   Command: \`ACTION_USER_RESET_PASSWORD:{"email": "user_email"}\`
+    *   **Manage Notification Preferences (User must be logged in - Placeholder Feature):**
+        *   User phrases: "change notification settings", "unsubscribe from newsletter".
+        *   Interaction: Ask what specific notification preference they want to change (e.g., "newsletter", "course updates") and what value (e.g., true/false, on/off).
+        *   Command: \`ACTION_USER_MANAGE_NOTIFICATIONS:{"preference": "pref_name", "value": true_or_false}\` (e.g., \`{"preference": "newsletter", "value": false}\`). The system will provide a placeholder message if the feature is not fully implemented.
 
-    6.  **Horizontal Rules:**
-        Use three or more hyphens, asterisks, or underscores:
-        ---
-        ***
-        ___
+    ---
+    **Conditional Behavior Based on User Authentication**
 
-    7.  **Strikethrough:**
-        Use two tildes for ~~strikethrough text~~.
+    Your behavior and available actions change based on whether the user is logged in. This information (user's name and email) will be provided to you if they are logged in, similar to how it's done for the "Sending Messages to Site Owner" capability.
 
-    8.  **Task Lists (GFM):**
-        * [x] Completed task
-        * [ ] Incomplete task
-        * [ ] Another task
-          * [x] Nested completed task
-    Use these features judiciously to improve the clarity and presentation of your answers.
+    *   **If User is NOT Logged In (session is null):**
+        *   You can help users:
+            *   Log in to existing accounts (Email/Password): Use \`ACTION_USER_LOGIN_EMAIL:{"email": "...", "password": "..."}\` (after asking for email, then password).
+            *   Log in with Google: Use \`ACTION_USER_LOGIN_GOOGLE\`
+            *   Create new accounts: Use \`ACTION_USER_SIGNUP:{"firstName": "...", "lastName": "...", "email": "...", "password": "..."}\` (after asking for first name, last name, email, then password).
+            *   Reset a forgotten password: Use \`ACTION_USER_RESET_PASSWORD:{"email": "..."}\` (after asking for their email).
+        *   If a user asks to do something that requires being logged in (like viewing orders, changing profile details, changing password, managing notifications, or deleting their account), you must first inform them they need to be logged in. Then, offer to help them log in or create an account. For example: "To view your order history, you need to be logged in. Would you like to log in or create an account?"
 
-    **יכולת חדשה: סיכום מאמרים**
-    כאשר המשתמש נמצא בדף מאמר, תקבל את התוכן המלא של המאמר כחלק מההקשר.
-    אם המשתמש יבקש ממך לסכם את המאמר, אנא ספק סיכום תמציתי ומדויק של עיקרי הדברים, בהתבסס *אך ורק* על תוכן המאמר שקיבלת.
-    השתדל שהסיכום יהיה באורך של 3-5 משפטים עיקריים, אלא אם המשתמש ביקש אורך אחר.
-    לדוגמה, אם המשתמש שואל "תוכל לסכם לי את המאמר הזה?", עליך להשתמש בתוכן המאמר שסופק לך כדי ליצור את הסיכום.
-    אל תוסיף מידע חיצוני או דעות אישיות לסיכום.
-
-    **יכולת חדשה: שליטה על ערכת הנושא (מצב כהה/בהיר)**
-    אתה יכול לעזור למשתמש לשנות את ערכת הנושא של האתר בין מצב בהיר למצב כהה.
-    אם המשתמש מבקש ממך להפעיל מצב כהה, לכבות מצב כהה, או לשנות את ערכת הנושא (למשל, "הפעל מצב לילה", "עבור למצב בהיר", "שנה למצב חשוך"), על תגובתך המלאה למערכת להיות אך ורק הפקודה הבאה בשורה חדשה, ללא שום טקסט נוסף לפניה או אחריה:
-    \`ACTION_TOGGLE_DARK_MODE\`
-    המערכת תטפל בביצוע הפעולה ותודיע למשתמש על השינוי. אל תוסיף הודעת אישור משלך.
-
-    Creating Navigation Buttons:
-    You can create special links that will be rendered as clickable buttons for navigating within the site. This is useful for guiding users to relevant pages.
-    To create a navigation button, use the following Markdown syntax:
-    \`[Button Text](URL "nav-button")\`
-
-    -   \`Button Text\`: The text that will appear on the button.
-    -   \`URL\`: The relative path for navigation (e.g., \`/courses\`, \`/about\`, \`/article/some-id\`). **Must be a relative path.**
-    -   \`"nav-button"\`: The title attribute must be exactly "nav-button" (including the quotes in the Markdown link definition).
-
-    Examples:
-    -   To direct a user to the main courses page: \`[לרשימת הקורסים המלאה](/courses "nav-button")\`
-    -   To link to a specific article: \`[קרא עוד על המאמר בנושא X](/article/article-x-id "nav-button")\`
-    -   To suggest navigating to the "About Us" page: \`[עבור לדף אודותינו](/about "nav-button")\`
-
-    השתמש ביכולת יצירת כפתורי הניווט באופן יזום כאשר אתה מזהה הזדמנות להפנות את המשתמש לדף רלוונטי (כגון מאמר, קורס, או קטגוריה) שיכול להרחיב על הנקודה שהתקיים דיון לגביה או לענות על שאלה פוטנציאלית. Only use relative paths for these buttons. For external links, use standard Markdown links which will open in a new tab.
-
-    **יכולת חדשה: חיפוש באתר**
-    אתה יכול לעזור למשתמשים למצוא מידע ספציפי באתר.
-    אם המשתמש מבקש ממך לחפש מידע באתר (למשל: "חפש לי על הכנה למבחן שלב א'", "מה אתם אומרים על חשיבה כמותית?", "מצא מידע על תוכנית אודיסאה"), עליך לחלץ את מונח החיפוש המרכזי מהבקשה שלו.
-    לאחר מכן, על תגובתך המלאה למערכת להיות אך ורק הפקודה הבאה בפורמט הזה בשורה חדשה, ללא שום טקסט נוסף לפניה או אחריה:
-    \`ACTION_PERFORM_SITE_SEARCH: מונח החיפוש שזיהית\`
-    לדוגמה, אם המשתמש אומר "חפש באתר על מבחני מחוננים", תגובתך צריכה להיות:
-    \`ACTION_PERFORM_SITE_SEARCH: מבחני מחוננים\`
-    המערכת תבצע את החיפוש ותציג את התוצאות. אל תנסה לענות על השאילתה ישירות אם היא נראית כמו בקשת חיפוש.
-
-    **יכולת חדשה: המלצות מותאמות אישית**
-    במצבים מתאימים, אתה יכול להציע למשתמש המלצות למאמרים או קורסים נוספים שעשויים לעניין אותו.
-    בסס את המלצותיך על:
-    1.  **הדף הנוכחי בו המשתמש נמצא:** אם המשתמש קורא מאמר, תוכל להציע 1-2 מאמרים נוספים מאותה קטגוריה או בנושא דומה. אם פרטי הקורסים זמינים לך, תוכל להמליץ על קורס רלוונטי.
-    2.  **נושאי השיחה המרכזיים:** אם השיחה מתמקדת בתחום מסוים, הצע מאמר או קורס רלוונטיים.
-
-    הצג את ההמלצות בצורה ברורה, רצוי כרשימה קצרה עם קישורים (באמצעות כפתורי ניווט). לדוגמה:
-    *   "אם המאמר על 'X' עניין אותך, אולי תרצה לעיין גם במאמר על 'Y': [קרא את המאמר על Y](/article/article_y_id "nav-button")"
-    *   "בהמשך לשיחתנו על Z, ייתכן שתמצא עניין בקורס הבא: [פרטים על קורס ABC](/shop "nav-button")" (שים לב: אם אתה יודע את ה-ID הספציפי של הקורס והמערכת תומכת בקישור ישיר אליו, השתמש בו. אחרת, הפנה לדף הכללי של החנות או הקורסים).
-
-    הצע המלצות אלו באופן יזום אך בצורה מתונה. אין להציף את המשתמש בהמלצות. הצעה אחת או שתיים רלוונטיות בכל פעם מספיקה בדרך כלל.
-    לפני מתן המלצה, ודא שהיא באמת רלוונטית ומוסיפה ערך למשתמש. אל תמליץ על אותו פריט מספר פעמים.
-    זכור, לרשותך עומד המידע על המאמרים באתר (כולל קטגוריות ותוכן מלא כשאתה בדף מאמר) ופרטי הקורסים כפי שמוגדרים לך. השתמש בידע זה בחוכמה.
-
-    **יכולת חדשה: סיוע בניווט מתקדם באתר**
-    כאשר משתמש שואל כיצד למצוא מידע מסוים, איך להגיע לדף כלשהו, או מביע קושי בניווט באתר, עליך לסייע לו להגיע ליעדו בקלות.
-
-    1.  **קישור ישיר (כפתור ניווט):** אם קיים דף יעד ברור ובולט לשאלת המשתמש, המטרה הראשונית שלך היא לספק לו כפתור ניווט ישיר לדף זה.
-    2.  **הסבר מילולי על הנתיב:** בנוסף לקישור הישיר (או אם קישור ישיר אינו חד משמעי), הסבר למשתמש את הדרך להגיע למידע או לדף המבוקש באמצעות התפריטים ומבנה האתר.
-        *   לדוגמה: "תוכל למצוא מידע על X על ידי מעבר לקטגוריית 'מאמרים' מהתפריט הראשי, ושם לחפש את תת-הקטגוריה 'Y'."
-        *   דוגמה נוספת: "כדי להגיע לדף 'צור קשר', תוכל ללחוץ על הקישור 'צור קשר' בסרגל הניווט העליון או בחלק התחתון של האתר (footer)."
-    3.  **שילוב:** ניתן ואף רצוי לשלב בין הסבר מילולי למתן כפתור ניווט.
-        *   לדוגמה: "מידע על מבחני מחוננים נמצא במדור המאמרים. מהעמוד הראשי, בחר 'מאמרים' בתפריט, ולאחר מכן חפש את הקטגוריה הרלוונטית. תוכל גם להשתמש בכפתור זה למעבר מהיר: [מאמרים בנושא מחוננות](/articles "nav-button")"
-
-    שמור על הסברים ברורים, תמציתיים וקלים להבנה. אם המשתמש נשמע אבוד או מבולבל, הרגע אותו והנחה אותו צעד אחר צעד במידת הצורך.
-    הידע שלך על מבנה האתר (למשל, פריטי תפריט הניווט, קטגוריות מאמרים, דפים עיקריים כמו אודות, קורסים, חנות, שאלות נפוצות, צור קשר) חיוני כאן.
-
-    **יכולת חדשה: השוואת קורסים**
-    אתה יכול לסייע למשתמשים להשוות בין קורסים שונים המוצעים באתר.
-    כאשר משתמש מבקש ממך השוואה בין קורסים ספציפיים (למשל, "מה ההבדל בין קורס הכנה לשלב א' לקורס הכנה לשלב ב'?", "איזה קורס יתאים לי יותר, אודיסאה או בר-אילן?"), פעל כך:
-
-    1.  **זיהוי הקורסים:** ודא שאתה מזהה נכון את הקורסים שהמשתמש רוצה להשוות מתוך רשימת הקורסים הזמינה לך (\`COURSES_DATA\`). אם אינך בטוח, בקש הבהרה.
-    2.  **איסוף מידע:** עבור כל קורס שזוהה, אסוף את הפרטים הרלוונטיים מהמידע שברשותך: שם הקורס (\`title\`), תיאור כללי (\`description\`), תוכן מפורט (\`detailedContent\` - חפש בו נושאים מרכזיים, קהל יעד אם מצוין), ומחיר (\`price\`).
-    3.  **הצגת ההשוואה:** הצג למשתמש השוואה מאוזנת. תוכל להשתמש במבנה הבא כהשראה:
-        "הנה השוואה קצרה בין [שם קורס א'] לבין [שם קורס ב']:
-
-        **[שם קורס א'] ([קישור לקורס א' בחנות](/shop "nav-button"))**
-        *   **תיאור קצר:** [תמצית מה-\`description\` של קורס א']
-        *   **נושאים עיקריים/קהל יעד:** [נסה לחלץ מ-\`detailedContent\` של קורס א', או ציין אם לא מפורט]
-        *   **מחיר:** [המחיר של קורס א']
-
-        **[שם קורס ב'] ([קישור לקורס ב' בחנות](/shop "nav-button"))**
-        *   **תיאור קצר:** [תמצית מה-\`description\` של קורס ב']
-        *   **נושאים עיקריים/קהל יעד:** [נסה לחלץ מ-\`detailedContent\` של קורס ב', או ציין אם לא מפורט]
-        *   **מחיר:** [המחיר של קורס ב']
-
-        **נקודות מרכזיות להשוואה:**
-        *   [ציין הבדל משמעותי 1, למשל, קורס א' מתמקד ב-X בעוד קורס ב' מתמקד ב-Y]
-        *   [ציין הבדל משמעותי 2, למשל, קהל היעד של קורס א' הוא Z בעוד קורס ב' הוא W, אם ידוע]
-        *   [התייחסות למחירים אם יש הבדל משמעותי או אם הם דומים]
-
-        אם חסר מידע ספציפי להשוואה עבור אחד הקורסים (למשל, קהל יעד לא מוגדר בבירור), ציין זאת.
-        בסס את ההשוואה אך ורק על המידע הזמין לך מ-\`COURSES_DATA\`.
-        בסיום ההשוואה, תוכל להציע למשתמש לשאול שאלות נוספות או לעבור לדפי הקורסים בחנות."
-
-        **יכולת חדשה: סיוע בשליחת פנייה (טופס יצירת קשר)**
-        אתה יכול לעזור למשתמשים לשלוח הודעה לבעלי האתר.
-
-        *   **אם המשתמש מחובר (אתה תדע זאת כי פרטי השם והאימייל שלו יהיו זמינים לך בהנחיות של יכולת שליחת הודעת טלגרם לבעלים):**
-            *   שאל את המשתמש מה תוכן ההודעה שהוא רוצה לשלוח.
-*   לאחר קבלת תוכן ההודעה, השתמש ביכולת הקיימת לשליחת הודעה לבעלי האתר: ACTION_SEND_TELEGRAM_MESSAGE_TO_OWNER: תוכן ההודעה מהמשתמש. השם והאימייל של המשתמש המחובר יצורפו אוטומטית.
-
-        *   **אם המשתמש אינו מחובר (כלומר, אין לך את פרטי השם והאימייל שלו מההקשר):**
-            *   הסבר למשתמש שכדי לשלוח פנייה, תצטרך לבקש ממנו את שמו, כתובת האימייל שלו, ואת תוכן ההודעה.
-            *   שאל אותו כל פרט בנפרד:
-                1.  "מהו שמך המלא?"
-                2.  "מהי כתובת האימייל שלך?"
-                3.  "מהי הודעתך?"
-            *   לאחר שקיבלת את כל שלושת הפרטים, הצג לו אותם לאישור: "בסדר, רק כדי לוודא: שמך הוא [שם], אימיילך הוא [אימייל], והודעתך היא '[הודעה]'. האם לשלוח?"
-            *   אם המשתמש מאשר, על תגובתך המלאה למערכת להיות אך ורק הפקודה הבאה בפורמט JSON מחרוזתי בשורה חדשה:
-                \`ACTION_SEND_PUBLIC_CONTACT_MESSAGE: {"name": "השם שהמשתמש סיפק", "email": "האימייל שהמשתמש סיפק", "message": "ההודעה שהמשתמש סיפק"}\`
-                (ודא שה-JSON תקין, עם מרכאות כפולות סביב המפתחות והערכים המחרוזתיים).
-            *   המערכת תטפל בשליחת הפנייה ותודיע למשתמש.
-
-        בכל מקרה, המתן לאישור מפורש מהמשתמש לפני שאתה מפעיל את אחת מפעולות השליחה.
-
-        **יכולת חדשה: בירור זמינות לקורסים (באופן עקיף)**
-        אינך יכול לבדוק זמינות מקומות בקורסים בזמן אמת. עם זאת, אתה יכול לסייע למשתמשים לברר זאת מול בעלי האתר.
-
-        אם משתמש שואל לגבי זמינות מקום בקורס ספציפי (למשל, "האם יש מקום פנוי בקורס X?", "האם ההרשמה לקורס Y עדיין פתוחה?"):
-        1.  זהה את שם הקורס שהמשתמש מתעניין בו.
-        2.  הסבר למשתמש שאין לך גישה למידע על זמינות בזמן אמת.
-        3.  הצע לו באופן מיידי סיוע בשליחת פנייה לבעלי האתר כדי לברר את הזמינות של הקורס הספציפי.
-            *   דוגמה לתשובה: "איני יכול לבדוק זמינות בזמן אמת עבור קורסים. עם זאת, אוכל לסייע לך לשלוח פנייה למנהלי האתר כדי לברר לגבי זמינות מקום בקורס '[שם הקורס שהמשתמש ציין]'. האם תרצה לעשות זאת?"
-        4.  אם המשתמש מסכים, עליך ליזום את תהליך "סיוע בשליחת פנייה (טופס יצירת קשר)" שכבר למדת:
-            *   אם המשתמש מחובר, שאל אותו מה תוכן ההודעה שירצה לשלוח לגבי בירור הזמינות של הקורס.
-            *   אם המשתמש אינו מחובר, התחל באיסוף פרטיו (שם, אימייל) והודעתו לגבי הבירור על הקורס.
-            *   לאחר מכן, המשיך בתהליך שליחת הפנייה כפי שהונחית עבור היכולת ההיא (באמצעות \`ACTION_SEND_TELEGRAM_MESSAGE_TO_OWNER\` או \`ACTION_SEND_PUBLIC_CONTACT_MESSAGE\`).
-
-        המטרה היא לא להשאיר את המשתמש ללא מענה, אלא להציע לו דרך פעולה קונקרטית לבירור מול הגורם המתאים.
+    *   **If User IS Logged In (session is not null, user name/email are provided to you):**
+        *   The user is currently logged in as [User's Name if available, otherwise User's Email].
+        *   **Primary Available Action:** You can help the user **log out** (disconnect) from their account. If they ask to "log out", "sign out", or "disconnect", respond with: \`ACTION_USER_LOGOUT\`
+        *   **Other Actions (User-Initiated Only):** If the user *specifically asks* to perform actions such as:
+            *   Changing their password (e.g., "I want to change my password")
+            *   Updating their profile (e.g., "I need to update my address", "open my profile settings")
+            *   Deleting their account (e.g., "I want to delete my account")
+            *   Viewing their order history (e.g., "show my past orders")
+            *   Managing their notification preferences (e.g., "stop sending me newsletters")
+            ...then you can assist them using the respective \`ACTION_...\` commands you learned above (e.g., \`ACTION_USER_CHANGE_PASSWORD\`, \`ACTION_OPEN_PROFILE_MODAL\`, \`ACTION_USER_DELETE_ACCOUNT_CONFIRMED\`, \`ACTION_USER_VIEW_ORDERS\`, \`ACTION_USER_MANAGE_NOTIFICATIONS\`).
+        *   **IMPORTANT: DO NOT proactively suggest or list these other logged-in actions.** Your main advertised capability for a logged-in user is to help them log out. Only use the other logged-in action commands if the user directly and clearly requests that specific action. For general inquiries from a logged-in user, continue to assist with information about courses, articles, etc., as per your primary role.
     `;
 
     let currentSystemPrompt = baseSystemPrompt;
@@ -529,6 +463,23 @@ Only use this command when the user explicitly wants to send a message to the ow
     const TOGGLE_DARK_MODE_COMMAND = 'ACTION_TOGGLE_DARK_MODE';
     // SITE_SEARCH_COMMAND_PREFIX and PUBLIC_CONTACT_MESSAGE_PREFIX are defined at component scope
 
+    // Auth actions
+    const ACTION_USER_LOGOUT = 'ACTION_USER_LOGOUT';
+    const ACTION_USER_LOGIN_EMAIL_PREFIX = "ACTION_USER_LOGIN_EMAIL:";
+    const ACTION_USER_SIGNUP_PREFIX = "ACTION_USER_SIGNUP:";
+    const ACTION_USER_LOGIN_GOOGLE = 'ACTION_USER_LOGIN_GOOGLE';
+    const { logout, session: currentSession } = useAuth(); // Ensure useAuth is available, get session
+
+    // User Management Actions
+    const ACTION_USER_CHANGE_PASSWORD_PREFIX = "ACTION_USER_CHANGE_PASSWORD:";
+    const ACTION_OPEN_PROFILE_MODAL = "ACTION_OPEN_PROFILE_MODAL";
+    const ACTION_USER_DELETE_ACCOUNT_CONFIRMED = "ACTION_USER_DELETE_ACCOUNT_CONFIRMED";
+
+    // New Actions for Order History, Reset Password, Notification Preferences
+    const ACTION_USER_VIEW_ORDERS = "ACTION_USER_VIEW_ORDERS";
+    const ACTION_USER_RESET_PASSWORD_PREFIX = "ACTION_USER_RESET_PASSWORD:";
+    const ACTION_USER_MANAGE_NOTIFICATIONS_PREFIX = "ACTION_USER_MANAGE_NOTIFICATIONS:";
+
     if (responseText && responseText.trim().startsWith(SITE_SEARCH_COMMAND_PREFIX)) {
         const searchQuery = responseText.trim().substring(SITE_SEARCH_COMMAND_PREFIX.length).trim();
         if (searchQuery) {
@@ -579,6 +530,134 @@ Only use this command when the user explicitly wants to send a message to the ow
     } else if (responseText && responseText.trim().startsWith(commandPrefixTelegram)) {
         const messageContent = responseText.trim().substring(commandPrefixTelegram.length).trim();
         await sendTelegramMessageToOwner(messageContent);
+    } else if (responseText && responseText.trim() === ACTION_USER_LOGOUT) {
+        await logout();
+        setMessages(prev => [...prev, { role: 'ai', text: "התנתקת בהצלחה." }]);
+    } else if (responseText && responseText.trim().startsWith(ACTION_USER_LOGIN_EMAIL_PREFIX)) {
+        const jsonPayload = responseText.trim().substring(ACTION_USER_LOGIN_EMAIL_PREFIX.length).trim();
+        try {
+            const { email, password } = JSON.parse(jsonPayload);
+            setPrefillEmail(email);
+            setPrefillPassword(password);
+            setIsLoginModalOpen(true);
+            setMessages(prev => [...prev, { role: 'ai', text: "אנא המתן, פותח את טופס ההתחברות עם הפרטים שמסרת..." }]);
+        } catch (e) {
+            console.error("Error parsing login payload:", e);
+            setMessages(prev => [...prev, { role: 'ai', text: "שגיאה בעיבוד פרטי ההתחברות." }]);
+        }
+    } else if (responseText && responseText.trim().startsWith(ACTION_USER_SIGNUP_PREFIX)) {
+        const jsonPayload = responseText.trim().substring(ACTION_USER_SIGNUP_PREFIX.length).trim();
+        try {
+            const { firstName, lastName, email, password } = JSON.parse(jsonPayload);
+            setPrefillEmail(email);
+            setPrefillPassword(password);
+            setPrefillFirstName(firstName); // Stored, though SignupModal might not use it directly
+            setPrefillLastName(lastName);   // Stored, though SignupModal might not use it directly
+            setIsSignupModalOpen(true);
+            setMessages(prev => [...prev, { role: 'ai', text: "אנא המתן, פותח את טופס ההרשמה עם הפרטים שמסרת..." }]);
+        } catch (e) {
+            console.error("Error parsing signup payload:", e);
+            setMessages(prev => [...prev, { role: 'ai', text: "שגיאה בעיבוד פרטי ההרשמה." }]);
+        }
+    } else if (responseText && responseText.trim() === ACTION_USER_LOGIN_GOOGLE) {
+        setMessages(prev => [...prev, { role: 'ai', text: "מפנה אותך להתחברות עם גוגל..." }]);
+        try {
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: { redirectTo: window.location.origin }
+            });
+            if (error) {
+                console.error("Google login error:", error);
+                setMessages(prev => [...prev, { role: 'ai', text: `שגיאה בהפנייה לגוגל: ${error.message}` }]);
+            }
+            // If successful, browser will redirect. No further message needed here.
+        } catch (e) {
+            console.error("Google login exception:", e);
+            setMessages(prev => [...prev, { role: 'ai', text: "אירעה שגיאה בעת ניסיון ההתחברות עם גוגל." }]);
+        }
+    } else if (responseText && responseText.trim().startsWith(ACTION_USER_CHANGE_PASSWORD_PREFIX)) {
+        if (!currentSession) {
+            setMessages(prev => [...prev, { role: 'ai', text: "עליך להתחבר תחילה כדי לשנות את סיסמתך." }]);
+        } else {
+            const jsonPayload = responseText.trim().substring(ACTION_USER_CHANGE_PASSWORD_PREFIX.length).trim();
+            try {
+                const { newPassword } = JSON.parse(jsonPayload);
+                if (!newPassword) {
+                     setMessages(prev => [...prev, { role: 'ai', text: "לא סופקה סיסמה חדשה." }]);
+                } else {
+                    const { error } = await supabase.auth.updateUser({ password: newPassword });
+                    if (error) {
+                        setMessages(prev => [...prev, { role: 'ai', text: `שגיאה בעדכון הסיסמה: ${error.message}` }]);
+                    } else {
+                        setMessages(prev => [...prev, { role: 'ai', text: "הסיסמה עודכנה בהצלחה." }]);
+                    }
+                }
+            } catch (e) {
+                console.error("Error parsing change password payload or updating password:", e);
+                setMessages(prev => [...prev, { role: 'ai', text: "שגיאה בעיבוד בקשת שינוי הסיסמה." }]);
+            }
+        }
+    } else if (responseText && responseText.trim() === ACTION_OPEN_PROFILE_MODAL) {
+        if (!currentSession) {
+            setMessages(prev => [...prev, { role: 'ai', text: "עליך להתחבר תחילה כדי לצפות או לעדכן את הפרופיל שלך." }]);
+        } else {
+            setIsProfileModalOpen(true);
+            setMessages(prev => [...prev, { role: 'ai', text: "פותח את הגדרות הפרופיל שלך..." }]);
+        }
+    } else if (responseText && responseText.trim() === ACTION_USER_DELETE_ACCOUNT_CONFIRMED) {
+        if (!currentSession) {
+            setMessages(prev => [...prev, { role: 'ai', text: "עליך להתחבר תחילה כדי למחוק את חשבונך." }]);
+        } else {
+            setMessages(prev => [...prev, { role: 'ai', text: "מעבד את בקשתך למחיקת החשבון..." }]);
+            try {
+                const { error } = await supabase.functions.invoke('delete-user-account');
+                if (error) {
+                    setMessages(prev => [...prev, { role: 'ai', text: `שגיאה בתהליך מחיקת החשבון: ${error.message}. ודא שהפונקציה 'delete-user-account' מוגדרת כראוי ב-Supabase, או פנה לתמיכה.` }]);
+                } else {
+                    // Logout should be handled by onAuthStateChange in AuthContext after the function successfully deletes the user.
+                    setMessages(prev => [...prev, { role: 'ai', text: "בקשת מחיקת החשבון שלך עובדה. אם הפעולה הצליחה, תנותק מהמערכת בקרוב." }]);
+                }
+            } catch (e: any) {
+                console.error("Error invoking delete-user-account function:", e);
+                setMessages(prev => [...prev, { role: 'ai', text: `שגיאה קריטית בתהליך מחיקת החשבון: ${e.message || 'Unknown error'}. פנה לתמיכה.` }]);
+            }
+        }
+    } else if (responseText && responseText.trim() === ACTION_USER_VIEW_ORDERS) {
+        if (!currentSession) {
+            setMessages(prev => [...prev, { role: 'ai', text: "עליך להתחבר תחילה כדי לצפות בהיסטוריית ההזמנות שלך." }]);
+        } else {
+            setMessages(prev => [...prev, { role: 'ai', text: "מאחזר את היסטוריית ההזמנות שלך... (הערת מפתח: תכונה זו עדיין אינה מיושמת במלואה. יש לאחזר נתוני הזמנות מהמערכת האחורית.)" }]);
+            // Placeholder: Actual order fetching logic would go here
+        }
+    } else if (responseText && responseText.trim().startsWith(ACTION_USER_RESET_PASSWORD_PREFIX)) {
+        const jsonPayload = responseText.trim().substring(ACTION_USER_RESET_PASSWORD_PREFIX.length).trim();
+        try {
+            const { email } = JSON.parse(jsonPayload);
+            if (email) {
+                setPrefillEmail(email);
+                setIsForgotPasswordModalOpen(true);
+                setMessages(prev => [...prev, { role: 'ai', text: "אנא המתן, פותח את טופס איפוס הסיסמה עם כתובת האימייל שמסרת..." }]);
+            } else {
+                setMessages(prev => [...prev, { role: 'ai', text: "לא סופקה כתובת אימייל לאיפוס סיסמה." }]);
+            }
+        } catch (e) {
+            console.error("Error parsing reset password payload:", e);
+            setMessages(prev => [...prev, { role: 'ai', text: "שגיאה בעיבוד בקשת איפוס הסיסמה." }]);
+        }
+    } else if (responseText && responseText.trim().startsWith(ACTION_USER_MANAGE_NOTIFICATIONS_PREFIX)) {
+        if (!currentSession) {
+            setMessages(prev => [...prev, { role: 'ai', text: "עליך להתחבר תחילה כדי לנהל את העדפות ההתראות שלך." }]);
+        } else {
+            const jsonPayload = responseText.trim().substring(ACTION_USER_MANAGE_NOTIFICATIONS_PREFIX.length).trim();
+            try {
+                const { preference, value } = JSON.parse(jsonPayload);
+                setMessages(prev => [...prev, { role: 'ai', text: `מעדכן את העדפות ההתראות שלך עבור '${preference}' ל-'${value}'... (הערת מפתח: תכונה זו עדיין אינה מיושמת במלואה. יש לאחסן ולעדכן העדפות משתמש במערכת האחורית.)` }]);
+                // Placeholder: Actual notification preference update logic would go here
+            } catch (e) {
+                console.error("Error parsing manage notifications payload:", e);
+                setMessages(prev => [...prev, { role: 'ai', text: "שגיאה בעיבוד בקשת ניהול ההתראות." }]);
+            }
+        }
     } else if (responseText) { // Ensure responseText is not null before adding
         setMessages(prev => [...prev, { role: 'ai', text: responseText }]);
     } else { // Handle case where responseText is null (error from Gemini)
@@ -609,13 +688,83 @@ Only use this command when the user explicitly wants to send a message to the ow
     setAdminPasswordInput('');
   };
 
+  // Modal control handlers
+  const clearAuthPrefill = () => {
+    setPrefillEmail('');
+    setPrefillPassword('');
+    setPrefillFirstName('');
+    setPrefillLastName('');
+  };
+
+  const handleLoginClose = () => {
+    setIsLoginModalOpen(false);
+    clearAuthPrefill();
+  };
+
+  const handleSignupClose = () => {
+    setIsSignupModalOpen(false);
+    clearAuthPrefill();
+  };
+
+  const handleForgotPasswordClose = () => {
+    setIsForgotPasswordModalOpen(false);
+    clearAuthPrefill(); // Though typically only email is prefilled here
+  };
+
+  const switchToSignup = (email?: string) => {
+    setIsLoginModalOpen(false);
+    setIsForgotPasswordModalOpen(false);
+    setIsSignupModalOpen(true);
+    if (email) setPrefillEmail(email);
+  };
+
+  const switchToLogin = (email?: string) => {
+    setIsSignupModalOpen(false);
+    setIsForgotPasswordModalOpen(false);
+    setIsLoginModalOpen(true);
+    if (email) setPrefillEmail(email);
+  };
+
+  const switchToForgotPassword = (email?: string) => {
+    setIsLoginModalOpen(false);
+    setIsSignupModalOpen(false);
+    setIsForgotPasswordModalOpen(true);
+    if (email) setPrefillEmail(email);
+  };
+
 
   return (
     // -- 🎨 MODIFIED LINE --
     // This container is now full-width on mobile with padding, and aligns items to the center.
     // On desktop, it reverts to the original corner positioning.
 <div className="fixed inset-x-2 bottom-2 sm:inset-x-auto sm:right-4 sm:bottom-4 z-50 flex flex-col items-start" dir="rtl">
-  <AnimatePresence>
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={handleLoginClose}
+        onSwitchToSignup={switchToSignup}
+        onSwitchToForgotPassword={switchToForgotPassword}
+        prefillEmail={prefillEmail}
+        prefillPassword={prefillPassword}
+      />
+      <SignupModal
+        isOpen={isSignupModalOpen}
+        onClose={handleSignupClose}
+        onSwitchToLogin={switchToLogin}
+        // As per instructions, SignupModal does not take name prefill props directly.
+        // The AI will either guide user or use supabase.auth.signUp if all details are collected.
+        prefillEmail={prefillEmail} // It might still take email
+      />
+      <ForgotPasswordModal
+        isOpen={isForgotPasswordModalOpen}
+        onClose={handleForgotPasswordClose}
+        onSwitchToLogin={switchToLogin}
+        prefillEmail={prefillEmail}
+      />
+      <ProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+      />
+      <AnimatePresence>
         {open && (
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
