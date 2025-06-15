@@ -16,12 +16,10 @@ const GiftedCoursePage: React.FC = () => {
           {/* Optional: Add a breadcrumb or a link back to Learning Zone here if desired */}
         </AnimatedDiv>
 
-        <AnimatedDiv animation="fadeInUp" delay={0.15}>
-          <article
-            className="prose prose-lg sm:prose-xl dark:prose-invert max-w-none mx-auto bg-white dark:bg-slate-800 p-6 sm:p-8 md:p-10 rounded-xl shadow-lg"
-            dangerouslySetInnerHTML={{ __html: processedContent }}
-          />
-        </AnimatedDiv>
+        <article
+          className="prose prose-lg sm:prose-xl dark:prose-invert max-w-none mx-auto bg-white dark:bg-slate-800 p-6 sm:p-8 md:p-10 rounded-xl shadow-lg"
+          dangerouslySetInnerHTML={{ __html: processedContent }}
+        />
       </div>
     </div>
   );
