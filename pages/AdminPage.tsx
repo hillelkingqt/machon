@@ -1010,7 +1010,16 @@ ${currentBody}
   };
 
   const handleOpenArticleModal = (article: Article | null = null) => {
-    setCurrentArticle(article ? { ...article } : { id: '', title: '', fullContent: '', category: '', artag: '', imageUrl: '', excerpt: '' });
+    if (article) {
+      const normalizedArticle: Article = {
+        ...article,
+        // Some rows may come with snake_case field from Supabase
+        fullContent: (article as any).full_content ?? article.fullContent ?? '',
+      };
+      setCurrentArticle(normalizedArticle);
+    } else {
+      setCurrentArticle({ id: '', title: '', fullContent: '', category: '', artag: '', imageUrl: '', excerpt: '' });
+    }
     setShowArticleModal(true);
   };
   const handleCloseArticleModal = () => { setShowArticleModal(false); setCurrentArticle(null); setErrorArticles(null); };
