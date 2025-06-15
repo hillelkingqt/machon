@@ -14,6 +14,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" integrity="sha384-wcIxkf4k558AjM3Yz3BBFQUbk/zgIYC2R0QpeeYb+TwlBVMrlgLqwRjRtGZiK7ww" crossorigin="anonymous">
 
     <style>
+        :host, html {
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
         body {
             font-family: 'Rubik', 'Assistant', sans-serif;
             scroll-behavior: smooth;
@@ -56,8 +60,8 @@ html.dark ::-webkit-scrollbar-corner {
             }
 
         .gradient-text {
-            background-clip: text;
             -webkit-background-clip: text;
+            background-clip: text;
             color: transparent;
             background-size: 250% auto;
             animation: shimmer-animation 5s ease-in-out infinite alternate;
