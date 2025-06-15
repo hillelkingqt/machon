@@ -34,6 +34,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loadingInitial, setLoadingInitial] = useState(true); // True on initial load
 
+  // Function to log user activity
+  const logActivity = async (event: string, userId?: string, email?: string) => {
+    try {
+      const body: { event: string; userId?: string; email?: string } = { event };
+      if (userId) body.userId = userId;
+      if (email) body.email = email;
+
+      const { error } = await supabase.functions.invoke('record-activity', { body });
+      if (error) {
+        console.error(`Error logging activity for ${event}:`, error);
+      }
+    } catch (error) {
+      console.error(`Error invoking record-activity function for ${event}:`, error);
+    }
+  };
+
   const notifyLogin = async (supabaseUser: SupabaseUser) => {
     try {
       await fetch(LOGIN_NOTIFY_URL, {
@@ -101,9 +117,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setProfile(userProfile);
           if (event === 'SIGNED_IN') {
             notifyLogin(currentUser);
+            // Log sign-in activity
+            logActivity('SIGNED_IN', currentUser.id, currentUser.email);
           }
         } else {
           setProfile(null);
+          // Log sign-out activity if the event is SIGNED_OUT
+          // (or if newSession is null, indicating a sign out)
+          if (event === 'SIGNED_OUT' || !newSession) {
+             logActivity('SIGNED_OUT');
+          }
         }
         setLoadingInitial(false);
       }

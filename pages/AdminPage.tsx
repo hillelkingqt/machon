@@ -32,6 +32,15 @@ interface QAItem {
   answer_text: string | null;
 }
 
+interface BlockedItem {
+  id: string;
+  type: 'IP' | 'EMAIL';
+  value: string;
+  reason?: string | null;
+  created_at: string;
+  admin_id?: string | null; // Optional: if you want to display who blocked it
+}
+
 const AdminPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, session, logout: authLogout, loadingInitial } = useAuth();
@@ -60,6 +69,19 @@ const AdminPage: React.FC = () => {
   const [showArticleModal, setShowArticleModal] = useState(false);
   const [currentArticle, setCurrentArticle] = useState<Article | null>(null);
   const [isSubmittingArticle, setIsSubmittingArticle] = useState(false);
+
+  // State for User Blocking Management
+  const [userActivityIPs, setUserActivityIPs] = useState<string[]>([]);
+  const [userActivityEmails, setUserActivityEmails] = useState<string[]>([]);
+  const [blockedItems, setBlockedItems] = useState<BlockedItem[]>([]);
+  const [isLoadingUserActivity, setIsLoadingUserActivity] = useState(false);
+  const [errorUserActivity, setErrorUserActivity] = useState<string | null>(null);
+  const [isLoadingBlockedItems, setIsLoadingBlockedItems] = useState(false);
+  const [errorBlockedItems, setErrorBlockedItems] = useState<string | null>(null);
+  const [newBlockValue, setNewBlockValue] = useState('');
+  const [newBlockType, setNewBlockType] = useState<'IP' | 'EMAIL'>('IP');
+  const [newBlockReason, setNewBlockReason] = useState('');
+  const [isSubmittingBlock, setIsSubmittingBlock] = useState(false);
 
   const editor = useEditor({
     extensions: [
@@ -774,6 +796,133 @@ ${currentBody}
     }
   }, [isAuthorized, fetchArticles, fetchQAItems, fetchAdmins]); // Add fetchAdmins to dependency array
 
+  const fetchBlockedItems = useCallback(async () => {
+    if (!supabase) return;
+    setIsLoadingBlockedItems(true);
+    setErrorBlockedItems(null);
+    try {
+      const { data, error } = await supabase
+        .from('blocked_items')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      setBlockedItems(data || []);
+    } catch (err: any) {
+      setErrorBlockedItems(`שגיאה בטעינת פריטים חסומים: ${err.message}`);
+    } finally {
+      setIsLoadingBlockedItems(false);
+    }
+  }, [supabase]);
+
+  const fetchUserActivityIPs = useCallback(async () => {
+    if (!supabase) return;
+    setIsLoadingUserActivity(true);
+    setErrorUserActivity(null);
+    try {
+      // Fetching all IPs and then making them unique client-side
+      const { data, error } = await supabase
+        .from('user_activity_log')
+        .select('ip_address')
+        .neq('ip_address', null) // Ensure ip_address is not null
+        .eq('is_admin_activity', false); // Exclude admin activity
+
+      if (error) throw error;
+
+      const uniqueIPs = Array.from(new Set(data?.map(item => item.ip_address).filter(ip => ip))); // Filter out null/undefined again just in case
+      setUserActivityIPs(uniqueIPs);
+    } catch (err: any) {
+      setErrorUserActivity(`שגיאה בטעינת כתובות IP של משתמשים: ${err.message}`);
+    } finally {
+      setIsLoadingUserActivity(false);
+    }
+  }, [supabase]);
+
+  const fetchUserActivityEmails = useCallback(async () => {
+    if (!supabase) return;
+    setIsLoadingUserActivity(true); // Use the same loading state for both IPs and Emails activity
+    setErrorUserActivity(null); // Use the same error state
+    try {
+      const { data, error } = await supabase
+        .from('user_activity_log')
+        .select('email')
+        .neq('email', null) // Ensure email is not null
+        .eq('is_admin_activity', false); // Exclude admin activity
+
+      if (error) throw error;
+
+      const uniqueEmails = Array.from(new Set(data?.map(item => item.email).filter(email => email)));
+      setUserActivityEmails(uniqueEmails);
+    } catch (err: any) {
+      setErrorUserActivity(`שגיאה בטעינת כתובות אימייל של משתמשים: ${err.message}`);
+    } finally {
+      setIsLoadingUserActivity(false);
+    }
+  }, [supabase]);
+
+  // Update main useEffect to include new fetch functions
+  useEffect(() => {
+    if (isAuthorized && supabase) {
+      fetchArticles();
+      fetchQAItems();
+      fetchAdmins();
+      fetchBlockedItems();
+      fetchUserActivityIPs();
+      fetchUserActivityEmails();
+    }
+  }, [isAuthorized, supabase, fetchArticles, fetchQAItems, fetchAdmins, fetchBlockedItems, fetchUserActivityIPs, fetchUserActivityEmails]);
+
+  const handleAddBlockSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newBlockValue.trim()) {
+      setErrorBlockedItems('ערך לחסימה (IP/Email) לא יכול להיות ריק.');
+      return;
+    }
+    setIsSubmittingBlock(true);
+    setErrorBlockedItems(null);
+    try {
+      const blockData = {
+        type: newBlockType,
+        value: newBlockValue.trim(),
+        reason: newBlockReason.trim() || null,
+        admin_id: user?.id, // Optional: Log which admin blocked it
+      };
+      const { error } = await supabase.from('blocked_items').insert([blockData]);
+      if (error) {
+        if (error.code === '23505') { // Unique constraint violation
+            setErrorBlockedItems(`פריט זה (${newBlockValue}) כבר חסום.`);
+        } else {
+            throw error;
+        }
+      } else {
+        alert(`'${newBlockValue}' נחסם בהצלחה.`);
+        setNewBlockValue('');
+        setNewBlockReason('');
+        // setNewBlockType('IP'); // Optionally reset type, or keep user's last selection
+        fetchBlockedItems(); // Refresh the list
+      }
+    } catch (err: any) {
+      setErrorBlockedItems(`שגיאה בחסימת הפריט: ${err.message}`);
+    } finally {
+      setIsSubmittingBlock(false);
+    }
+  };
+
+  const handleUnblockItem = async (itemId: string, itemValue: string) => {
+    if (!window.confirm(`האם אתה בטוח שברצונך לבטל חסימה עבור '${itemValue}'?`)) return;
+    setIsLoadingBlockedItems(true); // Indicate loading for list modification
+    setErrorBlockedItems(null);
+    try {
+      const { error } = await supabase.from('blocked_items').delete().eq('id', itemId);
+      if (error) throw error;
+      alert(`החסימה עבור '${itemValue}' בוטלה בהצלחה.`);
+      fetchBlockedItems(); // Refresh the list
+    } catch (err: any) {
+      setErrorBlockedItems(`שגיאה בביטול החסימה: ${err.message}`);
+    } finally {
+      // setIsLoadingBlockedItems(false); // fetchBlockedItems will set this
+    }
+  };
+
   const handleRemoveAdmin = async (adminId: string, adminEmail: string) => {
     if (user?.email === adminEmail) {
       alert("אינך יכול להסיר את עצמך.");
@@ -1120,6 +1269,175 @@ ${currentBody}
           )}
         </section>
 
+        {/* User Blocking Management Section */}
+        <section className="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-xl shadow-lg mt-6 sm:mt-8">
+          <div className="flex justify-between items-center border-b border-slate-300 dark:border-slate-700 pb-4 mb-6">
+            <h2 className="text-xl sm:text-2xl font-semibold text-primary dark:text-sky-500">ניהול חסימות משתמשים</h2>
+          </div>
+
+          {/* Manual Blocking Form */}
+          <form onSubmit={handleAddBlockSubmit} className="mb-8 p-4 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-700/30">
+            <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100 mb-3">הוסף חסימה ידנית</h3>
+            {errorBlockedItems && <div className="p-3 mb-3 text-sm rounded-lg border bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700">{errorBlockedItems}</div>}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+              <div>
+                <label htmlFor="newBlockValue" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">ערך לחסימה (IP/Email)</label>
+                <input
+                  type="text"
+                  id="newBlockValue"
+                  value={newBlockValue}
+                  onChange={(e) => setNewBlockValue(e.target.value)}
+                  className="w-full p-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-1 focus:ring-primary dark:bg-slate-700 dark:text-white shadow-sm text-sm"
+                  placeholder="הכנס כתובת IP או אימייל"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="newBlockType" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">סוג חסימה</label>
+                <select
+                  id="newBlockType"
+                  value={newBlockType}
+                  onChange={(e) => setNewBlockType(e.target.value as 'IP' | 'EMAIL')}
+                  className="w-full p-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-1 focus:ring-primary dark:bg-slate-700 dark:text-white shadow-sm text-sm"
+                >
+                  <option value="IP">IP</option>
+                  <option value="EMAIL">EMAIL</option>
+                </select>
+              </div>
+              <div>
+                <label htmlFor="newBlockReason" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">סיבה (אופציונלי)</label>
+                <input
+                  type="text"
+                  id="newBlockReason"
+                  value={newBlockReason}
+                  onChange={(e) => setNewBlockReason(e.target.value)}
+                  className="w-full p-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-1 focus:ring-primary dark:bg-slate-700 dark:text-white shadow-sm text-sm"
+                  placeholder="סיבת החסימה"
+                />
+              </div>
+            </div>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg flex items-center shadow-md text-sm font-medium transition-colors disabled:opacity-60"
+              disabled={isSubmittingBlock || !newBlockValue.trim()}
+            >
+              {isSubmittingBlock ? <Loader2 size={18} className="animate-spin ml-2" /> : <PlusCircle size={18} className="ml-2" />}
+              {isSubmittingBlock ? 'חוסם...' : 'הוסף חסימה'}
+            </button>
+          </form>
+
+          {/* Currently Blocked Items List */}
+          <div className="mb-8">
+            <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100 mb-3">פריטים חסומים حاليًا</h3>
+            {isLoadingBlockedItems && (
+              <div className="flex flex-col items-center justify-center p-5 text-slate-600 dark:text-slate-400">
+                <Loader2 className="h-8 w-8 animate-spin text-primary dark:text-sky-400" />
+                <p className="mt-2 text-xs">טוען פריטים חסומים...</p>
+              </div>
+            )}
+            {!isLoadingBlockedItems && errorBlockedItems && <div className="p-3 my-2 text-sm rounded-lg border bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700">{errorBlockedItems}</div>}
+            {!isLoadingBlockedItems && !errorBlockedItems && blockedItems.length === 0 && (
+              <p className="text-slate-500 dark:text-slate-400 text-center py-5 text-sm">לא נמצאו פריטים חסומים.</p>
+            )}
+            {!isLoadingBlockedItems && !errorBlockedItems && blockedItems.length > 0 && (
+              <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+                {blockedItems.map(item => (
+                  <div key={item.id} className="p-3 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm bg-slate-50 dark:bg-slate-700/40 flex justify-between items-center text-sm">
+                    <div>
+                      <p className="font-semibold text-slate-700 dark:text-slate-200">{item.value} <span className="text-xs px-1.5 py-0.5 rounded-full bg-orange-200 text-orange-800 dark:bg-orange-700 dark:text-orange-100">{item.type}</span></p>
+                      {item.reason && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">סיבה: {item.reason}</p>}
+                      <p className="text-xs text-slate-400 dark:text-slate-500">נחסם בתאריך: {new Date(item.created_at).toLocaleString('he-IL')}</p>
+                    </div>
+                    <button
+                      onClick={() => handleUnblockItem(item.id, item.value)}
+                      className="px-2.5 py-1.5 text-xs font-medium rounded-md flex items-center transition-colors bg-green-500 hover:bg-green-600 text-white"
+                      disabled={isLoadingBlockedItems} // Disable while any list modification is happening
+                    >
+                      <Trash2 size={14} className="ml-1" />בטל חסימה
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* User Activity Section */}
+          <div>
+            <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100 mb-4">פעילות משתמשים אחרונה (לא מנהלים)</h3>
+            {isLoadingUserActivity && (
+              <div className="flex flex-col items-center justify-center p-5 text-slate-600 dark:text-slate-400">
+                <Loader2 className="h-8 w-8 animate-spin text-primary dark:text-sky-400" />
+                <p className="mt-2 text-xs">טוען פעילות משתמשים...</p>
+              </div>
+            )}
+            {errorUserActivity && <div className="p-3 my-2 text-sm rounded-lg border bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700">{errorUserActivity}</div>}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* User Activity IPs List */}
+              <div>
+                <h4 className="text-md font-semibold text-slate-700 dark:text-slate-200 mb-2">כתובות IP ייחודיות:</h4>
+                {!isLoadingUserActivity && !errorUserActivity && userActivityIPs.length === 0 && (
+                  <p className="text-slate-500 dark:text-slate-400 text-xs py-3">לא נמצאו כתובות IP בפעילות המשתמשים.</p>
+                )}
+                {!isLoadingUserActivity && userActivityIPs.length > 0 && (
+                  <div className="space-y-1.5 max-h-72 overflow-y-auto pr-1 text-sm">
+                    {userActivityIPs.map(ip => {
+                      const isBlocked = blockedItems.some(b => b.type === 'IP' && b.value === ip);
+                      return (
+                        <div key={ip} className={`p-2 border rounded-md flex justify-between items-center text-xs ${isBlocked ? 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-700' : 'bg-slate-50 dark:bg-slate-700/30 border-slate-200 dark:border-slate-600'}`}>
+                          <span className={isBlocked ? 'text-red-700 dark:text-red-300' : 'text-slate-700 dark:text-slate-300'}>{ip}</span>
+                          {isBlocked ? (
+                            <span className="px-2 py-0.5 text-xs font-medium text-red-600 dark:text-red-300 flex items-center"><Ban size={12} className="ml-1" /> חסום</span>
+                          ) : (
+                            <button
+                              onClick={() => { setNewBlockValue(ip); setNewBlockType('IP'); setNewBlockReason('חסימה מתוך רשימת פעילות'); handleAddBlockSubmit(new Event('submit') as any); }}
+                              className="px-2 py-1 text-xs font-medium rounded-md flex items-center transition-colors bg-red-500 hover:bg-red-600 text-white disabled:opacity-50"
+                              disabled={isSubmittingBlock}
+                            >
+                              <Ban size={12} className="ml-1" /> חסום IP
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* User Activity Emails List */}
+              <div>
+                <h4 className="text-md font-semibold text-slate-700 dark:text-slate-200 mb-2">כתובות אימייל ייחודיות:</h4>
+                {!isLoadingUserActivity && !errorUserActivity && userActivityEmails.length === 0 && (
+                   <p className="text-slate-500 dark:text-slate-400 text-xs py-3">לא נמצאו כתובות אימייל בפעילות המשתמשים.</p>
+                )}
+                {!isLoadingUserActivity && userActivityEmails.length > 0 && (
+                  <div className="space-y-1.5 max-h-72 overflow-y-auto pr-1 text-sm">
+                    {userActivityEmails.map(email => {
+                      const isBlocked = blockedItems.some(b => b.type === 'EMAIL' && b.value === email);
+                      return (
+                        <div key={email} className={`p-2 border rounded-md flex justify-between items-center text-xs ${isBlocked ? 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-700' : 'bg-slate-50 dark:bg-slate-700/30 border-slate-200 dark:border-slate-600'}`}>
+                           <span className={isBlocked ? 'text-red-700 dark:text-red-300' : 'text-slate-700 dark:text-slate-300'}>{email}</span>
+                          {isBlocked ? (
+                            <span className="px-2 py-0.5 text-xs font-medium text-red-600 dark:text-red-300 flex items-center"><Ban size={12} className="ml-1" /> חסום</span>
+                          ) : (
+                            <button
+                              onClick={() => { setNewBlockValue(email); setNewBlockType('EMAIL'); setNewBlockReason('חסימה מתוך רשימת פעילות'); handleAddBlockSubmit(new Event('submit') as any); }}
+                              className="px-2 py-1 text-xs font-medium rounded-md flex items-center transition-colors bg-red-500 hover:bg-red-600 text-white disabled:opacity-50"
+                              disabled={isSubmittingBlock}
+                            >
+                              <Ban size={12} className="ml-1" /> חסום אימייל
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+
         {showArticleModal && currentArticle && (
           <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex justify-center items-center z-[100] p-4" dir="rtl">
             <div className="bg-white dark:bg-slate-800 p-5 sm:p-8 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
@@ -1159,7 +1477,7 @@ ${currentBody}
                   <label htmlFor="body" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">תוכן מלא</label>
                   <div className="border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm">
                     {editor && <EditorToolbar editor={editor} />}
-                    {editor && <EditorContent editor={editor} className="w-full p-3 focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white text-sm sm:text-base min-h-[150px] max-h-[400px] overflow-y-auto" />}
+                    {editor && <EditorContent editor={editor} className="w-full p-3 focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white text-sm sm:text-base min-h-[300px] max-h-[600px] overflow-y-auto" />}
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
