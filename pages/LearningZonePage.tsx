@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import AnimatedDiv from '../components/ui/AnimatedDiv'; // Assuming this component is suitable for page animations
-import { BookOpenCheck, Construction } from 'lucide-react'; // Icons for courses
+import { BookOpenCheck, Construction, Calculator } from 'lucide-react'; // Icons for courses
 
 const LearningZonePage: React.FC = () => {
   // Placeholder for other courses - can be expanded later
@@ -43,6 +43,33 @@ const LearningZonePage: React.FC = () => {
                 התחל ללמוד
                 <ChevronRight className="ms-2 h-5 w-5 rtl:hidden" />
                  <ChevronLeft className="me-2 h-5 w-5 ltr:hidden" /> {/* For RTL, arrow on the other side */}
+              </Link>
+            </div>
+          </div>
+        </div>
+      </AnimatedDiv>
+
+      {/* Word Problems Course Card/Link */}
+      <AnimatedDiv animation="fadeInUp" delay={0.3}> {/* Adjusted delay if needed */}
+        <div className="bg-white dark:bg-secondary-dark shadow-xl rounded-lg p-6 sm:p-8 mb-12 sm:mb-16 transition-all duration-300 hover:shadow-2xl transform hover:-translate-y-1">
+          <div className="flex flex-col sm:flex-row items-center">
+            <div className="flex-shrink-0 mb-6 sm:mb-0 sm:me-8">
+              <Calculator size={64} className="text-secondary dark:text-secondary-light bg-primary dark:bg-primary-light p-3 rounded-full" />
+            </div>
+            <div className="flex-grow text-center sm:text-right">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-3">
+                תרגול בעיות מילוליות במתמטיקה
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                מאגר מקיף של בעיות מילוליות במתמטיקה, כולל הסברים, דוגמאות ופתרונות, לשיפור ההבנה והחשיבה המתמטית.
+              </p>
+              <Link
+                to="/learning-zone/word-problems" // Link to the new page
+                className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary hover:bg-primary-dark dark:hover:bg-primary-light dark:text-secondary-dark shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95 transition-all duration-300"
+              >
+                התחל ללמוד
+                <ChevronRight className="ms-2 h-5 w-5 rtl:hidden" />
+                <ChevronLeft className="me-2 h-5 w-5 ltr:hidden" /> {/* For RTL, arrow on the other side */}
               </Link>
             </div>
           </div>
