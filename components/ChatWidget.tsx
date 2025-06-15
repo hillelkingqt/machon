@@ -829,7 +829,7 @@ Only use this command when the user explicitly wants to send a message to the ow
                       {m.role === 'user' ? (
                         m.text
                       ) : (
-<div className="prose dark:prose-invert max-w-none">
+<div className="prose-sm dark:prose-invert max-w-none text-sm">
                           <ReactMarkdown
                             remarkPlugins={[remarkGfm, remarkMath]}
                             rehypePlugins={[rehypeKatex]}
