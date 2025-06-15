@@ -4,12 +4,19 @@ import { formatCourseDetailedContentToHtml, ProcessedContentItem } from '../util
 import AnimatedDiv from '../components/ui/AnimatedDiv';
 import QuizSection from '../components/ui/QuizSection';
 import { QuizSectionProps } from '../components/ui/QuizSection'; // Explicit import for casting
+import Button from '../components/ui/Button';
+import { useNavigate } from 'react-router-dom';
 
 const GiftedCoursePage: React.FC = () => {
+  const navigate = useNavigate();
   const processedContent: ProcessedContentItem[] = useMemo(() => {
     // Type assertion for clarity, though TypeScript should infer it from formatCourseDetailedContentToHtml's new return type
     return formatCourseDetailedContentToHtml(GIFTED_CHILDREN_COURSE_CONTENT) as ProcessedContentItem[];
   }, []); // Dependency array is empty as GIFTED_CHILDREN_COURSE_CONTENT is a constant
+
+  const handleGoToExpandedLearning = () => {
+    navigate('/gifted-expanded-learning');
+  };
 
   return (
     <div className="bg-white dark:bg-secondary-dark min-h-screen">
@@ -17,6 +24,17 @@ const GiftedCoursePage: React.FC = () => {
         <AnimatedDiv animation="fadeInUp">
           {/* Optional: Add a breadcrumb or a link back to Learning Zone here if desired */}
         </AnimatedDiv>
+
+        <div className="mb-8 text-center">
+          <Button
+            onClick={handleGoToExpandedLearning}
+            variant="primary"
+            size="lg"
+            className="font-semibold" // You can adjust styling as needed
+          >
+            לתרגול וחומרי לימוד מורחבים
+          </Button>
+        </div>
 
         {/* Iterate over processed content */}
         {processedContent.map((item, index) => {

@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Course } from '../types';
 import { Info } from 'lucide-react'; // Using the Info icon to indicate more details
 import { motion } from 'framer-motion';
@@ -12,9 +13,14 @@ interface CourseCardProps {
 
 const CourseCard: React.FC<CourseCardProps> = ({ course, onOpenModal }) => {
     const IconComponent = course.icon;
+    const navigate = useNavigate();
 
     const handleCardClick = () => {
-        onOpenModal(course);
+        if (course.id === 'gifted-prep-2-3') {
+            navigate('/gifted-course');
+        } else {
+            onOpenModal(course);
+        }
     };
 
     return (
