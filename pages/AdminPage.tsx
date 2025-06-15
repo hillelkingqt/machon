@@ -343,8 +343,6 @@ editorProps: {
     return () => {
       editor?.destroy();
       qaEditor?.destroy();
-      if(editor) { editor.storage.markdownInitialized = false; }
-      if(qaEditor) { qaEditor.storage.markdownInitialized = false; }
     };
   }, [editor, qaEditor]);
 
@@ -1329,10 +1327,6 @@ ${currentBody}
     // Content setting is now primarily handled by the useEffect listening to currentQAItem.answer_text & showQAModal
     // However, to ensure content is fresh if the same item is reopened, explicitly set it.
     // The useEffect might not fire if item object is same but content was cleared.
-    if (qaEditor) {
-        qaEditor.commands.setContent(preparseAlertBlocks(itemToLoad.answer_text || ''), false, { preserveWhitespace: 'full' });
-        qaEditor.storage.markdownInitialized = true; // Mark as initialized
-    }
   };
 
   const handleCloseQAModal = () => {
