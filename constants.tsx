@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavItem, Course, Article } from './types'; // Combined Article import
-import { ExternalLink, Facebook, Instagram, MessageCircle, Rss, ShoppingBag, Info, Home, BookOpen, Users, BarChart2, Award, UsersRound, Edit3, Lightbulb, ChevronRight, Send, Phone, BookOpenCheck, Tv, Settings, Target, TrendingUp, Brain, CheckCircle, Star as StarIcon, Users as UsersIcon, Smile, Award as AwardIcon, MessageSquareQuote, Activity, Briefcase, GraduationCap, Zap, Rocket, ClipboardCheck, HelpCircle } from 'lucide-react'; // Added HelpCircle
+import { BookText, ExternalLink, Facebook, Instagram, MessageCircle, Rss, ShoppingBag, Info, Home, BookOpen, Users, BarChart2, Award, UsersRound, Edit3, Lightbulb, ChevronRight, Send, Phone, BookOpenCheck, Tv, Settings, Target, TrendingUp, Brain, CheckCircle, Star as StarIcon, Users as UsersIcon, Smile, Award as AwardIcon, MessageSquareQuote, Activity, Briefcase, GraduationCap, Zap, Rocket, ClipboardCheck, HelpCircle } from 'lucide-react'; // Added HelpCircle, BookText
 
 
 export const LOGO_URL = 'text_logo'; // Indicates text logo is used, actual text comes from APP_NAME
@@ -14,6 +14,7 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     { label: 'מאמרים', href: '/articles', icon: Rss },
     { label: 'חנות', href: '/shop', icon: ShoppingBag },
     { label: 'שאלות', href: '/faq', icon: HelpCircle }, // Changed from "חנות חיצונית"
+    { label: 'מקום לימוד', href: '/learning-space', icon: BookText, isButton: false },
     { label: 'צור קשר', href: '/contact', isButton: false, icon: Send },
 ];
 

@@ -4,7 +4,7 @@ import { APP_NAME, NAVIGATION_ITEMS } from '../constants';
 import { NavItem } from '../types';
 import DarkModeToggle from './DarkModeToggle';
 // LogOutIcon removed, UserCircle is used
-import { Menu, X, ExternalLink as ExternalLinkIcon, BookOpenCheck, LogIn as LogInIcon, UserCircle, Loader2 } from 'lucide-react';
+import { Menu, X, ExternalLink as ExternalLinkIcon, BookOpenCheck, LogIn as LogInIcon, UserCircle, Loader2, BookText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from './ui/Button';
 import LoginModal from './auth/LoginModal';
@@ -18,7 +18,7 @@ const Header: React.FC = () => {
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false); // Step 2: Add state for modal visibility
     const [isScrolled, setIsScrolled] = useState(false);
     const location = useLocation();
-    const { user, profile, logout, loadingInitial } = useAuth(); // Consume AuthContext
+    const { user, profile, logout, loadingInitial, isLearningSpaceAuthorized } = useAuth(); // Consume AuthContext
 
     const [activeModal, setActiveModal] = useState<'login' | 'signup' | 'forgotPassword' | null>(null);
     const [loginPrefill, setLoginPrefill] = useState<{email?: string; password?: string} | null>(null);
@@ -70,6 +70,15 @@ const Header: React.FC = () => {
     // };
 
     // Removed commented out handleLogout function for cleaner diff
+
+    // Filter navigation items based on authorization status
+    const visibleNavigationItems = NAVIGATION_ITEMS.filter(item => {
+        if (item.href === '/learning-space') {
+            return !loadingInitial && isLearningSpaceAuthorized;
+        }
+        return true; // Keep all other items
+    });
+
     const NavLinkContent: React.FC<{ item: NavItem; mobile?: boolean }> = ({ item, mobile }) => {
         const MainIconComponent = item.icon;
         return (
@@ -192,7 +201,7 @@ const Header: React.FC = () => {
                         </div>
 
                         <nav className="hidden lg:flex items-center space-s-1 rtl:space-s-reverse">
-                            {NAVIGATION_ITEMS.map((item) => (
+                            {visibleNavigationItems.map((item) => (
                                 <div key={item.label} className="ms-3 rtl:me-3">
                                     <NavLink item={item} />
                                 </div>
@@ -229,7 +238,7 @@ const Header: React.FC = () => {
                             className="lg:hidden bg-white dark:bg-secondary-dark shadow-2xl absolute top-full left-0 right-0 overflow-y-auto max-h-[calc(100vh-5rem)] border-t border-gray-200 dark:border-gray-700"
                         >
                             <nav className="flex flex-col px-2 pt-3 pb-5 space-y-1.5">
-                                {NAVIGATION_ITEMS.map((item) => (
+                                {visibleNavigationItems.map((item) => (
                                     <NavLink key={item.label} item={item} mobile />
                                 ))}
                                 {/* Example of adding auth button to mobile menu if not in toolbar
