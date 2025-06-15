@@ -155,8 +155,10 @@ const App: React.FC = () => {
 
     useEffect(() => {
         checkBlockStatus();
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-            checkBlockStatus();
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+            if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+                checkBlockStatus();
+            }
         });
         return () => subscription.unsubscribe();
     }, [checkBlockStatus]);

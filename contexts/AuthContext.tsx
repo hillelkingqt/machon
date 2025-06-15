@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, useContext, ReactNode, useRef } from 'react';
 import { Session, User as SupabaseUser } from '@supabase/supabase-js';
 import { supabase } from '../utils/supabaseClient'; // Adjust path as necessary
 
@@ -33,6 +33,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loadingInitial, setLoadingInitial] = useState(true); // True on initial load
+  const loginNotifiedRef = useRef(false); // Track if login notification was sent for current session
 
   // Function to log user activity
   const logActivity = async (event: string, userId?: string, email?: string) => {
@@ -93,6 +94,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       if (currentSession?.user) {
+        loginNotifiedRef.current = true; // Assume notification already sent for existing session
         // Extract profile details from signUp metadata or OAuth provider
         const m = currentSession.user.user_metadata || {};
         const firstName = m.first_name || m.given_name || (m.full_name || m.name || '').split(' ')[0];
@@ -136,7 +138,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             avatarUrl: m.avatar_url || m.picture,
           };
           setProfile(userProfile);
-          if (event === 'SIGNED_IN') {
+          if (event === 'SIGNED_IN' && !loginNotifiedRef.current) {
+            loginNotifiedRef.current = true; // Prevent repeated notifications for this session
             notifyLogin(currentUser);
             // Log sign-in activity
             logActivity('SIGNED_IN', currentUser.id, currentUser.email);
@@ -146,6 +149,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Log sign-out activity if the event is SIGNED_OUT
           // (or if newSession is null, indicating a sign out)
           if (event === 'SIGNED_OUT' || !newSession) {
+             loginNotifiedRef.current = false;
              logActivity('SIGNED_OUT');
           }
         }
