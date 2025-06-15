@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { supabase } from './utils/supabaseClient'; // Import Supabase client
-import { useAuth } from './contexts/AuthContext'; // Import useAuth
+// import { useAuth } from './contexts/AuthContext'; // useAuth not directly used in App.tsx for block check
 import BlockedUserPage from './components/BlockedUserPage'; // Import BlockedUserPage
-import { Loader2 } from 'lucide-react'; // For loading indicator
+import { Loader2, XCircle } from 'lucide-react'; // For loading indicator and error icon
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ChatWidget from './components/ChatWidget';
@@ -17,6 +17,7 @@ import FullArticlePage from './pages/FullArticlePage';
 import FAQPage from './pages/FAQPage';
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 import { DarkModeContext, DarkMode } from './contexts/DarkModeContext';
+import { fetchIpWithFallback } from './utils/ipUtils'; // Import the new IP fetching function
 import { AuthProvider } from './contexts/AuthContext'; // Import AuthProvider
 import { DataProvider } from './contexts/DataContext'; // Import DataProvider
 
@@ -34,6 +35,7 @@ const ScrollToTop: React.FC = () => {
 const App: React.FC = () => {
     const [isUserBlocked, setIsUserBlocked] = useState<boolean>(false);
     const [isLoadingBlockStatus, setIsLoadingBlockStatus] = useState<boolean>(true);
+    const [blockCheckErrorOccurred, setBlockCheckErrorOccurred] = useState<boolean>(false); // New state for error handling
 
     // Dark mode state and effects
     const [darkMode, setDarkMode] = useState<DarkMode>(() => {
@@ -81,23 +83,20 @@ const App: React.FC = () => {
 
     const checkBlockStatus = useCallback(async () => {
             setIsLoadingBlockStatus(true);
+            setBlockCheckErrorOccurred(false); // Reset error state at the beginning of a check
             try {
-                // 1. Fetch IP
+                // 1. Fetch IP using the new fallback mechanism
                 let fetchedIp: string | null = null;
                 try {
-                    const { data: ipData, error: ipError } = await supabase.functions.invoke('get-my-ip');
-                    if (ipError) {
-                        console.error('Error fetching IP:', ipError);
-                        // Potentially allow access if IP fetch fails, or handle as a block for security
-                        // For now, we'll proceed, and the block check might only use email if available
-                    }
-                    if (ipData && ipData.ip) {
-                        fetchedIp = ipData.ip;
+                    fetchedIp = await fetchIpWithFallback();
+                    if (!fetchedIp) {
+                        console.warn('App.tsx: IP address could not be fetched even with fallback.');
+                        // Continue without IP, email check might still proceed
                     }
                 } catch (e) {
-                     console.error('Exception fetching IP:', e);
+                    // This catch is for unforeseen errors in fetchIpWithFallback itself, though it's designed to return null on failure.
+                    console.error('App.tsx: Exception calling fetchIpWithFallback:', e);
                 }
-
 
                 // 2. Get Email (if user is logged in)
                 // This effect runs outside of AuthContext's direct children that use useAuth(),
@@ -134,8 +133,8 @@ const App: React.FC = () => {
 
                 if (blockError) {
                     console.error('Error checking block status:', blockError);
-                    // Fail open (not blocked) if there's an error checking
-                    setIsUserBlocked(false);
+                    setBlockCheckErrorOccurred(true);
+                    setIsUserBlocked(false); // Ensure user is not considered blocked on error
                     return;
                 }
 
@@ -147,11 +146,12 @@ const App: React.FC = () => {
 
             } catch (error) {
                 console.error('General error in checkBlockStatus:', error);
-                setIsUserBlocked(false); // Fail open
+                setBlockCheckErrorOccurred(true);
+                setIsUserBlocked(false); // Ensure user is not considered blocked on error
             } finally {
                 setIsLoadingBlockStatus(false);
             }
-    }, [supabase]);
+    }, []); // Supabase client is stable, not needed in deps. fetchIpWithFallback is also stable.
 
     useEffect(() => {
         checkBlockStatus();
@@ -166,6 +166,17 @@ const App: React.FC = () => {
             <div className="flex flex-col items-center justify-center min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 p-4">
                 <Loader2 size={48} className="text-primary dark:text-sky-400 animate-spin mb-4" />
                 <p className="text-xl">Checking your status...</p>
+            </div>
+        );
+    }
+
+    // Render error page if block check failed
+    if (blockCheckErrorOccurred) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-slate-100 dark:bg-slate-900 text-red-500 p-4 text-center">
+                <XCircle size={48} className="mb-4" />
+                <h1 className="text-2xl font-bold mb-2">Access Error</h1>
+                <p className="text-lg">We encountered an issue determining your access status. Please try again later.</p>
             </div>
         );
     }
