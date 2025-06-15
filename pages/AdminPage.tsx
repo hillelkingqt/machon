@@ -1187,7 +1187,7 @@ ${currentBody}
                     <div className="text-xs text-slate-500 dark:text-slate-400 mb-2">
                       {article.category && <span className="font-medium bg-slate-200 dark:bg-slate-600 px-1.5 py-0.5 rounded-full">{article.category}</span>}
                     </div>
-                    <p className="text-sm text-slate-600 dark:text-slate-300 mb-3 clamp-2">{article.fullContent.substring(0,120) + (article.fullContent.length > 120 ? '...' : '')}</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-300 mb-3 clamp-2">{(article.fullContent || '').substring(0,120) + ((article.fullContent || '').length > 120 ? '...' : '')}</p>
                     <div className="flex gap-x-2 mt-3">
                       <button onClick={() => handleOpenArticleModal(article)} className="px-3 py-1.5 text-xs font-medium rounded-md flex items-center transition-colors bg-sky-500 hover:bg-sky-600 text-white"><Edit2 size={14} className="ml-1.5" />ערוך</button>
                       <button onClick={() => handleDeleteArticle(article.id)} className="px-3 py-1.5 text-xs font-medium rounded-md flex items-center transition-colors bg-red-500 hover:bg-red-600 text-white"><Trash2 size={14} className="ml-1.5" />מחק</button>
