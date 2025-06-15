@@ -4,8 +4,8 @@ import { useAuth } from '../contexts/AuthContext'; // Added import
 import { SupabaseClient } from '@supabase/supabase-js'; // createClient removed
 import { supabase } from '../utils/supabaseClient'; // Added import
 import { APP_NAME } from '../constants'; // SUPABASE_URL, SUPABASE_ANON_KEY removed
-import { PlusCircle, Edit2, Trash2, XCircle, Loader2, Sparkles as SparklesIcon, Users } from 'lucide-react'; // Added SparklesIcon, Users
-import { SiteAdmin, AuthorizedLearningSpaceUser } from '../types'; // Corrected path, Added AuthorizedLearningSpaceUser
+import { PlusCircle, Edit2, Trash2, XCircle, Loader2, Sparkles as SparklesIcon } from 'lucide-react'; // Added SparklesIcon
+import { SiteAdmin } from '../types'; // Corrected path
 import { useEditor, EditorContent } from '@tiptap/react';
 import { formatArticleContentToHtml } from '../utils/contentParser';
 import StarterKit from '@tiptap/starter-kit';
@@ -95,13 +95,6 @@ const AdminPage: React.FC = () => {
   const [newBlockType, setNewBlockType] = useState<'IP' | 'EMAIL'>('IP');
   const [newBlockReason, setNewBlockReason] = useState('');
   const [isSubmittingBlock, setIsSubmittingBlock] = useState(false);
-
-  // State for Authorized Learning Space Users Management
-  const [authorizedLearningSpaceUsers, setAuthorizedLearningSpaceUsers] = useState<AuthorizedLearningSpaceUser[]>([]);
-  const [isLoadingAuthLearningUsers, setIsLoadingAuthLearningUsers] = useState(false);
-  const [errorAuthLearningUsers, setErrorAuthLearningUsers] = useState<string | null>(null);
-  const [newAuthLearningEmail, setNewAuthLearningEmail] = useState('');
-  const [isSubmittingAuthLearningEmail, setIsSubmittingAuthLearningEmail] = useState(false);
 
   const editor = useEditor({
     extensions: [
@@ -1049,77 +1042,8 @@ ${currentBody}
       fetchBlockedItems();
       fetchUserActivityIPs();
       fetchUserActivityEmails();
-      fetchAuthorizedLearningSpaceUsers();
     }
-  }, [isAuthorized, supabase, fetchArticles, fetchQAItems, fetchAdmins, fetchBlockedItems, fetchUserActivityIPs, fetchUserActivityEmails, fetchAuthorizedLearningSpaceUsers]);
-
-  // CRUD Functions for Authorized Learning Space Users
-  const fetchAuthorizedLearningSpaceUsers = useCallback(async () => {
-    if (!supabase) return;
-    setIsLoadingAuthLearningUsers(true);
-    setErrorAuthLearningUsers(null);
-    try {
-      const { data, error } = await supabase
-        .from('authorized_learning_space_users')
-        .select('*')
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      setAuthorizedLearningSpaceUsers(data || []);
-    } catch (err: any) {
-      setErrorAuthLearningUsers(`שגיאה בטעינת משתמשים מורשים: ${err.message}`);
-    } finally {
-      setIsLoadingAuthLearningUsers(false);
-    }
-  }, [supabase]);
-
-  const handleAddAuthorizedLearningEmail = async (emailToAdd: string) => {
-    if (!emailToAdd.trim() || !emailToAdd.includes('@')) {
-      setErrorAuthLearningUsers('כתובת אימייל לא תקינה.');
-      return;
-    }
-    setIsSubmittingAuthLearningEmail(true);
-    setErrorAuthLearningUsers(null);
-    try {
-      const newUserData: { email: string; added_by?: string } = {
-        email: emailToAdd.trim(),
-      };
-      if (user?.id) {
-        newUserData.added_by = user.id;
-      }
-      const { error } = await supabase.from('authorized_learning_space_users').insert([newUserData]);
-      if (error) {
-        if (error.code === '23505') { // Unique constraint violation
-          setErrorAuthLearningUsers(`אימייל '${emailToAdd}' כבר קיים ברשימה.`);
-        } else {
-          throw error;
-        }
-      } else {
-        alert(`אימייל '${emailToAdd}' נוסף בהצלחה לרשימת המורשים.`);
-        setNewAuthLearningEmail(''); // Clear input field
-        fetchAuthorizedLearningSpaceUsers(); // Refresh the list
-      }
-    } catch (err: any) {
-      setErrorAuthLearningUsers(`שגיאה בהוספת אימייל מורשה: ${err.message}`);
-    } finally {
-      setIsSubmittingAuthLearningEmail(false);
-    }
-  };
-
-  const handleRemoveAuthorizedLearningEmail = async (userId: string, emailToRemove: string) => {
-    if (!window.confirm(`האם אתה בטוח שברצונך להסיר הרשאה מאימייל '${emailToRemove}'?`)) return;
-    setIsLoadingAuthLearningUsers(true); // Indicate loading for list modification
-    setErrorAuthLearningUsers(null);
-    try {
-      const { error } = await supabase.from('authorized_learning_space_users').delete().eq('id', userId);
-      if (error) throw error;
-      alert(`ההרשאה עבור '${emailToRemove}' הוסרה בהצלחה.`);
-      fetchAuthorizedLearningSpaceUsers(); // Refresh the list
-    } catch (err: any) {
-      setErrorAuthLearningUsers(`שגיאה בהסרת הרשאת אימייל: ${err.message}`);
-    } finally {
-      // setIsLoadingAuthLearningUsers(false); // fetchAuthorizedLearningSpaceUsers will set this
-    }
-  };
+  }, [isAuthorized, supabase, fetchArticles, fetchQAItems, fetchAdmins, fetchBlockedItems, fetchUserActivityIPs, fetchUserActivityEmails]);
 
   const handleAddBlockSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1549,80 +1473,6 @@ ${currentBody}
               ))}
             </div>
           )}
-        </section>
-
-        {/* Authorized Learning Space Users Management Section */}
-        <section className="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-xl shadow-lg mt-6 sm:mt-8">
-          <div className="flex justify-between items-center border-b border-slate-300 dark:border-slate-700 pb-4 mb-6">
-            <h2 className="text-xl sm:text-2xl font-semibold text-primary dark:text-sky-500 flex items-center">
-              <Users size={24} className="ml-3" /> ניהול הרשאות למקום לימוד
-            </h2>
-          </div>
-
-          {/* Form for Adding Emails */}
-          <form onSubmit={(e) => { e.preventDefault(); handleAddAuthorizedLearningEmail(newAuthLearningEmail); }} className="mb-6 p-4 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-700/30">
-            <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100 mb-3">הוסף אימייל מורשה</h3>
-            {errorAuthLearningUsers && <div className="p-3 mb-3 text-sm rounded-lg border bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700">{errorAuthLearningUsers}</div>}
-            <div className="flex items-end gap-3">
-              <div className="flex-grow">
-                <label htmlFor="newAuthLearningEmail" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">כתובת אימייל</label>
-                <input
-                  type="email"
-                  id="newAuthLearningEmail"
-                  value={newAuthLearningEmail}
-                  onChange={(e) => setNewAuthLearningEmail(e.target.value)}
-                  className="w-full p-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-1 focus:ring-primary dark:bg-slate-700 dark:text-white shadow-sm text-sm"
-                  placeholder="user@example.com"
-                  required
-                  disabled={isSubmittingAuthLearningEmail}
-                />
-              </div>
-              <button
-                type="submit"
-                className="px-4 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-lg flex items-center shadow-md text-sm font-medium transition-colors disabled:opacity-60"
-                disabled={isSubmittingAuthLearningEmail || !newAuthLearningEmail.trim()}
-              >
-                {isSubmittingAuthLearningEmail ? <Loader2 size={18} className="animate-spin ml-2" /> : <PlusCircle size={18} className="ml-2" />}
-                {isSubmittingAuthLearningEmail ? 'מוסיף...' : 'הוסף אימייל'}
-              </button>
-            </div>
-          </form>
-
-          {/* List of Authorized Emails */}
-          <div>
-            <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100 mb-3">אימיילים מורשים כרגע</h3>
-            {isLoadingAuthLearningUsers && (
-              <div className="flex flex-col items-center justify-center p-5 text-slate-600 dark:text-slate-400">
-                <Loader2 className="h-8 w-8 animate-spin text-primary dark:text-sky-400" />
-                <p className="mt-2 text-xs">טוען רשימת אימיילים מורשים...</p>
-              </div>
-            )}
-            {!isLoadingAuthLearningUsers && errorAuthLearningUsers && <div className="p-3 my-2 text-sm rounded-lg border bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700">{errorAuthLearningUsers}</div>}
-            {!isLoadingAuthLearningUsers && !errorAuthLearningUsers && authorizedLearningSpaceUsers.length === 0 && (
-              <p className="text-slate-500 dark:text-slate-400 text-center py-5 text-sm">לא נמצאו אימיילים מורשים.</p>
-            )}
-            {!isLoadingAuthLearningUsers && !errorAuthLearningUsers && authorizedLearningSpaceUsers.length > 0 && (
-              <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
-                {authorizedLearningSpaceUsers.map(auth_user => (
-                  <div key={auth_user.id} className="p-3 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm bg-slate-50 dark:bg-slate-700/40 flex justify-between items-center text-sm">
-                    <div>
-                      <p className="font-semibold text-slate-700 dark:text-slate-200">{auth_user.email}</p>
-                      <p className="text-xs text-slate-400 dark:text-slate-500">נוסף בתאריך: {new Date(auth_user.created_at).toLocaleString('he-IL')}</p>
-                      {auth_user.added_by && <p className="text-xs text-slate-400 dark:text-slate-500">נוסף על ידי (ID): {auth_user.added_by}</p>}
-                      {auth_user.notes && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">הערות: {auth_user.notes}</p>}
-                    </div>
-                    <button
-                      onClick={() => handleRemoveAuthorizedLearningEmail(auth_user.id, auth_user.email)}
-                      className="px-2.5 py-1.5 text-xs font-medium rounded-md flex items-center transition-colors bg-red-500 hover:bg-red-600 text-white"
-                      disabled={isLoadingAuthLearningUsers || isSubmittingAuthLearningEmail}
-                    >
-                      <Trash2 size={14} className="ml-1" />הסר הרשאה
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
         </section>
 
         {/* User Blocking Management Section */}
