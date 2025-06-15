@@ -164,9 +164,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async () => {
     setLoadingInitial(true); // Indicate loading during logout
-    await supabase.auth.signOut();
-    // onAuthStateChange will handle setting user, session, profile to null
-    // setLoadingInitial will be set to false by onAuthStateChange listener
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      console.error("Error logging out:", error);
+      setLoadingInitial(false);
+      throw error;
+    } else {
+      setSession(null);
+      setUser(null);
+      setProfile(null);
+      loginNotifiedRef.current = false;
+      logActivity('SIGNED_OUT');
+      setLoadingInitial(false);
+    }
   };
 
   // Login and Signup functions are currently handled by the modals.
