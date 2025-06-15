@@ -1040,19 +1040,6 @@ ${currentBody}
     }
   }, [supabase]);
 
-  // Update main useEffect to include new fetch functions
-  useEffect(() => {
-    if (isAuthorized && supabase) {
-      fetchArticles();
-      fetchQAItems();
-      fetchAdmins();
-      fetchBlockedItems();
-      fetchUserActivityIPs();
-      fetchUserActivityEmails();
-      fetchAuthorizedLearningSpaceUsers();
-    }
-  }, [isAuthorized, supabase, fetchArticles, fetchQAItems, fetchAdmins, fetchBlockedItems, fetchUserActivityIPs, fetchUserActivityEmails, fetchAuthorizedLearningSpaceUsers]);
-
   // CRUD Functions for Authorized Learning Space Users
   const fetchAuthorizedLearningSpaceUsers = useCallback(async () => {
     if (!supabase) return;
@@ -1071,6 +1058,19 @@ ${currentBody}
       setIsLoadingAuthLearningUsers(false);
     }
   }, [supabase]);
+
+  // Update main useEffect to include new fetch functions
+  useEffect(() => {
+    if (isAuthorized && supabase) {
+      fetchArticles();
+      fetchQAItems();
+      fetchAdmins();
+      fetchBlockedItems();
+      fetchUserActivityIPs();
+      fetchUserActivityEmails();
+      fetchAuthorizedLearningSpaceUsers();
+    }
+  }, [isAuthorized, supabase, fetchArticles, fetchQAItems, fetchAdmins, fetchBlockedItems, fetchUserActivityIPs, fetchUserActivityEmails, fetchAuthorizedLearningSpaceUsers]);
 
   const handleAddAuthorizedLearningEmail = async (emailToAdd: string) => {
     if (!emailToAdd.trim() || !emailToAdd.includes('@')) {
