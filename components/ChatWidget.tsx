@@ -358,7 +358,9 @@ const ChatWidget: React.FC = () => {
     let currentSystemPrompt = baseSystemPrompt;
 
     if (session && user && profile?.fullName && user?.email) {
-      const loggedInInstructions = `\n\n**Special Capability: Sending Messages to Site Owner**
+      const loggedInInstructions = `\n\nThe user is currently logged in as '${profile.fullName}' (${user.email}). Address them by name when appropriate. Do **not** offer or attempt any login or signup actions while they remain logged in. You may help them log out with \`ACTION_USER_LOGOUT\`. Other logged-in actions such as changing password, updating profile, deleting the account, viewing orders or managing notifications should only be used if the user explicitly requests them.
+
+**Special Capability: Sending Messages to Site Owner**
 You have a special ability: if the user asks you to send a message to the website owner or administrator, you can do this. The message will be sent via Telegram.
 When you use this ability, their name ('${profile.fullName}') and email ('${user.email}') will be automatically included with their message.
 To initiate this, after confirming the message content with the user, your *entire response to the system* must be ONLY the following command on a new line, without any other text before or after it:
@@ -537,46 +539,58 @@ Only use this command when the user explicitly wants to send a message to the ow
             setMessages(prev => [...prev, { role: 'ai', text: "שגיאה: פונקציית ההתנתקות אינה זמינה כעת." }]);
         }
     } else if (responseText && responseText.trim().startsWith(ACTION_USER_LOGIN_EMAIL_PREFIX)) {
-        const jsonPayload = responseText.trim().substring(ACTION_USER_LOGIN_EMAIL_PREFIX.length).trim();
-        try {
-            const { email, password } = JSON.parse(jsonPayload);
-            setPrefillEmail(email);
-            setPrefillPassword(password);
-            setIsLoginModalOpen(true);
-            setMessages(prev => [...prev, { role: 'ai', text: "אנא המתן, פותח את טופס ההתחברות עם הפרטים שמסרת..." }]);
-        } catch (e) {
-            console.error("Error parsing login payload:", e);
-            setMessages(prev => [...prev, { role: 'ai', text: "שגיאה בעיבוד פרטי ההתחברות." }]);
+        if (session) {
+            setMessages(prev => [...prev, { role: 'ai', text: "אתה כבר מחובר למערכת." }]);
+        } else {
+            const jsonPayload = responseText.trim().substring(ACTION_USER_LOGIN_EMAIL_PREFIX.length).trim();
+            try {
+                const { email, password } = JSON.parse(jsonPayload);
+                setPrefillEmail(email);
+                setPrefillPassword(password);
+                setIsLoginModalOpen(true);
+                setMessages(prev => [...prev, { role: 'ai', text: "אנא המתן, פותח את טופס ההתחברות עם הפרטים שמסרת..." }]);
+            } catch (e) {
+                console.error("Error parsing login payload:", e);
+                setMessages(prev => [...prev, { role: 'ai', text: "שגיאה בעיבוד פרטי ההתחברות." }]);
+            }
         }
     } else if (responseText && responseText.trim().startsWith(ACTION_USER_SIGNUP_PREFIX)) {
-        const jsonPayload = responseText.trim().substring(ACTION_USER_SIGNUP_PREFIX.length).trim();
-        try {
-            const { firstName, lastName, email, password } = JSON.parse(jsonPayload);
-            setPrefillEmail(email);
-            setPrefillPassword(password);
-            setPrefillFirstName(firstName); // Stored, though SignupModal might not use it directly
-            setPrefillLastName(lastName);   // Stored, though SignupModal might not use it directly
-            setIsSignupModalOpen(true);
-            setMessages(prev => [...prev, { role: 'ai', text: "אנא המתן, פותח את טופס ההרשמה עם הפרטים שמסרת..." }]);
-        } catch (e) {
-            console.error("Error parsing signup payload:", e);
-            setMessages(prev => [...prev, { role: 'ai', text: "שגיאה בעיבוד פרטי ההרשמה." }]);
+        if (session) {
+            setMessages(prev => [...prev, { role: 'ai', text: "כדי לפתוח חשבון חדש יש להתנתק תחילה." }]);
+        } else {
+            const jsonPayload = responseText.trim().substring(ACTION_USER_SIGNUP_PREFIX.length).trim();
+            try {
+                const { firstName, lastName, email, password } = JSON.parse(jsonPayload);
+                setPrefillEmail(email);
+                setPrefillPassword(password);
+                setPrefillFirstName(firstName); // Stored, though SignupModal might not use it directly
+                setPrefillLastName(lastName);   // Stored, though SignupModal might not use it directly
+                setIsSignupModalOpen(true);
+                setMessages(prev => [...prev, { role: 'ai', text: "אנא המתן, פותח את טופס ההרשמה עם הפרטים שמסרת..." }]);
+            } catch (e) {
+                console.error("Error parsing signup payload:", e);
+                setMessages(prev => [...prev, { role: 'ai', text: "שגיאה בעיבוד פרטי ההרשמה." }]);
+            }
         }
     } else if (responseText && responseText.trim().includes(ACTION_USER_LOGIN_GOOGLE)) {
-        setMessages(prev => [...prev, { role: 'ai', text: "מפנה אותך להתחברות עם גוגל..." }]);
-        try {
-            const { error } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: { redirectTo: window.location.origin }
-            });
-            if (error) {
-                console.error("Google login error:", error);
-                setMessages(prev => [...prev, { role: 'ai', text: `שגיאה בהפנייה לגוגל: ${error.message}` }]);
+        if (session) {
+            setMessages(prev => [...prev, { role: 'ai', text: "אתה כבר מחובר למערכת." }]);
+        } else {
+            setMessages(prev => [...prev, { role: 'ai', text: "מפנה אותך להתחברות עם גוגל..." }]);
+            try {
+                const { error } = await supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: { redirectTo: window.location.origin }
+                });
+                if (error) {
+                    console.error("Google login error:", error);
+                    setMessages(prev => [...prev, { role: 'ai', text: `שגיאה בהפנייה לגוגל: ${error.message}` }]);
+                }
+                // If successful, browser will redirect. No further message needed here.
+            } catch (e) {
+                console.error("Google login exception:", e);
+                setMessages(prev => [...prev, { role: 'ai', text: "אירעה שגיאה בעת ניסיון ההתחברות עם גוגל." }]);
             }
-            // If successful, browser will redirect. No further message needed here.
-        } catch (e) {
-            console.error("Google login exception:", e);
-            setMessages(prev => [...prev, { role: 'ai', text: "אירעה שגיאה בעת ניסיון ההתחברות עם גוגל." }]);
         }
     } else if (responseText && responseText.trim().startsWith(ACTION_USER_CHANGE_PASSWORD_PREFIX)) {
         if (!session) {
@@ -633,19 +647,23 @@ Only use this command when the user explicitly wants to send a message to the ow
             // Placeholder: Actual order fetching logic would go here
         }
     } else if (responseText && responseText.trim().startsWith(ACTION_USER_RESET_PASSWORD_PREFIX)) {
-        const jsonPayload = responseText.trim().substring(ACTION_USER_RESET_PASSWORD_PREFIX.length).trim();
-        try {
-            const { email } = JSON.parse(jsonPayload);
-            if (email) {
-                setPrefillEmail(email);
-                setIsForgotPasswordModalOpen(true);
-                setMessages(prev => [...prev, { role: 'ai', text: "אנא המתן, פותח את טופס איפוס הסיסמה עם כתובת האימייל שמסרת..." }]);
-            } else {
-                setMessages(prev => [...prev, { role: 'ai', text: "לא סופקה כתובת אימייל לאיפוס סיסמה." }]);
+        if (session) {
+            setMessages(prev => [...prev, { role: 'ai', text: "נראה שאתה כבר מחובר. ניתן לשנות סיסמה דרך הגדרות הפרופיל." }]);
+        } else {
+            const jsonPayload = responseText.trim().substring(ACTION_USER_RESET_PASSWORD_PREFIX.length).trim();
+            try {
+                const { email } = JSON.parse(jsonPayload);
+                if (email) {
+                    setPrefillEmail(email);
+                    setIsForgotPasswordModalOpen(true);
+                    setMessages(prev => [...prev, { role: 'ai', text: "אנא המתן, פותח את טופס איפוס הסיסמה עם כתובת האימייל שמסרת..." }]);
+                } else {
+                    setMessages(prev => [...prev, { role: 'ai', text: "לא סופקה כתובת אימייל לאיפוס סיסמה." }]);
+                }
+            } catch (e) {
+                console.error("Error parsing reset password payload:", e);
+                setMessages(prev => [...prev, { role: 'ai', text: "שגיאה בעיבוד בקשת איפוס הסיסמה." }]);
             }
-        } catch (e) {
-            console.error("Error parsing reset password payload:", e);
-            setMessages(prev => [...prev, { role: 'ai', text: "שגיאה בעיבוד בקשת איפוס הסיסמה." }]);
         }
     } else if (responseText && responseText.trim().startsWith(ACTION_USER_MANAGE_NOTIFICATIONS_PREFIX)) {
         if (!session) {
