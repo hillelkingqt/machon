@@ -209,10 +209,8 @@ onUpdate: ({ editor: currentEditor }) => {
   setCurrentArticle(prev => {
     if (!prev) return prev;
 
-    const markdownOutput = currentEditor.storage.markdown.getMarkdown();
-    console.log("Refactored Markdown Output (getMarkdown):", markdownOutput); // For debugging
-
-    const correctlySerializedMarkdown = postserializeAlertBlocks(markdownOutput);
+    const htmlOutput = currentEditor.getHTML();
+    const correctlySerializedMarkdown = postserializeAlertBlocks(htmlOutput);
     const updated = { ...prev, fullContent: correctlySerializedMarkdown };
 
     localStorage.setItem('draftArticle', JSON.stringify(updated));
