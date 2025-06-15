@@ -190,26 +190,15 @@ const AdminPage: React.FC = () => {
         toMarkdown: (state, node, parent, index) => {
           if (node.type.name === 'alertBlock') {
             state.write(`>>> ${node.attrs.alertType}: `);
-            // Iterate over content and serialize it.
-            // This needs to handle inline formatting correctly.
-            // `state.renderContent(node)` or similar is needed.
-            // `tiptap-markdown`'s `state` object has methods for this.
-            // The default serializer for node content should be called here.
-
-            // Simplified content serialization:
             let content = "";
             node.forEach((child, offset, i) => {
-                // This is very basic, assumes text nodes primarily.
-                // A proper solution uses state.renderInline(child) or similar.
-                // For now, we'll just get textContent, which loses inline markdown.
-            // Updated to use state.renderContent to preserve inline formatting.
-            // renderContent typically handles its own newlines for block content.
-            // If it renders paragraph nodes within, those will be separated by newlines.
+              // Commented content
+            });
             state.renderContent(node);
-            state.ensureNewLine(); // Ensure a newline after the block's content
-            state.write('\n');     // Add an extra newline for separation, if desired
-            // No state.closeBlock(node) needed as renderContent should handle block closing.
+            state.ensureNewLine();
+            state.write('\n');
           }
+
           // Removed the `else` block to allow tiptap-markdown's default serializers
           // to handle all other node types (paragraphs, headings, lists, bold, italic, etc.).
         },
