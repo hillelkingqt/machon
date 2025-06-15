@@ -19,7 +19,6 @@ export interface AuthContextType {
   profile: UserProfile | null;
   logout: () => Promise<void>;
   loadingInitial: boolean; // Renamed from 'loading' to be more specific
-  isLearningSpaceAuthorized?: boolean;
   // Login/Signup are handled by modals directly for now, but can be exposed here if needed
 }
 
@@ -34,7 +33,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loadingInitial, setLoadingInitial] = useState(true); // True on initial load
-  const [isLearningSpaceAuthorized, setIsLearningSpaceAuthorized] = useState<boolean>(false);
   const loginNotifiedRef = useRef(false); // Track if login notification was sent for current session
 
   // Function to log user activity
@@ -89,80 +87,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const checkLearningSpaceAuthorization = async (supabaseUser: SupabaseUser | null): Promise<boolean> => {
-    if (!supabaseUser || !supabaseUser.email) {
-      return false;
-    }
-    const userEmail = supabaseUser.email;
-
-    try {
-      // Admin Check
-      const { data: adminData, error: adminError } = await supabase
-        .from('admin')
-        .select('id, expires_at')
-        .eq('gmail', userEmail)
-        .maybeSingle(); // Use maybeSingle to handle null and single row
-
-      if (adminError && adminError.code !== 'PGRST116') { // PGRST116: No rows found, not an error for this check
-        console.error('Error checking admin table for learning space auth:', adminError);
-        // Optionally, you might want to return false or throw, depending on desired behavior for DB errors
-      }
-      if (adminData) {
-        if (adminData.expires_at) {
-          if (new Date(adminData.expires_at) > new Date()) return true; // Valid temporary admin
-        } else {
-          return true; // Permanent admin
-        }
-      }
-
-      // Authorized User Check
-      const { data: learningUserData, error: learningUserError } = await supabase
-        .from('authorized_learning_space_users')
-        .select('id')
-        .eq('email', userEmail)
-        .maybeSingle();
-
-      if (learningUserError && learningUserError.code !== 'PGRST116') {
-        console.error('Error checking authorized_learning_space_users table:', learningUserError);
-      }
-      if (learningUserData) return true;
-
-    } catch (error) {
-      console.error('Exception during checkLearningSpaceAuthorization:', error);
-    }
-    return false;
-  };
-
   useEffect(() => {
     setLoadingInitial(true);
     // Check for existing session on initial load
-    supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       setSession(currentSession);
-      const currentUser = currentSession?.user ?? null;
-      setUser(currentUser);
-
-      if (currentUser) {
+      setUser(currentSession?.user ?? null);
+      if (currentSession?.user) {
         loginNotifiedRef.current = true; // Assume notification already sent for existing session
-        const m = currentUser.user_metadata || {};
+        // Extract profile details from signUp metadata or OAuth provider
+        const m = currentSession.user.user_metadata || {};
         const firstName = m.first_name || m.given_name || (m.full_name || m.name || '').split(' ')[0];
         const lastName = m.last_name || m.family_name || (m.full_name || m.name || '').split(' ').slice(1).join(' ');
         setProfile({
-          id: currentUser.id,
+          id: currentSession.user.id,
           firstName,
           lastName,
           fullName: m.full_name || m.name || `${firstName || ''} ${lastName || ''}`.trim(),
           avatarUrl: m.avatar_url || m.picture,
         });
-        const isAuthorized = await checkLearningSpaceAuthorization(currentUser);
-        setIsLearningSpaceAuthorized(isAuthorized);
       } else {
         setProfile(null);
-        setIsLearningSpaceAuthorized(false);
       }
       setLoadingInitial(false);
     }).catch(() => {
-        setProfile(null);
-        setIsLearningSpaceAuthorized(false);
         setLoadingInitial(false); // Ensure loading stops on error too
     });
 
@@ -176,6 +124,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(currentUser);
 
         if (currentUser) {
+          // Extract profile information from user_metadata or OAuth provider
           const m = currentUser.user_metadata || {};
           const firstName = m.first_name || m.given_name || (m.full_name || m.name || '').split(' ')[0];
           const lastName = m.last_name || m.family_name || (m.full_name || m.name || '').split(' ').slice(1).join(' ');
@@ -183,22 +132,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             id: currentUser.id,
             firstName,
             lastName,
+            // Supabase often provides 'full_name' or 'name' from OAuth.
+            // For email signup, we constructed 'full_name'.
             fullName: m.full_name || m.name || `${firstName || ''} ${lastName || ''}`.trim(),
             avatarUrl: m.avatar_url || m.picture,
           };
           setProfile(userProfile);
-
-          const isAuthorized = await checkLearningSpaceAuthorization(currentUser);
-          setIsLearningSpaceAuthorized(isAuthorized);
-
           if (event === 'SIGNED_IN' && !loginNotifiedRef.current) {
-            loginNotifiedRef.current = true;
+            loginNotifiedRef.current = true; // Prevent repeated notifications for this session
             notifyLogin(currentUser);
+            // Log sign-in activity
             logActivity('SIGNED_IN', currentUser.id, currentUser.email);
           }
         } else {
           setProfile(null);
-          setIsLearningSpaceAuthorized(false);
+          // Log sign-out activity if the event is SIGNED_OUT
+          // (or if newSession is null, indicating a sign out)
           if (event === 'SIGNED_OUT' || !newSession) {
              loginNotifiedRef.current = false;
              logActivity('SIGNED_OUT');
@@ -244,7 +193,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     profile,
     logout,
     loadingInitial,
-    isLearningSpaceAuthorized,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
