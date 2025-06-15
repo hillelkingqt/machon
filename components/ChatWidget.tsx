@@ -468,7 +468,6 @@ Only use this command when the user explicitly wants to send a message to the ow
     const ACTION_USER_LOGIN_EMAIL_PREFIX = "ACTION_USER_LOGIN_EMAIL:";
     const ACTION_USER_SIGNUP_PREFIX = "ACTION_USER_SIGNUP:";
     const ACTION_USER_LOGIN_GOOGLE = 'ACTION_USER_LOGIN_GOOGLE';
-    const { logout, session: currentSession } = useAuth(); // Ensure useAuth is available, get session
 
     // User Management Actions
     const ACTION_USER_CHANGE_PASSWORD_PREFIX = "ACTION_USER_CHANGE_PASSWORD:";
@@ -576,7 +575,7 @@ Only use this command when the user explicitly wants to send a message to the ow
             setMessages(prev => [...prev, { role: 'ai', text: "אירעה שגיאה בעת ניסיון ההתחברות עם גוגל." }]);
         }
     } else if (responseText && responseText.trim().startsWith(ACTION_USER_CHANGE_PASSWORD_PREFIX)) {
-        if (!currentSession) {
+        if (!session) {
             setMessages(prev => [...prev, { role: 'ai', text: "עליך להתחבר תחילה כדי לשנות את סיסמתך." }]);
         } else {
             const jsonPayload = responseText.trim().substring(ACTION_USER_CHANGE_PASSWORD_PREFIX.length).trim();
@@ -598,14 +597,14 @@ Only use this command when the user explicitly wants to send a message to the ow
             }
         }
     } else if (responseText && responseText.trim() === ACTION_OPEN_PROFILE_MODAL) {
-        if (!currentSession) {
+        if (!session) {
             setMessages(prev => [...prev, { role: 'ai', text: "עליך להתחבר תחילה כדי לצפות או לעדכן את הפרופיל שלך." }]);
         } else {
             setIsProfileModalOpen(true);
             setMessages(prev => [...prev, { role: 'ai', text: "פותח את הגדרות הפרופיל שלך..." }]);
         }
     } else if (responseText && responseText.trim() === ACTION_USER_DELETE_ACCOUNT_CONFIRMED) {
-        if (!currentSession) {
+        if (!session) {
             setMessages(prev => [...prev, { role: 'ai', text: "עליך להתחבר תחילה כדי למחוק את חשבונך." }]);
         } else {
             setMessages(prev => [...prev, { role: 'ai', text: "מעבד את בקשתך למחיקת החשבון..." }]);
@@ -623,7 +622,7 @@ Only use this command when the user explicitly wants to send a message to the ow
             }
         }
     } else if (responseText && responseText.trim() === ACTION_USER_VIEW_ORDERS) {
-        if (!currentSession) {
+        if (!session) {
             setMessages(prev => [...prev, { role: 'ai', text: "עליך להתחבר תחילה כדי לצפות בהיסטוריית ההזמנות שלך." }]);
         } else {
             setMessages(prev => [...prev, { role: 'ai', text: "מאחזר את היסטוריית ההזמנות שלך... (הערת מפתח: תכונה זו עדיין אינה מיושמת במלואה. יש לאחזר נתוני הזמנות מהמערכת האחורית.)" }]);
@@ -645,7 +644,7 @@ Only use this command when the user explicitly wants to send a message to the ow
             setMessages(prev => [...prev, { role: 'ai', text: "שגיאה בעיבוד בקשת איפוס הסיסמה." }]);
         }
     } else if (responseText && responseText.trim().startsWith(ACTION_USER_MANAGE_NOTIFICATIONS_PREFIX)) {
-        if (!currentSession) {
+        if (!session) {
             setMessages(prev => [...prev, { role: 'ai', text: "עליך להתחבר תחילה כדי לנהל את העדפות ההתראות שלך." }]);
         } else {
             const jsonPayload = responseText.trim().substring(ACTION_USER_MANAGE_NOTIFICATIONS_PREFIX.length).trim();

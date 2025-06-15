@@ -104,7 +104,6 @@ export const ARTICLES_DATA: Article[] = [
         id: "new-article-odyssey-program-prep",
         title: "אודיסאה להצלחה: כיצד קורס ההכנה של מכון אביב יפתח לכם דלת לעולם המדע",
         date: "23/07/2024",
-        imageUrl: "/images/odyssey-program-prep.png",
         excerpt: "תוכנית אודיסאה היא הזדמנות נדירה. קורס ההכנה של מכון אביב מעניק את הכלים והביטחון להצלחה בתהליך המיון המאתגר.",
         category: "תוכניות הצטיינות",
         author: "צוות מכון אביב",
