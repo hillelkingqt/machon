@@ -32,7 +32,6 @@ const ScrollToTop: React.FC = () => {
 };
 
 const App: React.FC = () => {
-const App: React.FC = () => {
     const [isUserBlocked, setIsUserBlocked] = useState<boolean>(false);
     const [isLoadingBlockStatus, setIsLoadingBlockStatus] = useState<boolean>(true);
 
