@@ -34,9 +34,20 @@ export const AlertBlockNode = Node.create<AlertBlockOptions>({
       alertType: {
         default: 'INFO',
         // Ensure this matches the attribute set in renderHTML and used in pre-parser
-        parseHTML: (element) => element.getAttribute('data-alert-type')?.toUpperCase(),
+        parseHTML: (element) => {
+          const typeAttr = element.getAttribute('data-alert-type');
+          if (typeAttr) {
+            const typeUpper = typeAttr.toUpperCase();
+            // Ensure this.options is available. In some contexts, 'this' might be tricky.
+            // However, addAttributes is a method on the Node object, so 'this' should refer to the Node instance.
+            if (this.options.alertTypes.includes(typeUpper)) {
+              return typeUpper;
+            }
+          }
+          return 'INFO'; // Default if attribute is missing or invalid
+        },
         renderHTML: (attributes) => ({
-          'data-alert-type': attributes.alertType.toLowerCase(), // Store as lowercase in HTML for consistency
+          'data-alert-type': (attributes.alertType || 'INFO').toLowerCase(),
         }),
       },
     };
@@ -68,7 +79,7 @@ export const AlertBlockNode = Node.create<AlertBlockOptions>({
   },
 
   renderHTML({ HTMLAttributes, node }) {
-    const alertType = (node.attrs.alertType as string).toUpperCase();
+    const alertType = (node.attrs.alertType as string || 'INFO').toUpperCase();
     return [
       'div', // Outer element that parseHTML will look for
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
