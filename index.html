@@ -29,6 +29,11 @@
             scroll-behavior: smooth;
             overscroll-behavior-y: contain;
         }
+
+        html {
+            scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-track-color);
+            scrollbar-width: thin;
+        }
         /* Custom scrollbar for webkit browsers */
         ::-webkit-scrollbar {
             width: 12px;
@@ -36,6 +41,12 @@
         }
 
         ::-webkit-scrollbar-track {
+            background: var(--scrollbar-track-color);
+            border-radius: 10px;
+        }
+
+        /* Ensure track pieces match track color to avoid white edges */
+        ::-webkit-scrollbar-track-piece {
             background: var(--scrollbar-track-color);
             border-radius: 10px;
         }
@@ -51,6 +62,10 @@
             }
 
         html.dark ::-webkit-scrollbar-track {
+            background: var(--scrollbar-track-color);
+        }
+
+        html.dark ::-webkit-scrollbar-track-piece {
             background: var(--scrollbar-track-color);
         }
 
