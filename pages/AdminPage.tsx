@@ -1492,7 +1492,7 @@ ${currentBody}
                           type="button"
                           onClick={() => setShowAiImproveModal(true)}
                           className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center justify-center transition-colors shadow-md hover:shadow-lg focus:ring-2 focus:ring-blue-400"
-                          disabled={isGeneratingAiArticle || isSubmittingArticle || !currentArticle?.fullContent.trim()}
+                          disabled={isGeneratingAiArticle || isSubmittingArticle || !currentArticle?.fullContent?.trim()}
                         >
                           <SparklesIcon className="h-4 w-4 mr-2" />
                           שפר מאמר עם AI
