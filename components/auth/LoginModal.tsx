@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import AuthModalWrapper from './AuthModalWrapper';
 import Button from '../ui/Button';
-import { LockKeyhole, Mail, LogIn, LoaderCircle, AlertCircle, CheckCircle2 } from 'lucide-react'; // Added CheckCircle2
+import { LockKeyhole, Mail, LogIn, LogOut, LoaderCircle, AlertCircle, CheckCircle2 } from 'lucide-react'; // Added CheckCircle2 and LogOut
 import { supabase } from '../../utils/supabaseClient';
+import { useAuth } from '../../contexts/AuthContext';
 
 // A simple Google icon SVG component (remains unchanged)
 const GoogleIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
@@ -36,16 +37,38 @@ const LoginModal: React.FC<LoginModalProps> = ({
   const [password, setPassword] = useState('');
   const [loadingEmailPass, setLoadingEmailPass] = useState(false);
   const [loadingGoogle, setLoadingGoogle] = useState(false);
+  const [loadingLogout, setLoadingLogout] = useState(false); // New state for logout loading
   const [message, setMessage] = useState<{ type: 'success' | 'error'; content: string } | null>(null);
 
+  const { user, logout: authLogout } = useAuth(); // Access auth state
+
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !user) { // Only prefill if user is not logged in
       if (prefillEmail) setEmail(prefillEmail);
       if (prefillPassword) setPassword(prefillPassword);
     }
-  }, [isOpen, prefillEmail, prefillPassword]);
+    if (isOpen) { // Reset message when modal opens
+      setMessage(null);
+    }
+  }, [isOpen, prefillEmail, prefillPassword, user]);
 
-  const anyLoading = loadingEmailPass || loadingGoogle;
+  const anyLoading = loadingEmailPass || loadingGoogle || loadingLogout; // Include logout loading
+
+  const handleLogout = async () => {
+    setLoadingLogout(true);
+    setMessage(null);
+    try {
+      await authLogout();
+      setMessage({ type: 'success', content: "התנתקת בהצלחה." });
+      setTimeout(() => {
+        onClose(); // Close modal after successful logout
+      }, 1500);
+    } catch (error) {
+      setMessage({ type: 'error', content: "שגיאה בהתנתקות. נסה שנית." });
+    } finally {
+      setLoadingLogout(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,124 +117,154 @@ const LoginModal: React.FC<LoginModalProps> = ({
   }
 
   return (
-    <AuthModalWrapper isOpen={isOpen} onClose={onClose} title="התחברות">
+    <AuthModalWrapper isOpen={isOpen} onClose={onClose} title={user ? "כבר מחובר" : "התחברות"}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
         transition={{ duration: 0.3 }}
+        className="flex flex-col" // Ensure motion div takes up space
       >
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {message && (
-            <div className={`p-3 rounded-md text-sm flex items-center gap-2 ${message.type === 'success' ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200' : 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200'}`}>
-              {message.type === 'success' && <CheckCircle2 size={18} />}
-              {message.type === 'error' && <AlertCircle size={18} />}
-              {message.content}
-            </div>
-          )}
-
-          <div>
-            <label htmlFor="login-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              כתובת אימייל
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-5 w-5 text-gray-400" />
-              </div>
-              <input
-                type="email"
-                id="login-email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light sm:text-sm bg-gray-50 dark:bg-secondary-dark text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                placeholder="you@example.com"
-                required
-                disabled={anyLoading}
-              />
-            </div>
+        {message && (
+          <div className={`p-3 mb-4 rounded-md text-sm flex items-center gap-2 ${message.type === 'success' ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200' : 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200'}`}>
+            {message.type === 'success' && <CheckCircle2 size={18} />}
+            {message.type === 'error' && <AlertCircle size={18} />}
+            {message.content}
           </div>
+        )}
 
-          <div>
-            <label htmlFor="login-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              סיסמה
-            </label>
-            <div className="relative">
+        {user ? (
+          <div className="space-y-6">
+            <p className="text-center text-gray-700 dark:text-gray-300">
+              אתה כבר מחובר למערכת בתור {user.email}.
+              <br />
+              אם ברצונך להתחבר עם חשבון אחר (למשל גוגל), עליך להתנתק תחילה.
+            </p>
+            <Button
+              type="button"
+              variant="danger" // Or "primary" with red styling if "danger" isn't defined
+              size="lg"
+              className="w-full"
+              onClick={handleLogout}
+              icon={loadingLogout ? <LoaderCircle size={18} className="animate-spin" /> : <LogOut size={18} />}
+              iconPosition="leading"
+              disabled={loadingLogout}
+            >
+              {loadingLogout ? 'מתנתק...' : 'התנתק'}
+            </Button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Email Input */}
+            <div>
+              <label htmlFor="login-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                כתובת אימייל
+              </label>
+              <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <LockKeyhole className="h-5 w-5 text-gray-400" />
+                  <Mail className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
-                    type="password"
-                    id="login-password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light sm:text-sm bg-gray-50 dark:bg-secondary-dark text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                    placeholder="••••••••"
-                    required
-                    disabled={anyLoading}
+                  type="email"
+                  id="login-email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light sm:text-sm bg-gray-50 dark:bg-secondary-dark text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                  placeholder="you@example.com"
+                  required
+                  disabled={anyLoading}
                 />
+              </div>
             </div>
-          </div>
 
-          <div className="text-sm text-right">
+            {/* Password Input */}
+            <div>
+              <label htmlFor="login-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                סיסמה
+              </label>
+              <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <LockKeyhole className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                      type="password"
+                      id="login-password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light sm:text-sm bg-gray-50 dark:bg-secondary-dark text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                      placeholder="••••••••"
+                      required
+                      disabled={anyLoading}
+                  />
+              </div>
+            </div>
+
+            {/* Forgot Password Button */}
+            <div className="text-sm text-right">
+              <Button
+                as="button"
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={onSwitchToForgotPassword}
+                className="font-medium !p-0 !shadow-none !text-primary dark:!text-primary-light hover:!underline"
+                disabled={anyLoading}
+              >
+                ?שכחת סיסמה
+              </Button>
+            </div>
+
+            {/* Email/Password Login Button */}
             <Button
-              as="button"
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={onSwitchToForgotPassword}
-              className="font-medium !p-0 !shadow-none !text-primary dark:!text-primary-light hover:!underline"
+              type="submit"
+              variant="primary"
+              size="lg"
+              className="w-full"
+              icon={loadingEmailPass ? <LoaderCircle size={18} className="animate-spin" /> : <LogIn size={18}/>}
+              iconPosition="leading"
               disabled={anyLoading}
             >
-              ?שכחת סיסמה
+              {loadingEmailPass ? 'מתחבר...' : 'התחבר'}
             </Button>
-          </div>
 
-          <Button
-            type="submit"
-            variant="primary"
-            size="lg"
-            className="w-full"
-            icon={loadingEmailPass ? <LoaderCircle size={18} className="animate-spin" /> : <LogIn size={18}/>}
-            iconPosition="leading"
-            disabled={anyLoading}
-          >
-            {loadingEmailPass ? 'מתחבר...' : 'התחבר'}
-          </Button>
+            {/* OR Separator */}
+            <div className="relative flex py-3 items-center">
+              <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+              <span className="flex-shrink mx-4 text-gray-400 dark:text-gray-500 text-sm">או המשך עם</span>
+              <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+            </div>
 
-          <div className="relative flex py-3 items-center">
-            <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
-            <span className="flex-shrink mx-4 text-gray-400 dark:text-gray-500 text-sm">או המשך עם</span>
-            <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
-          </div>
-
-          <Button
-            type="button"
-            variant="light"
-            size="lg"
-            onClick={handleGoogleLogin}
-            className="w-full"
-            icon={loadingGoogle ? <LoaderCircle size={18} className="animate-spin" /> : <GoogleIcon className="w-5 h-5" />}
-            iconPosition="leading"
-            disabled={anyLoading}
-          >
-            {loadingGoogle ? 'מתחבר עם גוגל...' : 'התחבר עם גוגל'}
-          </Button>
-
-          <p className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
-            אין לך חשבון?{' '}
+            {/* Google Login Button */}
             <Button
-              as="button"
               type="button"
-              variant="ghost"
-              size="sm"
-              onClick={onSwitchToSignup}
-              className="font-medium !p-0 !shadow-none !text-primary dark:!text-primary-light hover:!underline"
+              variant="light"
+              size="lg"
+              onClick={handleGoogleLogin}
+              className="w-full"
+              icon={loadingGoogle ? <LoaderCircle size={18} className="animate-spin" /> : <GoogleIcon className="w-5 h-5" />}
+              iconPosition="leading"
               disabled={anyLoading}
             >
-              צור חשבון
+              {loadingGoogle ? 'מתחבר עם גוגל...' : 'התחבר עם גוגל'}
             </Button>
-          </p>
-        </form>
+
+            {/* Switch to Signup */}
+            <p className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
+              אין לך חשבון?{' '}
+              <Button
+                as="button"
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={onSwitchToSignup}
+                className="font-medium !p-0 !shadow-none !text-primary dark:!text-primary-light hover:!underline"
+                disabled={anyLoading}
+              >
+                צור חשבון
+              </Button>
+            </p>
+          </form>
+        )}
       </motion.div>
     </AuthModalWrapper>
   );
