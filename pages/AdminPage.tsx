@@ -71,6 +71,16 @@ const AdminPage: React.FC = () => {
   const [currentArticle, setCurrentArticle] = useState<Article | null>(null);
   const [isSubmittingArticle, setIsSubmittingArticle] = useState(false);
   const [previewHtml, setPreviewHtml] = useState<string>('');
+  const [qaPreviewHtml, setQaPreviewHtml] = useState<string>(''); // Added state for QA preview
+
+  // State for AI QA Generation
+  const [showAiQAPromptModal, setShowAiQAPromptModal] = useState(false);
+  const [aiQATopic, setAiQATopic] = useState('');
+  const [isGeneratingAiQA, setIsGeneratingAiQA] = useState(false); // Used for both QA generation and improvement
+
+  // State for AI QA Improvement
+  const [showAiQAImproveModal, setShowAiQAImproveModal] = useState(false);
+  const [aiQAImprovementPrompt, setAiQAImprovementPrompt] = useState('');
 
   // State for User Blocking Management
   const [userActivityIPs, setUserActivityIPs] = useState<string[]>([]);
@@ -191,23 +201,16 @@ const AdminPage: React.FC = () => {
                 // This is very basic, assumes text nodes primarily.
                 // A proper solution uses state.renderInline(child) or similar.
                 // For now, we'll just get textContent, which loses inline markdown.
-                // This needs to be improved to use the `state` object's rendering methods
-                // to preserve inline markdown.
-                if (i > 0) content += "\n"; // Add newlines between child paragraphs if any
-                content += child.textContent;
-            });
-            state.write(content.trim()); // Write content, needs better inline handling
-            state.ensureNewLine(); // Ensure a newline after the block
-            state.write('\n'); // Add an extra newline to separate from next block
-            // state.closeBlock(node); // Not always needed if ensureNewLine and \n are used
-          } else {
-            // Fallback for other nodes: this is tricky.
-            // Ideally, we call the original/default serializer for other nodes.
-            // This is a significant challenge when overriding toMarkdown globally.
-            // For now, this function will ONLY handle alertBlock.
-            // This means other content might not be serialized by this custom toMarkdown.
-            // THIS IS A PROBLEM. A proper solution needs to delegate to original serializers.
+            // Updated to use state.renderContent to preserve inline formatting.
+            // renderContent typically handles its own newlines for block content.
+            // If it renders paragraph nodes within, those will be separated by newlines.
+            state.renderContent(node);
+            state.ensureNewLine(); // Ensure a newline after the block's content
+            state.write('\n');     // Add an extra newline for separation, if desired
+            // No state.closeBlock(node) needed as renderContent should handle block closing.
           }
+          // Removed the `else` block to allow tiptap-markdown's default serializers
+          // to handle all other node types (paragraphs, headings, lists, bold, italic, etc.).
         },
       }),
     ],
@@ -215,12 +218,12 @@ const AdminPage: React.FC = () => {
     onUpdate: ({ editor: currentEditor }) => {
       setCurrentArticle(prev => {
         if (!prev) return prev;
-        let markdownOutput = currentEditor.storage.markdown.getMarkdown();
-        // Ensure custom alert blocks are serialized to '>>> TYPE: ...'
-        const correctlySerializedMarkdown = postserializeAlertBlocks(markdownOutput);
-        return { ...prev, fullContent: correctlySerializedMarkdown };
+        const markdownOutput = currentEditor.storage.markdown.getMarkdown();
+        console.log("Refactored Markdown Output (getMarkdown):", markdownOutput); // For debugging
+        // Removed postserializeAlertBlocks, assuming getMarkdown now produces clean Markdown.
+        return { ...prev, fullContent: markdownOutput };
       });
-    },
+        },
     editorProps: {
       // Removed transformPastedText here to rely on PasteRules in AlertBlockNode
       // and potentially Markdown.configure.transformPastedText or configureMarkdownIt
@@ -316,6 +319,17 @@ const AdminPage: React.FC = () => {
     }
   }, [currentArticle?.fullContent]);
 
+  // useEffect for updating QA live preview
+  useEffect(() => {
+    if (currentQAItem && currentQAItem.answer_text) {
+      const formattedHtml = formatArticleContentToHtml(currentQAItem.answer_text);
+      setQaPreviewHtml(formattedHtml);
+    } else {
+      setQaPreviewHtml('<p class="text-slate-500 dark:text-slate-400">Preview will appear here once you start writing...</p>');
+    }
+  }, [currentQAItem?.answer_text, currentQAItem]);
+
+
   useEffect(() => {
     if (editor) {
       editor.storage.markdownInitialized = false;
@@ -354,6 +368,217 @@ const AdminPage: React.FC = () => {
   const [isGeneratingAiArticle, setIsGeneratingAiArticle] = useState(false); // For loading state
   const [showAiImproveModal, setShowAiImproveModal] = useState(false);
   const [aiImprovementPrompt, setAiImprovementPrompt] = useState('');
+
+  const handleAiQAGenerate = async () => {
+    if (!aiQATopic.trim() || !currentQAItem) return;
+    setIsGeneratingAiQA(true);
+    setErrorQA(null);
+
+    const userProvidedInput = aiQATopic.trim();
+    let promptInstruction = '';
+
+    if (userProvidedInput.endsWith('?')) {
+      promptInstruction = `
+Please provide a comprehensive answer to the following question.
+Format the answer using Markdown-like syntax (headings, bold: **text**, italics: *text*, lists: * item, alerts: >>> INFO: message).
+Ensure the output strictly contains only the answer content. Do not include "Answer:" or any similar prefix.
+
+Question:
+${userProvidedInput}
+
+Answer:
+[Generated Answer Content in Markdown]
+`;
+    } else {
+      promptInstruction = `
+Based on the topic below, please formulate a relevant question and provide a comprehensive answer.
+Format the answer using Markdown-like syntax (headings, bold: **text**, italics: *text*, lists: * item, alerts: >>> INFO: message).
+Ensure the output for the answer strictly contains only the answer content itself, without any "Answer:" prefix.
+Structure your response as follows:
+Question: [Generated Question]
+Answer:
+[Generated Answer Content in Markdown]
+
+Topic: ${userProvidedInput}
+`;
+    }
+
+    try {
+      const apiKey = 'AIzaSyCJemWe3N0tEkaSwRLz4iuJb5J-jmzDJUM'; // Hardcoded as per issue
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-thinking-exp:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: promptInstruction }] }],
+          generationConfig: { temperature: 0.7, topK: 1, topP: 1, maxOutputTokens: 2048 }
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Gemini API Error (QA):', errorData);
+        throw new Error(`Gemini API request failed: ${response.status} ${response.statusText}. ${errorData?.error?.message || ''}`);
+      }
+
+      const data = await response.json();
+      const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      if (!generatedText) {
+        throw new Error('No text generated by AI for QA.');
+      }
+
+      let generatedQuestion = currentQAItem.question_text || '';
+      let generatedAnswer = '';
+
+      if (userProvidedInput.endsWith('?')) {
+        generatedAnswer = generatedText.trim();
+      } else {
+        const questionMatch = generatedText.match(/^Question:\s*(.*)/im);
+        if (questionMatch && questionMatch[1]) {
+          generatedQuestion = questionMatch[1].trim();
+        }
+        const answerMatch = generatedText.match(/^Answer:\s*([\s\S]*)/im);
+        if (answerMatch && answerMatch[1]) {
+          generatedAnswer = answerMatch[1].trim();
+        } else if (!questionMatch && generatedText.includes(userProvidedInput)) {
+           // If no "Question:" marker, and the original topic is in the response (heuristic)
+           // then assume the text after the topic is the answer.
+           // This is a fallback if "Answer:" marker is missing.
+           const topicIndex = generatedText.indexOf(userProvidedInput);
+           let potentialAnswer = generatedText.substring(topicIndex + userProvidedInput.length).trim();
+           // Remove "Answer:" prefix if it exists, even if the regex didn't catch it.
+           if (potentialAnswer.toLowerCase().startsWith('answer:')) {
+             potentialAnswer = potentialAnswer.substring('answer:'.length).trim();
+           }
+           generatedAnswer = potentialAnswer;
+        } else if (!questionMatch) {
+            generatedAnswer = generatedText.trim(); // Fallback: assume the whole text is the answer
+        }
+      }
+
+      if (!generatedAnswer && generatedText) { // If answer is still empty but we got text
+        console.warn("AI QA response parsing might have failed to isolate the answer. Using full response as answer.");
+        generatedAnswer = generatedText.trim();
+         // Attempt to remove Question: prefix if it was added by mistake by the AI
+        if (generatedAnswer.startsWith(generatedQuestion)) {
+            generatedAnswer = generatedAnswer.substring(generatedQuestion.length).trim();
+        }
+        if (generatedAnswer.toLowerCase().startsWith('answer:')) {
+            generatedAnswer = generatedAnswer.substring('answer:'.length).trim();
+        }
+      }
+
+      if (!generatedAnswer) {
+        throw new Error('AI did not generate a recognizable answer.');
+      }
+
+      setCurrentQAItem(prev => ({
+        ...prev!,
+        question_text: generatedQuestion,
+        answer_text: generatedAnswer // This updates the state for the preview
+      }));
+
+      if (qaEditor) {
+        // The editor content will be updated by the useEffect listening to currentQAItem.answer_text
+        // which calls preparseAlertBlocks.
+        // However, we can directly set it to ensure immediate update if needed,
+        // though relying on the existing useEffect is cleaner.
+        // For direct update:
+        // qaEditor.commands.setContent(preparseAlertBlocks(generatedAnswer), true, { preserveWhitespace: 'full' });
+      }
+
+      setShowAiQAPromptModal(false);
+      setAiQATopic('');
+
+    } catch (error: any) {
+      console.error('Failed to generate AI QA:', error);
+      setErrorQA(`שגיאה ביצירת תשובה עם AI: ${error.message}`);
+    } finally {
+      setIsGeneratingAiQA(false);
+    }
+  };
+
+  const handleAiQAImprove = async () => {
+    if (!aiQAImprovementPrompt.trim() || !currentQAItem || !qaEditor) {
+      setErrorQA("אנא הזן הוראות לשיפור וודא שיש תשובה קיימת לערוך.");
+      return;
+    }
+
+    const currentAnswerMarkdown = qaEditor.storage.markdown.getMarkdown();
+    if (!currentAnswerMarkdown?.trim()) {
+      setErrorQA("התשובה הנוכחית ריקה. אנא כתוב תוכן לפני שתנסה לשפר אותו.");
+      setShowAiQAImproveModal(false); // Close the improve modal, user should edit directly or generate first
+      return;
+    }
+
+    setIsGeneratingAiQA(true); // Reuse loading state
+    setErrorQA(null);
+
+    const promptInstruction = `
+Please improve the following Q&A answer based on the instructions provided.
+Format the improved answer using Markdown-like syntax (headings, bold: **text**, italics: *text*, lists: * item, alerts: >>> INFO: message).
+Ensure the output strictly contains only the improved answer body. Do not include "ImprovedAnswer:" or any similar prefix.
+
+Instructions for improvement:
+${aiQAImprovementPrompt}
+
+Original Answer:
+${currentAnswerMarkdown}
+
+ImprovedAnswer:
+[Generated Improved Answer Content in Markdown]
+`;
+
+    try {
+      const apiKey = 'AIzaSyCJemWe3N0tEkaSwRLz4iuJb5J-jmzDJUM'; // Hardcoded as per issue
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-thinking-exp:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: promptInstruction }] }],
+          generationConfig: { temperature: 0.7, topK: 1, topP: 1, maxOutputTokens: 2048 }
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Gemini API Error (QA Improve):', errorData);
+        throw new Error(`Gemini API request failed for QA improvement: ${response.status} ${response.statusText}. ${errorData?.error?.message || ''}`);
+      }
+
+      const data = await response.json();
+      let improvedAnswer = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      if (!improvedAnswer) {
+        throw new Error('AI did not generate a recognizable improved answer.');
+      }
+
+      // Remove "ImprovedAnswer:" prefix if AI includes it despite instructions
+      improvedAnswer = improvedAnswer.replace(/^ImprovedAnswer:\s*/i, '').trim();
+
+      if (!improvedAnswer) {
+        // This might happen if the AI only returned the prefix and nothing else.
+        throw new Error('AI returned an empty improved answer after stripping prefix.');
+      }
+
+      // Update editor and state
+      qaEditor.commands.setContent(preparseAlertBlocks(improvedAnswer), true, { preserveWhitespace: 'full' });
+      // The editor's onUpdate callback should ideally handle updating currentQAItem.answer_text.
+      // For more immediate state consistency for the preview, update it here too.
+      setCurrentQAItem(prev => ({ ...prev!, answer_text: improvedAnswer }));
+
+
+      setShowAiQAImproveModal(false);
+      setAiQAImprovementPrompt('');
+
+    } catch (error: any) {
+      console.error('Failed to improve AI QA:', error);
+      setErrorQA(`שגיאה בשיפור תשובה עם AI: ${error.message}`); // Set error in the main QA modal
+    } finally {
+      setIsGeneratingAiQA(false); // Reuse loading state
+    }
+  };
+
 
   // New useEffect for authorization
   useEffect(() => {
@@ -1014,7 +1239,8 @@ ${currentBody}
 
   const handleCloseQAModal = () => {
     setShowQAModal(false);
-    // setCurrentQAItem(null); // Clearing currentQAItem will trigger useEffect to clear editor if needed
+    setCurrentQAItem(null); // This will also clear the preview via useEffect by an external trigger
+    setQaPreviewHtml('<p class="text-slate-500 dark:text-slate-400">Preview will appear here once you start writing...</p>'); // Explicitly clear
     setErrorQA(null);
     if (qaEditor) {
       qaEditor.storage.markdownInitialized = false; // Reset flag
@@ -1502,22 +1728,67 @@ ${currentBody}
                 <h3 className="text-xl sm:text-2xl font-semibold text-primary dark:text-sky-400">{currentQAItem.id ? 'עריכת שאלה ותשובה' : 'הוספת שאלה חדשה'}</h3>
                 <button onClick={handleCloseQAModal} className="text-slate-400 hover:text-slate-600 dark:text-slate-300 dark:hover:text-slate-100 transition-colors"><XCircle size={26} /></button>
               </div>
-              <form onSubmit={handleQASubmit} className="overflow-y-auto space-y-5 pr-1 sm:pr-2 flex-grow">
-                {errorQA && <div className="p-3 text-sm rounded-lg border bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700">{errorQA}</div>}
-                <div>
-                  <label htmlFor="question_text" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">שאלה</label>
-                  <textarea name="question_text" id="question_text" value={currentQAItem.question_text} onChange={handleQAQuestionChange} rows={3} className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white shadow-sm text-sm sm:text-base" required />
-                </div>
-                <div>
-                  <label htmlFor="answer_text_editor" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">תשובה</label>
-                  <div className="border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm">
-                    {qaEditor && <EditorToolbar editor={qaEditor} />}
-                    {qaEditor && <EditorContent editor={qaEditor} id="answer_text_editor" />}
+              <form onSubmit={handleQASubmit} className="flex flex-col flex-grow overflow-y-hidden">
+                {errorQA && <div className="p-3 text-sm rounded-lg border bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700 mb-4">{errorQA}</div>}
+
+                <div className="flex flex-1 gap-x-6 overflow-y-auto mb-4 pr-1 sm:pr-2"> {/* Two-pane container */}
+                  {/* Left Pane: Editor Fields */}
+                  <div className="w-1/2 flex flex-col space-y-5">
+                    <div>
+                      <label htmlFor="question_text" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">שאלה</label>
+                      <textarea name="question_text" id="question_text" value={currentQAItem.question_text} onChange={handleQAQuestionChange} rows={4} className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white shadow-sm text-sm sm:text-base" required />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        // Use current question as default topic if available
+                        setAiQATopic(currentQAItem.question_text || '');
+                        setShowAiQAPromptModal(true);
+                      }}
+                      className="w-full sm:w-auto mt-1 px-3 py-2 text-xs font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-md flex items-center justify-center transition-colors shadow hover:shadow-md focus:ring-2 focus:ring-purple-400 disabled:opacity-60"
+                      disabled={isGeneratingAiQA || isSubmittingQA}
+                    >
+                      <SparklesIcon className="h-3.5 w-3.5 mr-1.5" />
+                      הפק תשובה עם AI
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!qaEditor?.getHTML() || qaEditor.isEmpty || !currentQAItem?.answer_text?.trim()) {
+                           setErrorQA("התשובה הנוכחית ריקה. אנא כתוב תוכן או הפק תשובה לפני שתנסה לשפר אותה.");
+                           return;
+                        }
+                        setAiQAImprovementPrompt(''); // Clear previous improvement prompt
+                        setShowAiQAImproveModal(true);
+                      }}
+                      className="w-full sm:w-auto mt-2 px-3 py-2 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md flex items-center justify-center transition-colors shadow hover:shadow-md focus:ring-2 focus:ring-blue-400 disabled:opacity-60"
+                      disabled={isGeneratingAiQA || isSubmittingQA || !currentQAItem?.answer_text?.trim()}
+                    >
+                      <SparklesIcon className="h-3.5 w-3.5 mr-1.5" />
+                      שפר תשובה עם AI
+                    </button>
+                    <div className="flex flex-col flex-grow mt-3"> {/* Added mt-3 for spacing */}
+                      <label htmlFor="answer_text_editor" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">תשובה</label>
+                      <div className="border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm flex flex-col flex-grow">
+                        {qaEditor && <EditorToolbar editor={qaEditor} />}
+                        {qaEditor && <EditorContent editor={qaEditor} id="answer_text_editor" className="w-full p-3 focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white text-sm sm:text-base min-h-[250px] flex-grow overflow-y-auto" />}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Pane: QA Preview */}
+                  <div className="w-1/2 overflow-y-auto p-4 border-r border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800/30">
+                    <h4 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-3 sticky top-0 bg-slate-50 dark:bg-slate-800/30 py-2 z-10">תצוגה מקדימה (תשובה):</h4>
+                    <div
+                      className="prose prose-sm sm:prose dark:prose-invert max-w-none"
+                      dangerouslySetInnerHTML={{ __html: qaPreviewHtml }}
+                    />
                   </div>
                 </div>
+
                 <div className="flex justify-end gap-x-3 pt-5 mt-auto border-t border-slate-300 dark:border-slate-700">
                   <button type="button" onClick={handleCloseQAModal} className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-lg transition-colors" disabled={isSubmittingQA}>ביטול</button>
-                  <button type="submit" className="px-5 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-dark rounded-lg flex items-center disabled:opacity-70 transition-colors" disabled={isSubmittingQA}>
+                  <button type="submit" className="px-5 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-dark rounded-lg flex items-center disabled:opacity-70 transition-colors" disabled={isSubmittingQA || !currentQAItem.question_text.trim()}>
                     {isSubmittingQA && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
                     {isSubmittingQA ? (currentQAItem.id ? 'מעדכן...' : 'שומר...') : (currentQAItem.id ? 'שמור שינויים' : 'צור שאלה')}
                   </button>
@@ -1668,7 +1939,118 @@ ${currentBody}
         </div>
       )}
 
-      {/* AI Improve Modal */}
+      {/* AI QA Prompt Modal */}
+      {showAiQAPromptModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex justify-center items-center z-[110] p-4" dir="rtl">
+          <div className="bg-white dark:bg-slate-800 p-5 sm:p-7 rounded-xl shadow-2xl w-full max-w-lg">
+            <div className="flex justify-between items-center mb-5">
+                <h3 className="text-lg sm:text-xl font-semibold text-primary dark:text-sky-400">הפק תשובה עם AI</h3>
+                <button
+                    onClick={() => { if (!isGeneratingAiQA) {setShowAiQAPromptModal(false); setAiQATopic(''); setErrorQA(null);} }}
+                    className="text-slate-400 hover:text-slate-600 dark:text-slate-300 dark:hover:text-slate-100 transition-colors"
+                    disabled={isGeneratingAiQA}
+                >
+                    <XCircle size={24} />
+                </button>
+            </div>
+            {errorQA && <div className="p-3 mb-3 text-sm rounded-lg border bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700">{errorQA}</div>}
+            <p className="text-sm text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">
+              הזן נושא כללי או שאלה ספציפית. ה-AI ינסח תשובה בפורמט Markdown.
+              אם תזין רק נושא, ה-AI ינסה לנסח גם שאלה מתאימה.
+            </p>
+            <textarea
+              value={aiQATopic}
+              onChange={(e) => setAiQATopic(e.target.value)}
+              rows={4}
+              className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white shadow-sm text-sm sm:text-base mb-5"
+              placeholder="לדוגמה: 'מהם היתרונות של X?', או פשוט 'יתרונות X' וה-AI ינסח שאלה."
+              disabled={isGeneratingAiQA}
+            />
+            {isGeneratingAiQA && (
+              <div className="flex items-center justify-center p-3 my-4 text-sm rounded-lg border bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-700/60 dark:text-slate-300 dark:border-slate-600">
+                <Loader2 className="h-5 w-5 animate-spin text-primary dark:text-sky-400 mr-3" />
+                מייצר תשובה, נא להמתין...
+              </div>
+            )}
+            <div className="flex justify-end gap-x-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+              <button
+                type="button"
+                onClick={() => { setShowAiQAPromptModal(false); setAiQATopic(''); setErrorQA(null);}}
+                className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-lg transition-colors"
+                disabled={isGeneratingAiQA}
+              >
+                ביטול
+              </button>
+              <button
+                type="button"
+                onClick={handleAiQAGenerate}
+                className="px-5 py-2 text-sm font-medium text-white bg-green-500 hover:bg-green-600 rounded-lg flex items-center disabled:opacity-70 transition-colors"
+                disabled={!aiQATopic.trim() || isGeneratingAiQA}
+              >
+                {isGeneratingAiQA ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <SparklesIcon className="h-4 w-4 mr-2" />}
+                {isGeneratingAiQA ? 'מייצר...' : 'הפק תשובה'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI QA Improvement Modal */}
+      {showAiQAImproveModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex justify-center items-center z-[110] p-4" dir="rtl">
+          <div className="bg-white dark:bg-slate-800 p-5 sm:p-7 rounded-xl shadow-2xl w-full max-w-lg">
+            <div className="flex justify-between items-center mb-5">
+                <h3 className="text-lg sm:text-xl font-semibold text-primary dark:text-sky-400">שפר תשובה עם AI</h3>
+                <button
+                    onClick={() => { if (!isGeneratingAiQA) {setShowAiQAImproveModal(false); setAiQAImprovementPrompt(''); setErrorQA(null);} }}
+                    className="text-slate-400 hover:text-slate-600 dark:text-slate-300 dark:hover:text-slate-100 transition-colors"
+                    disabled={isGeneratingAiQA}
+                >
+                    <XCircle size={24} />
+                </button>
+            </div>
+            {errorQA && <div className="p-3 mb-3 text-sm rounded-lg border bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700">{errorQA}</div>}
+            <p className="text-sm text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">
+              הסבר ל-AI כיצד תרצה לשפר את התשובה הנוכחית. לדוגמה: 'הפוך את הטקסט ליותר רשמי', 'הוסף דוגמאות', 'קצר את התשובה'.
+            </p>
+            <textarea
+              value={aiQAImprovementPrompt}
+              onChange={(e) => setAiQAImprovementPrompt(e.target.value)}
+              rows={4}
+              className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary dark:bg-slate-700 dark:text-white shadow-sm text-sm sm:text-base mb-5"
+              placeholder="לדוגמה: 'הפוך את התשובה ליותר ידידותית למתחילים', 'פרט יותר על נקודה X'"
+              disabled={isGeneratingAiQA}
+            />
+            {isGeneratingAiQA && (
+              <div className="flex items-center justify-center p-3 my-4 text-sm rounded-lg border bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-700/60 dark:text-slate-300 dark:border-slate-600">
+                <Loader2 className="h-5 w-5 animate-spin text-primary dark:text-sky-400 mr-3" />
+                משפר תשובה, נא להמתין...
+              </div>
+            )}
+            <div className="flex justify-end gap-x-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+              <button
+                type="button"
+                onClick={() => { setShowAiQAImproveModal(false); setAiQAImprovementPrompt(''); setErrorQA(null);}}
+                className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-lg transition-colors"
+                disabled={isGeneratingAiQA}
+              >
+                ביטול
+              </button>
+              <button
+                type="button"
+                onClick={handleAiQAImprove}
+                className="px-5 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center disabled:opacity-70 transition-colors focus:ring-2 focus:ring-blue-400"
+                disabled={!aiQAImprovementPrompt.trim() || isGeneratingAiQA}
+              >
+                {isGeneratingAiQA ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <SparklesIcon className="h-4 w-4 mr-2" />}
+                {isGeneratingAiQA ? 'משפר...' : 'שפר תשובה'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Improve Modal for Articles (existing) */}
       {showAiImproveModal && (
         <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex justify-center items-center z-[110] p-4" dir="rtl">
           <div className="bg-white dark:bg-slate-800 p-5 sm:p-7 rounded-xl shadow-2xl w-full max-w-lg">
@@ -1710,7 +2092,7 @@ ${currentBody}
               </button>
               <button
                 type="button"
-                onClick={handleAiArticleImprove} // This function will be created in the next step
+                onClick={handleAiArticleImprove}
                 className="px-5 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center disabled:opacity-70 transition-colors focus:ring-2 focus:ring-blue-400"
                 disabled={!aiImprovementPrompt.trim() || isGeneratingAiArticle}
               >
