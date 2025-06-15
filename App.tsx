@@ -18,6 +18,7 @@ import FAQPage from './pages/FAQPage';
 import LearningZonePage from './pages/LearningZonePage';
 import GiftedCoursePage from './pages/GiftedCoursePage';
 import GiftedExpandedLearningPage from './pages/GiftedExpandedLearningPage';
+import WordProblemsPage from './pages/WordProblemsPage'; // Import the new page
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 import { DarkModeContext, DarkMode } from './contexts/DarkModeContext';
 import { fetchIpWithFallback } from './utils/ipUtils'; // Import the new IP fetching function
@@ -195,6 +196,7 @@ const App: React.FC = () => {
                                     <Route path="/courses" element={<CoursesPage />} />
                                     <Route path="/learning-zone" element={<LearningZonePage />} />
                                     <Route path="/learning-zone/gifted-children-prep" element={<GiftedCoursePage />} />
+                                    <Route path="/learning-zone/word-problems" element={<WordProblemsPage />} /> {/* Added route */}
                                     <Route path="/gifted-expanded-learning" element={<GiftedExpandedLearningPage />} />
                                     <Route path="/articles" element={<ArticlesPage />} />
                                     <Route path="/article/:articleId" element={<FullArticlePage />} />
