@@ -521,7 +521,7 @@ Only use this command when the user explicitly wants to send a message to the ow
             console.error("Error parsing contact form payload or sending:", e);
             setMessages(prev => [...prev, { role: 'ai', text: "אירעה שגיאה בעיבוד בקשתך לשליחת טופס." }]);
         }
-    } else if (responseText && responseText.trim() === TOGGLE_DARK_MODE_COMMAND) {
+    } else if (responseText && responseText.trim().includes(TOGGLE_DARK_MODE_COMMAND)) {
         const currentMode = darkMode; // Capture state *before* toggle for accurate message
         toggleDarkMode();
         const confirmationMessage = currentMode ? "מצב בהיר הופעל." : "מצב כהה הופעל.";
@@ -529,7 +529,7 @@ Only use this command when the user explicitly wants to send a message to the ow
     } else if (responseText && responseText.trim().startsWith(commandPrefixTelegram)) {
         const messageContent = responseText.trim().substring(commandPrefixTelegram.length).trim();
         await sendTelegramMessageToOwner(messageContent);
-    } else if (responseText && responseText.trim() === ACTION_USER_LOGOUT) {
+    } else if (responseText && responseText.trim().includes(ACTION_USER_LOGOUT)) {
         if (authLogout) { // Check if authLogout is available
             await authLogout();
             setMessages(prev => [...prev, { role: 'ai', text: "התנתקת בהצלחה." }]);
@@ -562,7 +562,7 @@ Only use this command when the user explicitly wants to send a message to the ow
             console.error("Error parsing signup payload:", e);
             setMessages(prev => [...prev, { role: 'ai', text: "שגיאה בעיבוד פרטי ההרשמה." }]);
         }
-    } else if (responseText && responseText.trim() === ACTION_USER_LOGIN_GOOGLE) {
+    } else if (responseText && responseText.trim().includes(ACTION_USER_LOGIN_GOOGLE)) {
         setMessages(prev => [...prev, { role: 'ai', text: "מפנה אותך להתחברות עם גוגל..." }]);
         try {
             const { error } = await supabase.auth.signInWithOAuth({
@@ -600,14 +600,14 @@ Only use this command when the user explicitly wants to send a message to the ow
                 setMessages(prev => [...prev, { role: 'ai', text: "שגיאה בעיבוד בקשת שינוי הסיסמה." }]);
             }
         }
-    } else if (responseText && responseText.trim() === ACTION_OPEN_PROFILE_MODAL) {
+    } else if (responseText && responseText.trim().includes(ACTION_OPEN_PROFILE_MODAL)) {
         if (!session) {
             setMessages(prev => [...prev, { role: 'ai', text: "עליך להתחבר תחילה כדי לצפות או לעדכן את הפרופיל שלך." }]);
         } else {
             setIsProfileModalOpen(true);
             setMessages(prev => [...prev, { role: 'ai', text: "פותח את הגדרות הפרופיל שלך..." }]);
         }
-    } else if (responseText && responseText.trim() === ACTION_USER_DELETE_ACCOUNT_CONFIRMED) {
+    } else if (responseText && responseText.trim().includes(ACTION_USER_DELETE_ACCOUNT_CONFIRMED)) {
         if (!session) {
             setMessages(prev => [...prev, { role: 'ai', text: "עליך להתחבר תחילה כדי למחוק את חשבונך." }]);
         } else {
@@ -625,7 +625,7 @@ Only use this command when the user explicitly wants to send a message to the ow
                 setMessages(prev => [...prev, { role: 'ai', text: `שגיאה קריטית בתהליך מחיקת החשבון: ${e.message || 'Unknown error'}. פנה לתמיכה.` }]);
             }
         }
-    } else if (responseText && responseText.trim() === ACTION_USER_VIEW_ORDERS) {
+    } else if (responseText && responseText.trim().includes(ACTION_USER_VIEW_ORDERS)) {
         if (!session) {
             setMessages(prev => [...prev, { role: 'ai', text: "עליך להתחבר תחילה כדי לצפות בהיסטוריית ההזמנות שלך." }]);
         } else {
@@ -829,13 +829,13 @@ Only use this command when the user explicitly wants to send a message to the ow
                       {m.role === 'user' ? (
                         m.text
                       ) : (
-                        <ReactMarkdown
-                          remarkPlugins={[remarkGfm, remarkMath]}
-                          rehypePlugins={[rehypeKatex]}
-                          className="prose prose-sm dark:prose-invert max-w-none"
-                          components={{
-                            a: (props: any) => {
-                              const { href, children, title, ...rest } = props;
+                        <div className="prose prose-sm dark:prose-invert max-w-none">
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm, remarkMath]}
+                            rehypePlugins={[rehypeKatex]}
+                            components={{
+                              a: (props: any) => {
+                                const { href, children, title, ...rest } = props;
                               const isNavButton = title === 'nav-button';
                               const isRelative = href && !href.startsWith('http://') && !href.startsWith('https://');
 
@@ -865,6 +865,7 @@ Only use this command when the user explicitly wants to send a message to the ow
                         >
                           {m.text}
                         </ReactMarkdown>
+                        </div>
                       )}
                     </motion.div>
                   ))}
