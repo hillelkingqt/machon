@@ -213,7 +213,9 @@ const AdminPage: React.FC = () => {
     ],
     content: '', // Initial content
     onUpdate: ({ editor: currentEditor }) => {
-      if (currentArticle) {
+      // Use functional update to always work with the latest article state
+      setCurrentArticle(prev => {
+        if (!prev) return prev;
         let markdownContent = '';
         // Attempt to build markdown string by iterating through nodes
         // This provides more control, especially if global toMarkdown override is problematic.
@@ -284,8 +286,8 @@ const AdminPage: React.FC = () => {
         // For now, stick to the default getMarkdown and hope the custom node serializes.
         // If not, the alert blocks will be missing or wrong in the output.
 
-        setCurrentArticle({ ...currentArticle, fullContent: markdownContent });
-      }
+        return { ...prev, fullContent: markdownContent };
+      });
     },
     editorProps: {
       // Removed transformPastedText here to rely on PasteRules in AlertBlockNode
