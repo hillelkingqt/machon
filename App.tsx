@@ -79,9 +79,7 @@ const App: React.FC = () => {
         logAppLoad();
     }, []); // Empty dependency array ensures this runs only once on mount
 
-    // Effect for checking block status
-    useEffect(() => {
-        const checkBlockStatus = async () => {
+    const checkBlockStatus = useCallback(async () => {
             setIsLoadingBlockStatus(true);
             try {
                 // 1. Fetch IP
@@ -153,10 +151,15 @@ const App: React.FC = () => {
             } finally {
                 setIsLoadingBlockStatus(false);
             }
-        };
+    }, [supabase]);
 
+    useEffect(() => {
         checkBlockStatus();
-    }, []); // Runs once on app load
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+            checkBlockStatus();
+        });
+        return () => subscription.unsubscribe();
+    }, [checkBlockStatus]);
 
     if (isLoadingBlockStatus) {
         return (

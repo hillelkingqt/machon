@@ -1328,7 +1328,7 @@ ${currentBody}
 
           {/* Currently Blocked Items List */}
           <div className="mb-8">
-            <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100 mb-3">פריטים חסומים حاليًا</h3>
+            <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100 mb-3">פריטים חסומים כרגע</h3>
             {isLoadingBlockedItems && (
               <div className="flex flex-col items-center justify-center p-5 text-slate-600 dark:text-slate-400">
                 <Loader2 className="h-8 w-8 animate-spin text-primary dark:text-sky-400" />
