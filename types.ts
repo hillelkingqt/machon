@@ -16,6 +16,14 @@ export interface SiteAdmin {
   created_at: string; // ISO date string
 }
 
+export interface AuthorizedLearningSpaceUser {
+  id: string; // or number if you use auto-incrementing IDs, but UUID string is typical for Supabase
+  email: string;
+  created_at: string; // ISO date string
+  added_by?: string; // optional, UUID of the admin who added the user
+  notes?: string; // optional
+}
+
 export interface Course {
     id: string;
     title: string;

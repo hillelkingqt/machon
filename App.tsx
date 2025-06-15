@@ -15,6 +15,7 @@ import ShopPage from './pages/ShopPage';
 import ContactPage from './pages/ContactPage';
 import FullArticlePage from './pages/FullArticlePage';
 import FAQPage from './pages/FAQPage';
+import LearningSpacePage from './pages/LearningSpacePage'; // Import LearningSpacePage
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 import { DarkModeContext, DarkMode } from './contexts/DarkModeContext';
 import { fetchIpWithFallback } from './utils/ipUtils'; // Import the new IP fetching function
@@ -195,6 +196,7 @@ const App: React.FC = () => {
                                     <Route path="/shop" element={<ShopPage />} />
                                     <Route path="/contact" element={<ContactPage />} />
                                     <Route path="/faq" element={<FAQPage />} />
+                                    <Route path="/learning-space" element={<LearningSpacePage />} />
                                     <Route
                                         path="/admin"
                                         element={
