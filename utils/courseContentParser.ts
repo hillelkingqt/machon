@@ -1,8 +1,14 @@
+import { QuizSectionProps, SectionQuizQuestion } from '../components/ui/QuizSection';
+import { QuizOption } from '../components/ui/QuizQuestion';
+
+export interface ProcessedContentItem {
+  type: 'html' | 'quiz';
+  content: string | QuizSectionProps;
+}
 
 // Minimal mock for logic guidance within the parser, used to help determine table structure for specific courses.
-// Renamed from COURSES_DATA to avoid confusion if actual constants were ever imported here.
 const COURSES_DATA_PARSER_INTERNAL_CONFIG = [
-    { id: 'bar-ilan-acceleration', detailedContent: 'some_content_marker_for_bar_ilan' } // This marker is a placeholder for context.
+    { id: 'bar-ilan-acceleration', detailedContent: 'some_content_marker_for_bar_ilan' }
 ];
 
 // Helper function to check if a key is a valid key of an object (used for custom alert icons)
@@ -23,25 +29,20 @@ const KNOWN_TABLE_KEYS_COL1: string[] = [
     "נושאים ספציפיים (מתמטיקה)", "פורמט המבחן", "קריטריוני מעבר לשלב ב'", "אופי המבחן",
     "פרקים עיקריים", "נושאים ספציפיים (מילולי)", "נושאים ספציפיים (כמותי)",
     "נושאים ספציפיים (צורני)", "קריטריוני קבלה",
-    // For table 3
     "שם התוכנית", "מטרות התוכנית", "תהליך קבלה", "פרטי מבחן כניסה- מועד",
     "- עלות", "- משך", "- מס' שאלות", "- הגבלות", "- אחוז מעבר", "- פטורים", "מבנה התוכנית",
-    // For table 4
     "שלב קבלה", "שם השלב", "סוג הערכה/תוכן", "תזמון/משך", "מאפיינים/מטרת השלב העיקריים"
 ];
 
+const applyInlineStyles = (str: string): string => {
+    return str
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
+        .replace(/(^|[^*\\w])\*([^*]+)\*(?!\*)/g, '$1<em>$2</em>') // Italic without lookbehind
+        .replace(/<sup>(.*?)<\/sup>/g, '<sup class="text-xs opacity-70 ms-0.5">$1</sup>'); // Superscript for citations
+};
 
-export const formatCourseDetailedContentToHtml = (text: string | undefined): string => {
-    if (!text) return '';
-
-    const applyInlineStyles = (str: string): string => {
-        return str
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
-            .replace(/(^|[^*\\w])\*([^*]+)\*(?!\*)/g, '$1<em>$2</em>') // Italic without lookbehind
-            .replace(/<sup>(.*?)<\/sup>/g, '<sup class="text-xs opacity-70 ms-0.5">$1</sup>'); // Superscript for citations
-    };
-
-    const lines = text.trim().split('\n');
+const processMarkdownSegmentToHtml = (segment: string, originalTextForContext: string | undefined): string => {
+    const lines = segment.trim().split('\n');
     let htmlBlocks: string[] = [];
     let i = 0;
 
@@ -100,7 +101,6 @@ export const formatCourseDetailedContentToHtml = (text: string | undefined): str
             i++;
             currentLine = lines[i]?.trim() || ''; 
 
-            // Header Row
             if (currentLine) {
                 htmlBlocks.push(`<thead class="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-800 dark:text-slate-300"><tr>`);
                 const headerCellClass = "px-4 py-3 border-x border-slate-200 dark:border-slate-700 text-right font-semibold";
@@ -132,13 +132,10 @@ export const formatCourseDetailedContentToHtml = (text: string | undefined): str
                     if (currentLine.startsWith(key)) {
                         const value = currentLine.substring(key.length).trim();
                         
-                        // This is a heuristic to determine if the current line is part of the Bar-Ilan course's detailed content.
-                        // It checks if the input 'text' contains the marker from our internal config AND the currentLine.
-                        // This is a simplification; a more robust method would involve knowing the source course ID.
                         const isBarIlanTableContextForThisLine =
                             COURSES_DATA_PARSER_INTERNAL_CONFIG.find(c => c.id === 'bar-ilan-acceleration') &&
-                            text?.includes(COURSES_DATA_PARSER_INTERNAL_CONFIG[0].detailedContent) && // Check if 'text' is likely Bar-Ilan content
-                            text?.includes(currentLine); // Check if currentLine is part of that 'text'
+                            originalTextForContext?.includes(COURSES_DATA_PARSER_INTERNAL_CONFIG[0].detailedContent) &&
+                            originalTextForContext?.includes(currentLine);
 
                         const threeColumnCandidateKeys = ["פרטי מבחן כניסה- מועד", "- עלות", "- משך", "- מס' שאלות", "- הגבלות", "- אחוז מעבר", "- פטורים"];
                         const explicitlyTwoColumnKeysForBarIlan = ["מבנה התוכנית", "שם התוכנית", "כיתות יעד", "מטרות התוכנית", "תהליך קבלה"];
@@ -147,16 +144,15 @@ export const formatCourseDetailedContentToHtml = (text: string | undefined): str
                              htmlBlocks.push(`<td class="${tdKeyClass}">${applyInlineStyles("שם התוכנית")}</td><td class="${tdValueClass}">${applyInlineStyles("נוער מוכשר במתמטיקה - בר אילן")}</td><td class="${tdValueClass}">${applyInlineStyles("נוער מוכשר במתמטיקה - בר אילן")}</td>`);
                         } else if (isBarIlanTableContextForThisLine && threeColumnCandidateKeys.includes(key)) {
                             const valueParts = value.split(/\s+/);
-                            if (valueParts.length > 1) { // Value can be split for a third column
+                            if (valueParts.length > 1) {
                                 htmlBlocks.push(`<td class="${tdKeyClass}">${applyInlineStyles(key)}</td><td class="${tdValueClass}">${applyInlineStyles(valueParts[0] || '')}</td><td class="${tdValueClass}">${applyInlineStyles(valueParts.slice(1).join(' ') || '')}</td>`);
-                            } else { // Not enough parts for 3 columns, use 2-column with colspan
+                            } else {
                                 htmlBlocks.push(`<td class="${tdKeyClass}">${applyInlineStyles(key)}</td><td class="${tdValueClass}" colspan="2">${applyInlineStyles(value)}</td>`);
                             }
                         } else if (isBarIlanTableContextForThisLine && explicitlyTwoColumnKeysForBarIlan.includes(key)) {
-                            // These keys are always 2-column (key + value with colspan) in Bar-Ilan table context
                             htmlBlocks.push(`<td class="${tdKeyClass}">${applyInlineStyles(key)}</td><td class="${tdValueClass}" colspan="2">${applyInlineStyles(value)}</td>`);
                         }
-                        else { // Default for other tables or keys not specially handled
+                        else {
                             htmlBlocks.push(`<td class="${tdKeyClass}">${applyInlineStyles(key)}</td><td class="${tdValueClass}">${applyInlineStyles(value)}</td>`);
                         }
                         keyFound = true;
@@ -168,7 +164,6 @@ export const formatCourseDetailedContentToHtml = (text: string | undefined): str
                     if (currentLine.match(/^\d/)) { 
                         const stageNum = currentLine.match(/^\d+/)?.[0] || '';
                         let restOfLine = currentLine.substring(stageNum.length);
-                        // Naive split for table 4 (Odyssey program stages)
                         const cell1 = restOfLine.substring(0, Math.min(restOfLine.length, 10)); 
                         restOfLine = restOfLine.substring(cell1.length);
                         const cell2 = restOfLine.substring(0, Math.min(restOfLine.length, 40)); 
@@ -193,7 +188,6 @@ export const formatCourseDetailedContentToHtml = (text: string | undefined): str
             continue;
         }
 
-
         if (currentLine.startsWith('#### ')) { htmlBlocks.push(`<h5 class="text-xl font-semibold mt-8 mb-3 text-slate-700 dark:text-slate-200">${applyInlineStyles(currentLine.substring(5))}</h5>`); i++; continue; }
         if (currentLine.startsWith('### ')) { htmlBlocks.push(`<h4 class="text-2xl font-bold mt-10 mb-4 text-slate-800 dark:text-slate-100">${applyInlineStyles(currentLine.substring(4))}</h4>`); i++; continue; }
         if (currentLine.startsWith('## ')) { htmlBlocks.push(`<h3 class="text-3xl font-extrabold mt-12 mb-5 text-slate-800 dark:text-slate-100">${applyInlineStyles(currentLine.substring(3))}</h3>`); i++; continue; }
@@ -205,7 +199,7 @@ export const formatCourseDetailedContentToHtml = (text: string | undefined): str
             let listItems = '';
             while (i < lines.length) {
                 const lineTrimmed = lines[i]?.trim();
-                if (!lineTrimmed) { i++; break; } // handle end of lines array
+                if (!lineTrimmed) { i++; break; }
                 if (lineTrimmed.startsWith('* ') || lineTrimmed.startsWith('- ')) {
                     const itemContent = lineTrimmed.substring(2);
                     listItems += `<li class="py-1">${applyInlineStyles(itemContent)}</li>`;
@@ -235,7 +229,6 @@ export const formatCourseDetailedContentToHtml = (text: string | undefined): str
             continue;
         }
         
-        // Paragraphs
         let paraLines: string[] = [];
         while (i < lines.length) {
             const lineTrimmed = lines[i]?.trim();
@@ -247,7 +240,83 @@ export const formatCourseDetailedContentToHtml = (text: string | undefined): str
         }
         if (paraLines.length > 0) {
             htmlBlocks.push(`<p class="text-base text-slate-700 dark:text-slate-300 leading-relaxed my-4 hyphens-auto text-justify break-words">${paraLines.join(' ')}</p>`);
+        } else if (currentLine !== '') { // Catch any unprocessed non-empty line to prevent infinite loops if no rule matches
+             // This case should ideally be rare if paragraph logic is robust
+            // htmlBlocks.push(`<p class="text-base text-slate-700 dark:text-slate-300 leading-relaxed my-4 hyphens-auto text-justify break-words">${applyInlineStyles(currentLine)}</p>`);
+            // i++; // Ensure progress if currentLine was not consumed by paragraph logic (e.g. it was a marker itself)
+            // The main loop for paragraphs should handle incrementing 'i'. If paraLines is empty, and currentLine is not,
+            // it means 'i' was not incremented in this iteration by the paragraph logic.
+            // This was a potential source of infinite loop if a line is not empty, not a block start, and not paragraph content.
+            // However, the paragraph loop's break condition `lineTrimmed.match(/^(#|>|- |\* |\d+\. |---|\*\*\*|___|>>> |טבלה)/)`
+            // should correctly identify block markers. If it's not a block marker and not empty, it should be part of a paragraph.
+            // If paraLines is still empty, it might be a single line that doesn't fit paragraph criteria but isn't a block.
+            // The original code structure implicitly handled this by the final `else` pushing a paragraph.
+            // The current paragraph logic should consume it or i should be incremented if it was an empty line.
         }
     }
     return htmlBlocks.join('\n');
+};
+
+export const formatCourseDetailedContentToHtml = (text: string | undefined): ProcessedContentItem[] => {
+  if (!text) return [];
+
+  const output: ProcessedContentItem[] = [];
+  const quizStartMarker = '>>> QUIZ_JSON:';
+  const quizEndMarker = '<<< QUIZ_JSON_END';
+
+  let remainingText = text.trim(); // Use the original 'text' for context in processMarkdownSegmentToHtml
+
+  while (remainingText.length > 0) {
+    const quizStartIndex = remainingText.indexOf(quizStartMarker);
+
+    if (quizStartIndex === -1) { // No more quiz blocks
+      if (remainingText.trim().length > 0) {
+        const htmlContent = processMarkdownSegmentToHtml(remainingText, text);
+        if (htmlContent.trim().length > 0) {
+            output.push({ type: 'html', content: htmlContent });
+        }
+      }
+      break;
+    }
+
+    const htmlSegmentBeforeText = remainingText.substring(0, quizStartIndex);
+    if (htmlSegmentBeforeText.trim().length > 0) {
+      const htmlContent = processMarkdownSegmentToHtml(htmlSegmentBeforeText, text);
+       if (htmlContent.trim().length > 0) {
+            output.push({ type: 'html', content: htmlContent });
+        }
+    }
+
+    const quizEndIndex = remainingText.indexOf(quizEndMarker, quizStartIndex + quizStartMarker.length);
+    if (quizEndIndex === -1) {
+      const htmlContent = processMarkdownSegmentToHtml(remainingText.substring(quizStartIndex), text);
+      if (htmlContent.trim().length > 0) {
+            output.push({ type: 'html', content: htmlContent });
+        }
+      console.error('Malformed quiz block: No end marker found. Treating remaining content as HTML.');
+      break;
+    }
+
+    const quizJsonString = remainingText.substring(quizStartIndex + quizStartMarker.length, quizEndIndex).trim();
+    try {
+      const quizProps: QuizSectionProps = JSON.parse(quizJsonString);
+      // Basic validation for QuizProps structure
+      if (quizProps && typeof quizProps.title === 'string' && Array.isArray(quizProps.questions)) {
+        output.push({ type: 'quiz', content: quizProps });
+      } else {
+        throw new Error("Parsed JSON does not match QuizSectionProps structure.");
+      }
+    } catch (error) {
+      console.error('Error parsing quiz JSON or invalid structure:', error);
+      const malformedBlockText = remainingText.substring(quizStartIndex, quizEndIndex + quizEndMarker.length);
+      const htmlContent = processMarkdownSegmentToHtml(malformedBlockText, text);
+       if (htmlContent.trim().length > 0) {
+            output.push({ type: 'html', content: htmlContent });
+        }
+    }
+
+    remainingText = remainingText.substring(quizEndIndex + quizEndMarker.length);
+  }
+
+  return output;
 };
