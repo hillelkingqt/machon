@@ -702,8 +702,7 @@ Only use this command when the user explicitly wants to send a message to the ow
                                   {children}
                                 </a>
                               );
-                            }
-                            }
+                            },
                             ul: ({node, ...props}) => (
                               <ul className="list-disc pl-5 space-y-1" {...props} />
                             ),
