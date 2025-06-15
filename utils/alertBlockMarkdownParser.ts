@@ -17,7 +17,7 @@ export function preparseAlertBlocks(markdown: string): string {
   let result = markdown.replace(alertBlockRegex, (match, precedingNewlineOrStart, type, content) => {
     const alertType = type.toLowerCase();
     let processedContent = (content || '').trim();
-    const contentLines = processedContent.split('\n').filter(line => line.trim() !== '');
+    const contentLines = processedContent.split('\n').filter(line => (line || '').trim() !== '');
 
     if (contentLines.length === 0) {
         processedContent = '<p></p>'; // Ensure node is created even if empty
@@ -25,7 +25,7 @@ export function preparseAlertBlocks(markdown: string): string {
         // Basic HTML escaping for content lines.
         // If actual Markdown to HTML conversion is needed for inline styles *within* alerts
         // before Tiptap sees it, a proper Markdown parser (e.g., markdown-it) should be used here for `content`.
-        processedContent = contentLines.map(line => `<p>${line.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>`).join('');
+        processedContent = contentLines.map(line => `<p>${(line || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>`).join('');
     }
     const prefix = precedingNewlineOrStart;
     return `${prefix}<div data-alert-block data-alert-type="${alertType}">${processedContent}</div>`;
