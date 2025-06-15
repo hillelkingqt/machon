@@ -35,7 +35,7 @@ interface Message {
 }
 
 const ChatWidget: React.FC = () => {
-  const { session, user, profile } = useAuth();
+  const { session, user, profile, logout: authLogout } = useAuth(); // Destructure and alias logout
   const { articles } = useData();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -530,8 +530,12 @@ Only use this command when the user explicitly wants to send a message to the ow
         const messageContent = responseText.trim().substring(commandPrefixTelegram.length).trim();
         await sendTelegramMessageToOwner(messageContent);
     } else if (responseText && responseText.trim() === ACTION_USER_LOGOUT) {
-        await logout();
-        setMessages(prev => [...prev, { role: 'ai', text: "התנתקת בהצלחה." }]);
+        if (authLogout) { // Check if authLogout is available
+            await authLogout();
+            setMessages(prev => [...prev, { role: 'ai', text: "התנתקת בהצלחה." }]);
+        } else {
+            setMessages(prev => [...prev, { role: 'ai', text: "שגיאה: פונקציית ההתנתקות אינה זמינה כעת." }]);
+        }
     } else if (responseText && responseText.trim().startsWith(ACTION_USER_LOGIN_EMAIL_PREFIX)) {
         const jsonPayload = responseText.trim().substring(ACTION_USER_LOGIN_EMAIL_PREFIX.length).trim();
         try {
