@@ -37,16 +37,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Function to log user activity
   const logActivity = async (event: string, userId?: string, email?: string) => {
     try {
-      const body: { event: string; userId?: string; email?: string } = { event };
-      if (userId) body.userId = userId;
-      if (email) body.email = email;
+      let ipAddress: string | null = null;
+      try {
+        const { data } = await supabase.functions.invoke('get-my-ip');
+        if (data && typeof data.ip === 'string') {
+          ipAddress = data.ip;
+        }
+      } catch (err) {
+        try {
+          const res = await fetch('https://api.ipify.org?format=json');
+          const json = await res.json();
+          ipAddress = json.ip;
+        } catch (_) {
+          ipAddress = null;
+        }
+      }
 
-      const { error } = await supabase.functions.invoke('record-activity', { body });
+      const { error } = await supabase.from('user_activity_log').insert([
+        {
+          event,
+          user_id: userId || null,
+          email: email || null,
+          ip_address: ipAddress,
+          is_admin_activity: false,
+        },
+      ]);
+
       if (error) {
         console.error(`Error logging activity for ${event}:`, error);
       }
     } catch (error) {
-      console.error(`Error invoking record-activity function for ${event}:`, error);
+      console.error(`Error logging activity for ${event}:`, error);
     }
   };
 
