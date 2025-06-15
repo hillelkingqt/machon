@@ -722,7 +722,6 @@ Only use this command when the user explicitly wants to send a message to the ow
                       animate={{ opacity: 1, y: 0 }}
                       className="p-3 rounded-xl max-w-[85%] text-sm leading-relaxed bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-gray-400 mr-auto text-right flex items-center"
                     >
-                      <span className="mr-2">נציג מכון אביב מקליד/ה...</span>
                       <div className="flex space-x-1 items-center">
                         {[0, 1, 2].map(i => (
                           <motion.div
