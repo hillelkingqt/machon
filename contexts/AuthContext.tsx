@@ -19,7 +19,9 @@ export interface AuthContextType {
   profile: UserProfile | null;
   logout: () => Promise<void>;
   loadingInitial: boolean; // Renamed from 'loading' to be more specific
-  // Login/Signup are handled by modals directly for now, but can be exposed here if needed
+  loginWithPassword: (email: string, password: string) => Promise<any>;
+  signupWithDetails: (email: string, password: string, firstName: string, lastName: string) => Promise<any>;
+  loginWithGoogle: () => Promise<any>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -169,12 +171,57 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // setLoadingInitial will be set to false by onAuthStateChange listener
   };
 
-  // Login and Signup functions are currently handled by the modals.
-  // If they were to be exposed via context:
-  // const login = async (email, password) => supabase.auth.signInWithPassword({ email, password });
-  // const signup = async (email, password, firstName, lastName) => supabase.auth.signUp({
-  //   email, password, options: { data: { first_name: firstName, last_name: lastName, full_name: `${firstName} ${lastName}`}}
-  // });
+  const loginWithPassword = async (email: string, password: string) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        console.error('Error logging in with password:', error.message);
+        throw error;
+      }
+      return data;
+    } catch (error) {
+      console.error('Login with password failed:', error);
+      throw error;
+    }
+  };
+
+  const signupWithDetails = async (email: string, password: string, firstName: string, lastName: string) => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+            full_name: `${firstName} ${lastName}`,
+          },
+        },
+      });
+      if (error) {
+        console.error('Error signing up:', error.message);
+        throw error;
+      }
+      return data;
+    } catch (error) {
+      console.error('Signup failed:', error);
+      throw error;
+    }
+  };
+
+  const loginWithGoogle = async () => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+      if (error) {
+        console.error('Error logging in with Google:', error.message);
+        throw error;
+      }
+      return data;
+    } catch (error) {
+      console.error('Google login failed:', error);
+      throw error;
+    }
+  };
 
   const value: AuthContextType = {
     session,
@@ -182,6 +229,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     profile,
     logout,
     loadingInitial,
+    loginWithPassword,
+    signupWithDetails,
+    loginWithGoogle,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
